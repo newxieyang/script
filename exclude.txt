@@ -1,0 +1,8 @@
+.git\
+.idea\
+.DS_Store
+app\build\
+libFAP\build\
+libFAP\.cxx\
+libView\build\
+keystore\
