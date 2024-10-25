@@ -1,24 +1,39 @@
-set version=1.0.6
+
 rem custom 1 ARATEK 2 CASTL 3 MIAXIS 
 set custom=1 
-set targetDir=D:\G7SDKLib\G7SDKv%version%
-set zipFilePathName=D:\G7SDKLib\G7SDKv%version%.zip
 
-set jniDir=D:\git\oxi\g7\FAP70\
-set vs64Dir=%jniDir%cmake-build-release-vs2019_x64\libFAP\Release\
-set vs86Dir=%jniDir%cmake-build-release-vs2019_x86\libFAP\Release\
+
+set SDKDir=D:\git\oxi\g7\FAP70\
+set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
+set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
 set winDir=D:\git\oxi\g7\g7010WinDemo\
 
 @REM set androidDir=D:\git\oxi\g6\G6010ASSample\
 @REM set linuxDir=%targetDir%\Linux
 
+set versionFile=%SDKDir%\libFAP\include\Version.h
+for /f "tokens=3 delims= " %%i in ('findstr /C:"#define OXISCAN_VERSION_MAJOR " %versionFile%') do set MAJOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_MINOR " %versionFile%') do set MINOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_PATCH " %versionFile%') do set PATCH=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_BUILD " %versionFile%') do set BUILD=%%i 
+set "MAJOR=%MAJOR: =%"
+set "MINOR=%MINOR: =%"
+set "PATCH=%PATCH: =%"
+set "BUILD=%BUILD: =%"
+
+
+set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
+
+set targetDir=D:\G7SDKLib\G7SDKv%version%
+set zipFilePathName=D:\G7SDKLib\G7SDKv%version%.zip
+
 md %targetDir%
 
 @REM echo copy include
 md %targetDir%\include
-xcopy %jniDir%libFAP\include\OXiScanAPI.h %targetDir%\include /y
-xcopy %jniDir%libFAP\include\OXiScanUltimate.h %targetDir%\include /y
-xcopy %jniDir%libFAP\include\OXiScanUltimateApi_err.h %targetDir%\include /y
+xcopy %SDKDir%libFAP\include\OXiScanAPI.h %targetDir%\include /y
+xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %targetDir%\include /y
+xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %targetDir%\include /y
 if %custom% EQU 1 (
 	echo "1"
 )
@@ -50,7 +65,7 @@ md %targetDir%\winx86DemoWithLib
 rem copy win_x86
 xcopy %vs86Dir%FAP70.dll %targetDir%\winx86DemoWithLib /y
 xcopy %vs86Dir%FAP70.lib %targetDir%\winx86DemoWithLib /y
-@REM xcopy %jniDir%G6SDK\onnxruntime-1.12.1\lib\vs\win-x86\onnxruntime.dll %targetDir%\winx86DemoWithLib
+@REM xcopy %SDKDir%G6SDK\onnxruntime-1.12.1\lib\vs\win-x86\onnxruntime.dll %targetDir%\winx86DemoWithLib
 xcopy %winDir%\Release\*.exe %targetDir%\winx86DemoWithLib /y
 @REM xcopy %androidDir%libFAP\src\main\assets\*.onnx %winDemoDir%\samplex86    /y
 
@@ -58,7 +73,7 @@ rem copy win_x64
 md %targetDir%\winx64DemoWithLib
 xcopy %vs64Dir%FAP70.dll %targetDir%\winx64DemoWithLib /y
 xcopy %vs64Dir%FAP70.lib %targetDir%\winx64DemoWithLib /y
-@REM xcopy %jniDir%G6SDK\onnxruntime-1.12.1\lib\vs\win-x64\onnxruntime.dll %targetDir%\winx64DemoWithLib
+@REM xcopy %SDKDir%G6SDK\onnxruntime-1.12.1\lib\vs\win-x64\onnxruntime.dll %targetDir%\winx64DemoWithLib
 xcopy %winDir%\x64\Release\*.exe %targetDir%\winx64DemoWithLib /y
 @REM xcopy %androidDir%libFAP\src\main\assets\*.onnx %winDemoDir%\samplex64    /y
 @REM xcopy %winDir%g6010_sdk_debug\*.onnx winDemoDir\sample   /y
