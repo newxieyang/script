@@ -33,20 +33,7 @@ set SDKDir=%sourceDir%FAP6010_%customStr%\
 set androidDir=%sourceDir%G6010Android_%customStr%\
 set winDir=%sourceDir%g6010WinDemo_%customStr%\
 set linuxDir=%targetDir%\Linux
-set versionFile=%SDKDir%\libFAP\include\Version.h
 
-
-for /f "tokens=3 delims= " %%i in ('findstr /C:"#define OXISCAN_VERSION_MAJOR " %versionFile%') do set MAJOR=%%i 
-for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_MINOR " %versionFile%') do set MINOR=%%i 
-for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_PATCH " %versionFile%') do set PATCH=%%i 
-for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_BUILD " %versionFile%') do set BUILD=%%i 
-set "MAJOR=%MAJOR: =%"
-set "MINOR=%MINOR: =%"
-set "PATCH=%PATCH: =%"
-set "BUILD=%BUILD: =%"
-
-
-set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
 
 
 
@@ -54,8 +41,6 @@ set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
 @REM set zipFilePathName=D:\G6SDKLib\G6SDKtestv%version%.zip
 
 
-rd /s /q %targetDir%
-rd /s /q %targetDir%.zip
 
 
 
@@ -77,70 +62,120 @@ if %2 EQU 2 (
 )
 
 
-:copyAIModel
-rem copy AI model
-md %targetDir%\AI_model
-@REM xcopy %androidDir%libFAP\src\main\assets\*.onnx %targetDir%\AI_model
-@REM xcopy D:\G6SDKLib\*.bmp %targetDir%\AI_model
-goto:eof
+
 
 
 :copyWin
 
+    echo "copy win"
+    set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
+    set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
 
-md %targetDir%\winx86DemoWithLib
-rem copy win_x86
-xcopy %winDir%\Release\*.exe %targetDir%\winx86DemoWithLib /y
-IF %errorlevel% neq 0 (
-    echo copy winx86 exe file fail
-    pause
-    GOTO END
-)
-xcopy %winDir%\Release\*.dll %targetDir%\winx86DemoWithLib /y
-IF %errorlevel% neq 0 (
-    echo copy winx86 dll file fail
-    pause
-    GOTO END
-)
+    xcopy %SDKDir%libFAP\include\OXiScanAPI.h %winDir% /y
+      IF %errorlevel% neq 0 (
+        echo copy win OXiScanAPI.h file fail
+        pause
+        GOTO END
+    )
+    xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %winDir% /y
+      IF %errorlevel% neq 0 (
+        echo copy win OXiScanUltimate.h file fail
+        pause
+        GOTO END
+    )
+    xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %winDir% /y
+      IF %errorlevel% neq 0 (
+        echo copy win OXiScanUltimateApi_err.h file fail
+        pause
+        GOTO END
+    )
 
+    rem copy win_x86
+    rem xcopy %vs86Dir%%libName%.dll %targetDir%\libx86 /y
+    xcopy %vs86Dir%%libName%.lib %winDir%\libx86	/y
+        IF %errorlevel% neq 0 (
+        echo copy win OXiScanUltimateApi_err.h file fail
+        pause
+        GOTO END
+    )
+    xcopy %vs86Dir%%libName%.dll %winDir%\Release	/y
+        IF %errorlevel% neq 0 (
+        echo copy win OXiScanUltimateApi_err.h file fail
+        pause
+        GOTO END
+    )
 
-rem copy win_x64
-md %targetDir%\winx64DemoWithLib
-xcopy %winDir%\x64\Release\*.exe %targetDir%\winx64DemoWithLib /y
-IF %errorlevel% neq 0 (
-    echo copy winx64 exe file fail
-    pause
-    GOTO END
-)
-xcopy %winDir%\x64\Release\*.dll %targetDir%\winx64DemoWithLib /y
-IF %errorlevel% neq 0 (
-    echo copy winx64 dll file fail
-    pause
-    GOTO END
-)
+    rem copy win_x64
+    rem xcopy %vs64Dir%%libName%.dll %targetDir%\libx64 /y
+    xcopy %vs64Dir%%libName%.lib %winDir%\libx64 /y
+        IF %errorlevel% neq 0 (
+        echo copy win OXiScanUltimateApi_err.h file fail
+        pause
+        GOTO END
+    )
+    xcopy %vs64Dir%%libName%.dll %winDir%\x64\Release /y
+        IF %errorlevel% neq 0 (
+        echo copy win OXiScanUltimateApi_err.h file fail
+        pause
+        GOTO END
+    )
 
 goto:eof
 
 
 
 :copyAndroid
-rem copy android source code
+    echo "copy android"
+    
+    @REM set androidv7Dir=%SDKDir%cmake-build-release-armeabi-v7a\libFAP\
+    @REM set androidv8Dir=%SDKDir%cmake-build-release-arm64-v8a\libFAP\
+    @REM if %customIndex% EQU 0 (
+	@REM     %androidv7Dir%=%SDKDir%cmake-build-release-arm7-r18\libFAP\
+    @REM     %androidv8Dir%=%SDKDir%cmake-build-release-arm8-r18\libFAP\
+    @REM )
 
-md %targetDir%\Android
-xcopy %androidDir%app\build\outputs\apk\debug\*.apk %targetDir%\Android  /y
-goto:eof
+    echo %androidDir%
+    echo %SDKDir%
 
+    set androidv7Dir=%SDKDir%cmake-build-release-arm7-r18\libFAP\
+    set androidv8Dir=%SDKDir%cmake-build-release-arm8-r18\libFAP\
+    set jniDir=%androidDir%libFAP\src\main\cpp\
 
+    xcopy %androidv7Dir%lib%libName%.so %jniDir%armeabi-v7a /y
+    IF %errorlevel% neq 0 (
+        echo copy android v7a so  fail
+        pause
+        GOTO END
+    )
+    xcopy %androidv8Dir%lib%libName%.so %jniDir%arm64-v8a /y
+        IF %errorlevel% neq 0 (
+        echo copy android v8a so fail
+        pause
+        GOTO END
+    )
 
-:copyLinux
-@REM md %linuxDir%
-@REM @REM md %linuxDir%\aarch
-@REM @REM md %linuxDir%\x64
-@REM xcopy D:\G6SDKLib\linux\testG6SDK%version%.zip %linuxDir% /y
+    xcopy %SDKDir%libFAP\include\OXiScanAPI.h %jniDir%include /y
+    IF %errorlevel% neq 0 (
+         echo copy android OXiScanAPI.h file fail
+        pause
+        GOTO END
+    )
+    xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %jniDir%include /y
+    IF %errorlevel% neq 0 (
+        echo copy android OXiScanUltimate.h file fail
+        pause
+        GOTO END
+    )
+    xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %jniDir%include /y
+    IF %errorlevel% neq 0 (
+        echo copy android OXiScanUltimateApi_err.h file fail
+        pause
+        GOTO END
+    )
+
 goto:eof
 
 
 
 
 :END
-7z a -tzip %zipFilePathName% %targetDir% 

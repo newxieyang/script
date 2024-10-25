@@ -3,10 +3,60 @@ rem custom 1 ARATEK 2 CASTL 3 MIAXIS
 set custom=1 
 
 
-set SDKDir=D:\git\oxi\g7\FAP70\
+
+
+rem custom [0:ARATEK | 1:MIAXIS | 2:win7 | 3:fangzheng | new]
+set custom=1
+set customStr=win7
+set libName=FAP60
+set customIndex=%1
+set platformIndex=%2
+
+if %customIndex% EQU 0 (
+	set customStr=ARATEK
+    set libName=AraDevice
+)
+if %customIndex% EQU 1 (
+	set customStr=MIAXIS
+)
+
+if %customIndex% EQU 2 (
+	set customStr=win7
+)
+
+if %customIndex% EQU 3 (
+	set customStr=fangzheng
+)
+
+
+echo "genareate G6SDK"
+echo off
+
+set sourceDir=D:\git\oxi\g6\
+set SDKDir=%sourceDir%FAP6010_%customStr%\
+set androidDir=%sourceDir%G6010Android_%customStr%\
+set winDir=%sourceDir%g6010WinDemo_%customStr%\
+set linuxDir=%targetDir%\Linux
+set versionFile=%SDKDir%\libFAP\include\Version.h
+
+
+for /f "tokens=3 delims= " %%i in ('findstr /C:"#define OXISCAN_VERSION_MAJOR " %versionFile%') do set MAJOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_MINOR " %versionFile%') do set MINOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_PATCH " %versionFile%') do set PATCH=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_BUILD " %versionFile%') do set BUILD=%%i 
+set "MAJOR=%MAJOR: =%"
+set "MINOR=%MINOR: =%"
+set "PATCH=%PATCH: =%"
+set "BUILD=%BUILD: =%"
+
+
+set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
+
+
+
 set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
 set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
-set winDir=D:\git\oxi\g7\g7010WinDemo\
+
 
 @REM set androidDir=D:\git\oxi\g6\G6010ASSample\
 @REM set linuxDir=%targetDir%\Linux
