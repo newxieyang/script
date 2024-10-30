@@ -34,8 +34,8 @@ set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
 
 
 
-set targetDir=D:\G7SDKLib\G6SDKtestv%version%
-set zipFilePathName=D:\G7SDKLib\G6SDKtestv%version%.zip
+set targetDir=D:\G7SDKLib\G7SDKtestv%version%
+set zipFilePathName=D:\G7SDKLib\G7SDKtestv%version%.zip
 
 
 rd /s /q %targetDir%

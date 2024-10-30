@@ -74,8 +74,8 @@ set "BUILD=%BUILD: =%"
 
 set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
 
-set targetDir=D:\G7SDKLib\G7SDKv%version%
-set zipFilePathName=D:\G7SDKLib\G7SDKv%version%.zip
+set targetDir=D:\G6SDKLib\G6SDKv%version%
+set zipFilePathName=D:\G6SDKLib\G6SDKv%version%.zip
 
 md %targetDir%
 
@@ -96,7 +96,7 @@ if %custom% EQU 1 (
 @REM xcopy D:\G6SDKLib\*.bmp %targetDir%\AI_model
 
 
-set winDemoDir=%targetDir%\G7_win_demo_sourceCode
+set winDemoDir=%targetDir%\G6_win_demo_sourceCode
 
 rem copy win demo source code
 md %winDemoDir%
@@ -106,34 +106,34 @@ md %winDemoDir%\res
 xcopy %winDir%*.cpp %winDemoDir% /y
 xcopy %winDir%*.h %winDemoDir%  /y
 xcopy %winDir%*.rc %winDemoDir%  /y
-xcopy %winDir%G7WinDemo.* %winDemoDir%  /y
+xcopy %winDir%G6WinDemo.* %winDemoDir%  /y
 xcopy %winDir%res\*.* %winDemoDir%\res  /y
 xcopy %winDir%libx64\*.* %winDemoDir%\libx64  /y
 xcopy %winDir%libx86\*.* %winDemoDir%\libx86  /y
 
 md %targetDir%\winx86DemoWithLib
 rem copy win_x86
-xcopy %vs86Dir%FAP70.dll %targetDir%\winx86DemoWithLib /y
-xcopy %vs86Dir%FAP70.lib %targetDir%\winx86DemoWithLib /y
+xcopy %vs86Dir%AraDevice.dll %targetDir%\winx86DemoWithLib /y
+xcopy %vs86Dir%AraDevice.lib %targetDir%\winx86DemoWithLib /y
 @REM xcopy %SDKDir%G6SDK\onnxruntime-1.12.1\lib\vs\win-x86\onnxruntime.dll %targetDir%\winx86DemoWithLib
 xcopy %winDir%\Release\*.exe %targetDir%\winx86DemoWithLib /y
 @REM xcopy %androidDir%libFAP\src\main\assets\*.onnx %winDemoDir%\samplex86    /y
 
 rem copy win_x64
 md %targetDir%\winx64DemoWithLib
-xcopy %vs64Dir%FAP70.dll %targetDir%\winx64DemoWithLib /y
-xcopy %vs64Dir%FAP70.lib %targetDir%\winx64DemoWithLib /y
+xcopy %vs64Dir%AraDevice.dll %targetDir%\winx64DemoWithLib /y
+xcopy %vs64Dir%AraDevice.lib %targetDir%\winx64DemoWithLib /y
 @REM xcopy %SDKDir%G6SDK\onnxruntime-1.12.1\lib\vs\win-x64\onnxruntime.dll %targetDir%\winx64DemoWithLib
 xcopy %winDir%\x64\Release\*.exe %targetDir%\winx64DemoWithLib /y
 @REM xcopy %androidDir%libFAP\src\main\assets\*.onnx %winDemoDir%\samplex64    /y
 @REM xcopy %winDir%g6010_sdk_debug\*.onnx winDemoDir\sample   /y
 
 @REM rem copy android source code
-@REM md %targetDir%\Android
-@REM md %targetDir%\Android\G6010ASSample
-@REM xcopy %androidDir% %targetDir%\Android\G6010ASSample /exclude:exclude.txt /s /y /v
-@REM rd /s /q %targetDir%\Android\G6010ASSample\.gradle
-@REM rd /s /q %targetDir%\Android\G6010ASSample\gradle
+md %targetDir%\Android
+md %targetDir%\Android\G6010ASSample
+xcopy %androidDir% %targetDir%\Android\G6010ASSample /exclude:exclude.txt /s /y /v
+rd /s /q %targetDir%\Android\G6010ASSample\.gradle
+rd /s /q %targetDir%\Android\G6010ASSample\gradle
 
 
 @REM del /f /s /q %targetDir%\Android\G6010ASSample\libFAP\src\main\assets\*.onnx	
@@ -143,9 +143,9 @@ xcopy %winDir%\x64\Release\*.exe %targetDir%\winx64DemoWithLib /y
 @REM xcopy %androidDir%app\build\outputs\apk\debug\*.apk %targetDir%\Android  /y
 
 @REM rem copy document
-xcopy D:\G7SDKLib\*.docx %targetDir% /y
-xcopy D:\G7SDKLib\*.png %targetDir% /y
-xcopy D:\G7SDKLib\*.txt %targetDir% /y
+md %targetDir%\doc
+xcopy D:\6SDKLib\doc\*.* %targetDir%\doc /y
+
 
 
 @REM md %linuxDir%

@@ -1,5 +1,5 @@
 echo "copy G7SDK to project"
-echo OFF
+@REM echo OFF
 set targetDir=D:\git\oxi\g7\g7010WinDemo
 set platformIndex=%1
 
