@@ -12,10 +12,11 @@ set libName=FAP60
 set customIndex=%1
 
 if "%1" == "" (
-	echo "1 build win x86 x64 demo"
-	echo "2 build win x86 x64 demo with source code"
-	echo "3 build android demo"
-	echo "4 build android demo with source code"
+	echo "0 build ARTEK"
+	echo "1 build MIAXIS"
+	echo "2 build win7"
+	echo "3 build fangzheng"
+	echo "4 build new"
 	pause
     GOTO END
 )
@@ -146,9 +147,9 @@ IF %errorlevel% neq 0 (
     pause
     GOTO END
 )
-xcopy %winDir%G6WinDemo.* %winDemoDir%  /y
+xcopy %winDir%G6010WinDemo.* %winDemoDir%  /y
 IF %errorlevel% neq 0 (
-    echo copy source code G6WinDemo.* fail
+    echo copy source code G6010WinDemo.* fail
     pause
     GOTO END
 )
@@ -213,7 +214,7 @@ IF %errorlevel% neq 0 (
 @REM rem copy android source code
 md %targetDir%\Android
 md %targetDir%\Android\G6010ASSample
-xcopy %androidDir% %targetDir%\Android\G6010ASSample /y /v
+xcopy %androidDir% %targetDir%\Android\G6010ASSample /EXCLUDE:D:\owncloud\script\ex  /y /v /s
 rd /s /q %targetDir%\Android\G6010ASSample\.gradle
 rd /s /q %targetDir%\Android\G6010ASSample\gradle
 
