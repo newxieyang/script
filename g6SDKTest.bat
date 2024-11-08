@@ -1,28 +1,34 @@
 CHCP 65001
 
 
-rem custom [0:ARATEK | 1:MIAXIS | 2:win7 | 3:fangzheng | new]
-set custom=1
-set customStr=win7
+
+setlocal enabledelayedexpansion 
+set custom[0]=ARATEK
+set custom[1]=MIAXIS
+set custom[2]=win7
+set custom[3]=fangzheng
+set custom[4]=new
+set custom[5]=kejin
+set custom[6]=yinken
+set custom[7]=huantian
+
+
+
+
+if "%1" == "" (
+    for /l %%n in (0,1,7) do ( 
+    echo %%n build !custom[%%n]! 
+    )
+	pause
+    GOTO END
+)
+
+rem custom [0:ARATEK | 1:MIAXIS | 2:win7 | 3:fangzheng | 4:new | 5:kejin | 6:yinken | 7:huantian]
+@REM set custom=1
 set libName=FAP60
 set customIndex=%1
 set platformIndex=%2
-
-if %customIndex% EQU 0 (
-	set customStr=ARATEK
-    set libName=AraDevice
-)
-if %customIndex% EQU 1 (
-	set customStr=MIAXIS
-)
-
-if %customIndex% EQU 2 (
-	set customStr=win7
-)
-
-if %customIndex% EQU 3 (
-	set customStr=fangzheng
-)
+set customStr=!custom[%customIndex%]!
 
 
 echo "genareate G6SDK"

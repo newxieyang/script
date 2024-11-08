@@ -3,39 +3,33 @@ rem custom 1 ARATEK 2 CASTL 3 MIAXIS
 set custom=1 
 
 
+setlocal enabledelayedexpansion 
+set custom[0]=ARATEK
+set custom[1]=MIAXIS
+set custom[2]=win7
+set custom[3]=fangzheng
+set custom[4]=new
+set custom[5]=kejin
+set custom[6]=yinken
+set custom[7]=huantian
 
 
-rem custom [0:ARATEK | 1:MIAXIS | 2:win7 | 3:fangzheng | new]
-set custom=1
-set customStr=win7
-set libName=FAP60
-set customIndex=%1
+
 
 if "%1" == "" (
-	echo "0 build ARTEK"
-	echo "1 build MIAXIS"
-	echo "2 build win7"
-	echo "3 build fangzheng"
-	echo "4 build new"
+    for /l %%n in (0,1,7) do ( 
+    echo %%n build !custom[%%n]! 
+    )
 	pause
     GOTO END
 )
 
-if %customIndex% EQU 0 (
-	set customStr=ARATEK
-    set libName=AraDevice
-)
-if %customIndex% EQU 1 (
-	set customStr=MIAXIS
-)
-
-if %customIndex% EQU 2 (
-	set customStr=win7
-)
-
-if %customIndex% EQU 3 (
-	set customStr=fangzheng
-)
+rem custom [0:ARATEK | 1:MIAXIS | 2:win7 | 3:fangzheng | 4:new | 5:kejin | 6:yinken | 7:huantian]
+@REM set custom=1
+set libName=FAP60
+set customIndex=%1
+set platformIndex=%2
+set customStr=!custom[%customIndex%]!
 
 
 echo "genareate G6SDK"
@@ -214,7 +208,7 @@ IF %errorlevel% neq 0 (
 @REM rem copy android source code
 md %targetDir%\Android
 md %targetDir%\Android\G6010ASSample
-xcopy %androidDir% %targetDir%\Android\G6010ASSample /EXCLUDE:D:\owncloud\script\ex  /y /v /s
+xcopy %androidDir% %targetDir%\Android\G6010ASSample /EXCLUDE:e:\owncloud\script\ex  /y /v /s
 rd /s /q %targetDir%\Android\G6010ASSample\.gradle
 rd /s /q %targetDir%\Android\G6010ASSample\gradle
 
