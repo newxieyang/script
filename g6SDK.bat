@@ -81,6 +81,10 @@ if %2 EQU 2 (
 
 :copyWin
 
+    if %customIndex% EQU 4 (
+        set winDir=%sourceDir%g6MFC_%customStr%\
+    )
+
     echo "copy win"
     set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
     set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\

@@ -32,7 +32,7 @@ set customStr=!custom[%customIndex%]!
 
 
 echo "genareate G6SDK"
-echo off
+@REM echo off
 
 set sourceDir=D:\git\oxi\g6\
 set SDKDir=%sourceDir%FAP6010_%customStr%\
@@ -40,6 +40,10 @@ set androidDir=%sourceDir%G6010Android_%customStr%\
 set winDir=%sourceDir%g6010WinDemo_%customStr%\
 set linuxDir=%targetDir%\Linux
 set versionFile=%SDKDir%\libFAP\include\Version.h
+
+if "%1" == "4" (
+    set winDir=%sourceDir%G6MFC_%customStr%\
+)
 
 
 for /f "tokens=3 delims= " %%i in ('findstr /C:"#define OXISCAN_VERSION_MAJOR " %versionFile%') do set MAJOR=%%i 
@@ -54,6 +58,18 @@ set "BUILD=%BUILD: =%"
 
 set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
 
+set mkVer=%SDKDir%\OXiMKImgLib\src\oxi_mk_image_process.cpp
+for /f "tokens=3 delims= " %%i in ('findstr /C:"version[0] = " %mkVer%') do set MAJOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:"version[1] = " %mkVer%') do set MINOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:"version[2] = " %mkVer%') do set PATCH=%%i 
+set "MAJOR=%MAJOR: =%"
+set "MINOR=%MINOR: =%"
+set "PATCH=%PATCH: =%"
+
+set mkVerStr=%MAJOR%.%MINOR%.%PATCH%
+set mkVerStr=%mkVerStr:;=%
+echo %mkVerStr%
+
 
 set targetDir=D:\G6SDKLib\%customStr%
 if exist %targetDir% (
@@ -63,7 +79,7 @@ if exist %targetDir% (
     md %targetDir% 
 )
 
-set targetDir=D:\G6SDKLib\%customStr%\G6SDKtestv%version%
+set targetDir=D:\G6SDKLib\%customStr%\G6SDKtestv%version%mk%mkVerStr%
 set zipFilePathName=%targetDir%.zip
 
 

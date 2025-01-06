@@ -73,6 +73,19 @@ set "PATCH=%PATCH: =%"
 set "BUILD=%BUILD: =%"
 set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
 
+
+set mkVer=%SDKDir%\OXiMKImgLib\src\oxi_mk_image_process.cpp
+for /f "tokens=3 delims= " %%i in ('findstr /C:"version[0] = " %mkVer%') do set MAJOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:"version[1] = " %mkVer%') do set MINOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:"version[2] = " %mkVer%') do set PATCH=%%i 
+set "MAJOR=%MAJOR: =%"
+set "MINOR=%MINOR: =%"
+set "PATCH=%PATCH: =%"
+
+set mkVerStr=%MAJOR%.%MINOR%.%PATCH%
+set mkVerStr=%mkVerStr:;=%
+echo %mkVerStr%
+
 set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
 set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
 
@@ -88,7 +101,7 @@ if exist %targetDir% (
     md %targetDir% 
 )
 
-set targetDir=D:\G6SDKLib\%customStr%\G6SDKv%version%
+set targetDir=D:\G6SDKLib\%customStr%\G6SDKv%version%mk%mkVerStr%
 set zipFilePathName=%targetDir%.zip
 
 md %targetDir%

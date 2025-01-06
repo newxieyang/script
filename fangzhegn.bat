@@ -1,4 +1,5 @@
 CHCP 65001
+@echo off
 
 setlocal enabledelayedexpansion 
 set custom[0]=ARATEK
@@ -9,70 +10,36 @@ set custom[4]=new
 set custom[5]=kejin
 set custom[6]=yinken
 set custom[7]=huantian
+set custom[8]=Thales
 
-@echo off
 
 
-for /l %%n in (0,1,7) do ( 
-   echo !custom[%%n]! 
-)
-
- GOTO END
 
 if "%1" == "" (
-	echo "0 build ARTEK"
-	echo "1 build MIAXIS"
-	echo "2 build win7"
-	echo "3 build fangzheng"
-	echo "4 build new"
-    echo "5 build kejin"
-	echo "6 build yinken"
-	echo "7 build huantian"
+    for /l %%n in (0,1,8) do ( 
+    echo %%n build !custom[%%n]! 
+    )
 	pause
     GOTO END
 )
 
-rem custom [0:ARATEK | 1:MIAXIS | 2:win7 | 3:fangzheng | 4:new | 5:kejin | 6:yinken | 7:huantian]
-set custom=1
-set customStr=win7
+rem custom [0:ARATEK | 1:MIAXIS | 2:win7 | 3:fangzheng | 4:new | 5:kejin | 6:yinken | 7:huantian | 8:Thales]
+@REM set custom=1
 set libName=FAP60
 set customIndex=%1
 set platformIndex=%2
+set customStr=!custom[%customIndex%]!
+
+
 
 if %customIndex% EQU 0 (
-	set customStr=ARATEK
+	@REM set customStr=ARATEK
     set libName=AraDevice
 )
-if %customIndex% EQU 1 (
-	set customStr=MIAXIS
-)
-
-if %customIndex% EQU 2 (
-	set customStr=win7
-)
-
-if %customIndex% EQU 3 (
-	set customStr=fangzheng
-)
-
-if %customIndex% EQU 4 (
-	set customStr=new
-)
-
-if %customIndex% EQU 5 (
-	set customStr=kejin
-)
-
-if %customIndex% EQU 6 (
-	set customStr=yinken
-)
-
-if %customIndex% EQU 7 (
-	set customStr=huantian
-)
 
 
-echo "genareate G6SDK"
+
+echo "genareate custom  %customStr% G6SDK libName %libName%"
 echo off
 
 set sourceDir=D:\git\oxi\g6\
@@ -114,6 +81,10 @@ if %2 EQU 2 (
 
 :copyWin
 
+    if %customIndex% EQU 4 (
+        set winDir=%sourceDir%g6MFC_%customStr%\
+    )
+
     echo "copy win"
     set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
     set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
@@ -139,13 +110,13 @@ if %2 EQU 2 (
 
     rem copy win_x86
     rem xcopy %vs86Dir%%libName%.dll %targetDir%\libx86 /y
-    xcopy %vs86Dir%%libName%.lib %winDir%\libx86	/y
+    xcopy %vs86Dir%%libName%.lib %winDir%libx86	/y
         IF %errorlevel% neq 0 (
         echo copy win OXiScanUltimateApi_err.h file fail
         pause
         GOTO END
     )
-    xcopy %vs86Dir%%libName%.dll %winDir%\Release	/y
+    xcopy %vs86Dir%%libName%.dll %winDir%Release	/y
         IF %errorlevel% neq 0 (
         echo copy win OXiScanUltimateApi_err.h file fail
         pause
@@ -154,13 +125,13 @@ if %2 EQU 2 (
 
     rem copy win_x64
     rem xcopy %vs64Dir%%libName%.dll %targetDir%\libx64 /y
-    xcopy %vs64Dir%%libName%.lib %winDir%\libx64 /y
+    xcopy %vs64Dir%%libName%.lib %winDir%libx64 /y
         IF %errorlevel% neq 0 (
         echo copy win OXiScanUltimateApi_err.h file fail
         pause
         GOTO END
     )
-    xcopy %vs64Dir%%libName%.dll %winDir%\x64\Release /y
+    xcopy %vs64Dir%%libName%.dll %winDir%x64\Release /y
         IF %errorlevel% neq 0 (
         echo copy win OXiScanUltimateApi_err.h file fail
         pause
@@ -174,18 +145,22 @@ goto:eof
 :copyAndroid
     echo "copy android"
     
-    @REM set androidv7Dir=%SDKDir%cmake-build-release-armeabi-v7a\libFAP\
-    @REM set androidv8Dir=%SDKDir%cmake-build-release-arm64-v8a\libFAP\
-    @REM if %customIndex% EQU 0 (
-	@REM     %androidv7Dir%=%SDKDir%cmake-build-release-arm7-r18\libFAP\
-    @REM     %androidv8Dir%=%SDKDir%cmake-build-release-arm8-r18\libFAP\
-    @REM )
+    set androidv7Dir=%SDKDir%cmake-build-release-armeabi-v7a\libFAP\
+    set androidv8Dir=%SDKDir%cmake-build-release-arm64-v8a\libFAP\
+    if %customIndex% EQU 0 (
+	    SET androidv7Dir=%SDKDir%cmake-build-release-arm7-r18\libFAP\
+        SET androidv8Dir=%SDKDir%cmake-build-release-arm8-r18\libFAP\
+    )
 
     echo %androidDir%
     echo %SDKDir%
 
-    set androidv7Dir=%SDKDir%cmake-build-release-arm7-r18\libFAP\
-    set androidv8Dir=%SDKDir%cmake-build-release-arm8-r18\libFAP\
+    @REM if %customIndex% EQU 0 (
+    @REM     set androidv7Dir=%SDKDir%cmake-build-release-arm7-r18\libFAP\
+    @REM     set androidv8Dir=%SDKDir%cmake-build-release-arm8-r18\libFAP\
+    @REM )
+
+
     set jniDir=%androidDir%libFAP\src\main\cpp\
 
     xcopy %androidv7Dir%lib%libName%.so %jniDir%armeabi-v7a /y
