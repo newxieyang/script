@@ -26,6 +26,7 @@ def list_file(base):
 
 if __name__ == '__main__':
     base_dir = 'D:\\0\\org\\finger'
+    print("dir:%s" % (base_dir))
     list_file(base_dir)
 
 
