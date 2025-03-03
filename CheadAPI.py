@@ -8,10 +8,10 @@ from docx.oxml.ns import nsdecls
 from docx.shared import Inches
 
 
-verPathName="D:\git\oxi\g7\FAP70\libFAP\include\Version.h"
-APIPathName="D:\git\oxi\g7\FAP70\libFAP\include\OXiScanAPI.h"
-PathName="D:\git\oxi\g7\FAP70\libFAP\include\OXiScanUltimate.h"
-target="D:\G6SDKLib\ARATEK"
+verPathName="D:\git\oxi\g6\FAP6010_Thales\libFAP\include\Version.h"
+APIPathName="D:\git\oxi\g6\FAP6010_Thales\libFAP\include\OXiScanAPI.h"
+PathName="D:\git\oxi\g6\FAP6010_Thales\libFAP\include\OXiScanUltimate.h"
+target="D:\G6SDKLib\doc"
 
 
 def readVer():
@@ -212,7 +212,7 @@ def writeDocx(verName, liner):
                 row_cells[1].text = para[index].replace(cs[0], "").strip()
 
 
-    doc.save('d:/test.docx')
+    doc.save(target+ '/Fingerprint Scanner SDK (ISO)v '+verName+'.docx')
     
 
 

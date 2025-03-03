@@ -1,5 +1,5 @@
 @echo OFF 
-set projectDir=D:\git\oxi\g6\G6SDKPlus\FAP6010
+set projectDir=D:\git\oxi\g6\FAP6010_win7
 
 
 set winX86=%projectDir%\cmake-build-release_x86
@@ -24,7 +24,7 @@ set ninja="D:/apps/JetBrains/CLion 2023.1.4/bin/ninja/win/x64/ninja.exe"
 
 
 echo "----------------create Win x64 cmake project-----------------------"
-%cmake% -G "Visual Studio 16 2019" -A x64 -DCMAKE_SYSTEM_NAME=Windows -S %projectDir% -B %winX64%
+%cmake% -G "Visual Studio 16 2019" -A x64 -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_VERSION=10.0 -S %projectDir% -B %winX64%
 IF %errorlevel% neq 0 (
     echo fail to generate Win x64 cmake project
     pause
@@ -40,7 +40,7 @@ IF %errorlevel% neq 0 (
 
 
 echo "----------------create Win x86 cmake project-----------------------"
-%cmake% -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SYSTEM_NAME=Windows -S %projectDir% -B %winX86%
+%cmake% -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_VERSION=10.0 -S %projectDir% -B %winX86%
 IF %errorlevel% neq 0 (
     echo fail to generate Win x86 cmake project
     pause

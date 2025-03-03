@@ -1,5 +1,5 @@
 CHCP 65001
-@echo off
+@REM @echo off
 
 setlocal enabledelayedexpansion 
 set custom[0]=ARATEK

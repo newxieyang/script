@@ -227,9 +227,9 @@ IF %errorlevel% neq 0 (
 @REM rem copy android source code
 md %targetDir%\Android
 md %targetDir%\Android\G6010ASSample
-xcopy %androidDir% %targetDir%\Android\G6010ASSample /EXCLUDE:e:\owncloud\script\ex  /y /v /s
-rd /s /q %targetDir%\Android\G6010ASSample\.gradle
-rd /s /q %targetDir%\Android\G6010ASSample\gradle
+xcopy %androidDir% %targetDir%\Android\G6010ASSample /EXCLUDE:D:\git\script\exclude  /y /v /s
+@REM rd /s /q %targetDir%\Android\G6010ASSample\.gradle
+@REM rd /s /q %targetDir%\Android\G6010ASSample\gradle
 
 
 @REM del /f /s /q %targetDir%\Android\G6010ASSample\libFAP\src\main\assets\*.onnx	

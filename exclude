@@ -1,4 +1,5 @@
-build
+build\
+.idea\
 .cxx
 .git
 .DS_Store

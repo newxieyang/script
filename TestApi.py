@@ -2,7 +2,7 @@
 # encoding:utf-8
 
 
-APIPathName = "D://git//oxi//g6//FAP6010_win7//libFAP//include//OXiScanAPI.h"
+APIPathName = "D://git//oxi//g6//FAP6010_Thales//libFAP//include//OXiScanAPI.h"
 
 def readFunInfo(funName):
 
@@ -28,7 +28,6 @@ def readFunInfo(funName):
         # if index != -1:
         #     break
         if funName.lower() in line.lower():
-            print("liner in ")
             break
                 
     return liner
