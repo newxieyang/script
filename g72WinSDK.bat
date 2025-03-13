@@ -1,11 +1,27 @@
 echo "copy G7SDK to project"
 echo OFF
-set targetDir=D:\git\oxi\g7\g7010WinDemo
-set platformIndex=%1
 
-@REM set SDKDir=D:\git\oxi\g7\g7demoprogram\
+setlocal enabledelayedexpansion 
+set custom[0]=oxi
+set custom[1]=fangzheng
+
+
+if "%1" == "" (
+    for /l %%n in (0,1,9) do ( 
+    echo %%n build !custom[%%n]! 
+    )
+	pause
+    GOTO END
+)
+
+
+set customIndex=%1
+set platformIndex=%2
+set customStr=!custom[%customIndex%]!
+
 
 set SDKDir=D:\git\oxi\g7\FAP70\
+set targetDir=D:\git\oxi\g7\g7010WinDemo_%customStr%
 
 
 if %platformIndex% EQU 1 (

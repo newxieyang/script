@@ -7,15 +7,40 @@ from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
 from docx.shared import Inches
 
+G7SRC="D:\git\oxi\g7\FAP70"
+G7target="D:\G7SDKLib\doc"
+G6SRC="D:\git\oxi\g6\FAP6010"
+G6target="D:\G6SDKLib\doc"
+versionName="\libFAP\include\Version.h"
+APIName="\libFAP\include\OXiScanAPI.h"
 
-verPathName="D:\git\oxi\g6\FAP6010_Thales\libFAP\include\Version.h"
-APIPathName="D:\git\oxi\g6\FAP6010_Thales\libFAP\include\OXiScanAPI.h"
-PathName="D:\git\oxi\g6\FAP6010_Thales\libFAP\include\OXiScanUltimate.h"
-target="D:\G6SDKLib\doc"
+verPathName=""
+APIPathName=""
+PathName=""
+target=""
+
+custom = ["_ARATEK","_MIAXIS","_win7","_fangzheng","_new","_kejin","_yinken","_huantian","_Thales"]
+
+def setSDKPath(sdkname, version):
+    global verPathName
+    global APIPathName
+    global target
+    if sdkname in "G7":
+        verPathName=G7SRC+versionName
+        APIPathName=G7SRC+APIName
+        target= G7target
+    if(sdkname in "G6"):
+        target= G6target
+        if(version == 8):
+            verPathName=G6SRC+custom[version]+versionName
+            APIPathName=G6SRC+custom[version]+APIName
+           
+
+
 
 
 def readVer():
-    f = open(file=verPathName)
+    f = open(file=verPathName, encoding="utf-8")
     verName = ""
     for line in f:
         if "#define OXISCAN_VERSION_MAJOR" in line:
@@ -32,7 +57,7 @@ def readVer():
 
 
 def readAPI():
-    f = open(file=APIPathName)
+    f = open(file=APIPathName, encoding="utf-8")
     liner = []
     for line in f:
         if "OXISCAN_API " in line:
@@ -54,7 +79,7 @@ def getFuntionString(funStr):
 
 def readFunInfo(funName):
 
-    f = open(file=APIPathName)
+    f = open(file=APIPathName, encoding="utf-8")
     liner = []
     index = 0
     havaBreak = True
@@ -217,6 +242,9 @@ def writeDocx(verName, liner):
 
 
 if __name__ == '__main__':
+    setSDKPath("G7", 0)
+    print(APIPathName)
+    print(verPathName)
     verName = readVer()
     liner = readAPI()
     writeDocx(verName, liner)

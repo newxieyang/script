@@ -1,15 +1,23 @@
 
-rem custom 1 ARATEK 2 CASTL 3 MIAXIS 
-set custom=1 
+setlocal enabledelayedexpansion 
+set custom[0]=oxi
+set custom[1]=fangzheng 
+
+if "%1" == "" (
+    for /l %%n in (0,1,9) do ( 
+    echo %%n build !custom[%%n]! 
+    )
+	pause
+    GOTO END
+)
+
+set customIndex=%1
+set platformIndex=%2
+set customStr=!custom[%customIndex%]!
 
 
 set SDKDir=D:\git\oxi\g7\FAP70\
-set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
-set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
-set winDir=D:\git\oxi\g7\g7010WinDemo\
 
-@REM set androidDir=D:\git\oxi\g6\G6010ASSample\
-@REM set linuxDir=%targetDir%\Linux
 
 set versionFile=%SDKDir%\libFAP\include\Version.h
 for /f "tokens=3 delims= " %%i in ('findstr /C:"#define OXISCAN_VERSION_MAJOR " %versionFile%') do set MAJOR=%%i 
@@ -26,6 +34,9 @@ set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
 
 set targetDir=D:\G7SDKLib\G7SDKv%version%
 set zipFilePathName=D:\G7SDKLib\G7SDKv%version%.zip
+set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
+set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
+set winDir=D:\git\oxi\g7\g7010WinDemo_%customStr%\
 
 md %targetDir%
 
@@ -63,7 +74,7 @@ xcopy %winDir%libx86\*.* %winDemoDir%\libx86  /y
 
 md %targetDir%\winx86DemoWithLib
 rem copy win_x86
-xcopy %vs86Dir%FAP70.dll %targetDir%\winx86DemoWithLib /y
+xcopy %vs86Dir%*.dll %targetDir%\winx86DemoWithLib /y
 xcopy %vs86Dir%FAP70.lib %targetDir%\winx86DemoWithLib /y
 @REM xcopy %SDKDir%G6SDK\onnxruntime-1.12.1\lib\vs\win-x86\onnxruntime.dll %targetDir%\winx86DemoWithLib
 xcopy %winDir%\Release\*.exe %targetDir%\winx86DemoWithLib /y
@@ -71,7 +82,7 @@ xcopy %winDir%\Release\*.exe %targetDir%\winx86DemoWithLib /y
 
 rem copy win_x64
 md %targetDir%\winx64DemoWithLib
-xcopy %vs64Dir%FAP70.dll %targetDir%\winx64DemoWithLib /y
+xcopy %vs64Dir%*.dll %targetDir%\winx64DemoWithLib /y
 xcopy %vs64Dir%FAP70.lib %targetDir%\winx64DemoWithLib /y
 @REM xcopy %SDKDir%G6SDK\onnxruntime-1.12.1\lib\vs\win-x64\onnxruntime.dll %targetDir%\winx64DemoWithLib
 xcopy %winDir%\x64\Release\*.exe %targetDir%\winx64DemoWithLib /y
@@ -93,9 +104,8 @@ xcopy %winDir%\x64\Release\*.exe %targetDir%\winx64DemoWithLib /y
 @REM xcopy %androidDir%app\build\outputs\apk\debug\*.apk %targetDir%\Android  /y
 
 @REM rem copy document
-xcopy D:\G7SDKLib\*.docx %targetDir% /y
-xcopy D:\G7SDKLib\*.png %targetDir% /y
-xcopy D:\G7SDKLib\*.txt %targetDir% /y
+md %targetDir%\doc
+xcopy D:\G7SDKLib\doc\*.* %targetDir%\doc /y
 
 
 @REM md %linuxDir%
@@ -103,5 +113,5 @@ xcopy D:\G7SDKLib\*.txt %targetDir% /y
 @REM @REM md %linuxDir%\x64
 @REM xcopy D:\G6SDKLib\linux\testG6SDK%version%.zip %linuxDir% /y
 
-@REM 7z a -tzip %zipFilePathName% %targetDir% 
+7z a -tzip %zipFilePathName% %targetDir% 
 @pause
