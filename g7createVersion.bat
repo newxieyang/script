@@ -1,7 +1,7 @@
 
 setlocal enabledelayedexpansion 
 set custom[0]=oxi
-set custom[1]=fangzheng 
+set custom[1]=DERMALOG
 
 if "%1" == "" (
     for /l %%n in (0,1,9) do ( 
@@ -29,14 +29,37 @@ set "MINOR=%MINOR: =%"
 set "PATCH=%PATCH: =%"
 set "BUILD=%BUILD: =%"
 
-
 set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
 
-set targetDir=D:\G7SDKLib\G7SDKv%version%
-set zipFilePathName=D:\G7SDKLib\G7SDKv%version%.zip
+set mkVer=%SDKDir%\OXiMKImgLib\src\oxi_mk_image_process.cpp
+for /f "tokens=3 delims= " %%i in ('findstr /C:"version[0] = " %mkVer%') do set MAJOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:"version[1] = " %mkVer%') do set MINOR=%%i 
+for /f "tokens=3 delims= " %%i in ('findstr /C:"version[2] = " %mkVer%') do set PATCH=%%i 
+set "MAJOR=%MAJOR: =%"
+set "MINOR=%MINOR: =%"
+set "PATCH=%PATCH: =%"
+
+set mkVerStr=%MAJOR%.%MINOR%.%PATCH%
+set mkVerStr=%mkVerStr:;=%
+echo %mkVerStr%
+
+@REM set targetDir=D:\G7SDKLib\G7SDKv%version%
+@REM set zipFilePathName=D:\G7SDKLib\G7SDKv%version%.zip
 set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
 set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
-set winDir=D:\git\oxi\g7\g7010WinDemo_%customStr%\
+set winDir=D:\git\oxi\g7\g7010WinDemo_oxi\
+
+md %targetDir%
+
+set targetDir=D:\G7SDKLib\%customStr%
+if exist %targetDir% (
+   echo "文件存在"
+) else (
+::创建文件夹
+    md %targetDir% 
+)
+set targetDir=D:\G7SDKLib\%customStr%\G7SDKv%version%mk%mkVerStr%
+set zipFilePathName=%targetDir%.zip
 
 md %targetDir%
 
@@ -45,9 +68,9 @@ md %targetDir%\include
 xcopy %SDKDir%libFAP\include\OXiScanAPI.h %targetDir%\include /y
 xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %targetDir%\include /y
 xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %targetDir%\include /y
-if %custom% EQU 1 (
-	echo "1"
-)
+@REM if %custom% EQU 1 (
+@REM 	echo "1"
+@REM )
 
 
 
