@@ -112,13 +112,13 @@ if %2 EQU 2 (
     rem xcopy %vs86Dir%%libName%.dll %targetDir%\libx86 /y
     xcopy %vs86Dir%%libName%.lib %winDir%libx86	/y
         IF %errorlevel% neq 0 (
-        echo copy win OXiScanUltimateApi_err.h file fail
+        echo copy win x86 lib file fail
         pause
         GOTO END
     )
     xcopy %vs86Dir%%libName%.dll %winDir%Release	/y
         IF %errorlevel% neq 0 (
-        echo copy win OXiScanUltimateApi_err.h file fail
+        echo copy win x86 dll file fail
         pause
         GOTO END
     )
@@ -127,13 +127,13 @@ if %2 EQU 2 (
     rem xcopy %vs64Dir%%libName%.dll %targetDir%\libx64 /y
     xcopy %vs64Dir%%libName%.lib %winDir%libx64 /y
         IF %errorlevel% neq 0 (
-        echo copy win OXiScanUltimateApi_err.h file fail
+        echo copy win x64 lib file fail
         pause
         GOTO END
     )
     xcopy %vs64Dir%%libName%.dll %winDir%x64\Release /y
         IF %errorlevel% neq 0 (
-        echo copy win OXiScanUltimateApi_err.h file fail
+        echo copy win x64 dll file fail
         pause
         GOTO END
     )
