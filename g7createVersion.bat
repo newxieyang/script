@@ -2,6 +2,7 @@
 setlocal enabledelayedexpansion 
 set custom[0]=oxi
 set custom[1]=DERMALOG
+set custom[2]=fangzheng
 
 if "%1" == "" (
     for /l %%n in (0,1,9) do ( 
