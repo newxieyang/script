@@ -1,7 +1,7 @@
 
 rem custom 1 ARATEK 2 CASTL 3 MIAXIS 
 set custom=1 
-
+echo off
 
 setlocal enabledelayedexpansion 
 set custom[0]=ARATEK
@@ -14,17 +14,18 @@ set custom[6]=yinken
 set custom[7]=huantian
 set custom[8]=Thales
 set custom[9]=shenzhou
+set custom[10]=mantra
 
 
 if "%1" == "" (
-    for /l %%n in (0,1,9) do ( 
+    for /l %%n in (0,1,10) do ( 
     echo %%n build !custom[%%n]! 
     )
 	pause
     GOTO END
 )
 
-rem custom [0:ARATEK | 1:MIAXIS | 2:win7 | 3:fangzheng | 4:new | 5:kejin | 6:yinken | 7:huantian | 8:Thales]
+rem custom [0:ARATEK | 1:MIAXIS | 2:win7 | 3:fangzheng | 4:new | 5:kejin | 6:yinken | 7:huantian | 8:Thales |shenzhou|mantra]
 @REM set custom=1
 set libName=FAP60
 set customIndex=%1

@@ -7,19 +7,20 @@ from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
 from docx.shared import Inches
 
-G7SRC="D:\git\oxi\g7\FAP70"
-G7target="D:\G7SDKLib\doc"
-G6SRC="D:\git\oxi\g6\FAP6010"
-G6target="D:\G6SDKLib\doc"
-versionName="\libFAP\include\Version.h"
-APIName="\libFAP\include\OXiScanAPI.h"
+G7SRC = "D:/git/oxi/g7/FAP70"
+G7target = "D:/G7SDKLib/doc"
+G6SRC = "D:/git/oxi/g6/FAP6010"
+G6target = "D:/G6SDKLib/doc"
+versionName = "/libFAP/include/Version.h"
+APIName = "/libFAP/include/ScanAPI.h"
 
 verPathName=""
 APIPathName=""
 PathName=""
 target=""
+keyword = "SCAN_API"
 
-custom = ["_ARATEK","_MIAXIS","_win7","_fangzheng","_new","_kejin","_yinken","_huantian","_Thales"]
+custom = ["_ARATEK","_MIAXIS","_win7","_fangzheng","_new","_kejin","_yinken","_huantian","_Thales","_mantra"]
 
 def setSDKPath(sdkname, version):
     global verPathName
@@ -31,10 +32,10 @@ def setSDKPath(sdkname, version):
         target= G7target
     if(sdkname in "G6"):
         target= G6target
-        if(version == 8):
-            verPathName=G6SRC+custom[version]+versionName
-            APIPathName=G6SRC+custom[version]+APIName
-           
+        # if(version == 8):
+        verPathName=G6SRC+custom[version]+versionName
+        APIPathName=G6SRC+custom[version]+APIName
+     
 
 
 
@@ -60,8 +61,8 @@ def readAPI():
     f = open(file=APIPathName, encoding="utf-8")
     liner = []
     for line in f:
-        if "OXISCAN_API " in line:
-            if "OXi_" in line:
+        if keyword in line:
+            if "HANDLE" in line:
                 liner.append(line)
     return liner
 
@@ -242,9 +243,11 @@ def writeDocx(verName, liner):
 
 
 if __name__ == '__main__':
-    setSDKPath("G7", 0)
+    setSDKPath("G6", 9)
     print(APIPathName)
     print(verPathName)
+    print("-----------------------------")
     verName = readVer()
     liner = readAPI()
     writeDocx(verName, liner)
+    print(target)
