@@ -109,25 +109,56 @@ md %targetDir%
 
 @REM echo copy include
 md %targetDir%\include
-xcopy %SDKDir%libFAP\include\OXiScanAPI.h %targetDir%\include /y
-IF %errorlevel% neq 0 (
-    echo copy OXiScanAPI.h fail
-    pause
-    GOTO END
-)
-xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %targetDir%\include /y
-IF %errorlevel% neq 0 (
-    echo copy OXiScanUltimate.h fail
-    pause
-    GOTO END
-)
-xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %targetDir%\include /y
-IF %errorlevel% neq 0 (
-    echo copy OXiScanUltimateApi_err.h fail
-    pause
-    GOTO END
+
+
+
+IF exist %SDKDir%libFAP\include\ScanAPI.h (
+    xcopy %SDKDir%libFAP\include\ScanAPI.h %targetDir%\include  /y
+        IF %errorlevel% neq 0 (
+        echo copy win ScanAPI.h file fail
+        pause
+        GOTO END
+    )
+) else (
+    xcopy %SDKDir%libFAP\include\OXiScanAPI.h %targetDir%\include  /y
+        IF %errorlevel% neq 0 (
+        echo copy win ScanAPI.h file fail
+        pause
+        GOTO END
+    )
 )
 
+IF exist %SDKDir%libFAP\include\ScanUltimateApi_err.h (
+    xcopy %SDKDir%libFAP\include\ScanUltimateApi_err.h %targetDir%\include  /y
+        IF %errorlevel% neq 0 (
+        echo copy win ScanUltimateApi_err.h file fail
+        pause
+        GOTO END
+    )
+) else (
+    xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %targetDir%\include  /y
+        IF %errorlevel% neq 0 (
+        echo copy win OXiScanUltimateApi_err.h file fail
+        pause
+        GOTO END
+    )
+)
+
+IF exist %SDKDir%libFAP\include\ScanUltimate.h (
+    xcopy %SDKDir%libFAP\include\ScanUltimate.h %targetDir%\include  /y
+        IF %errorlevel% neq 0 (
+        echo copy win ScanUltimate.h file fail
+        pause
+        GOTO END
+    )
+) else (
+    xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %targetDir%\include  /y
+        IF %errorlevel% neq 0 (
+        echo copy win OXiScanUltimate.h file fail
+        pause
+        GOTO END
+    )
+)
 
 
 @REM rem copy AI model
@@ -137,6 +168,10 @@ IF %errorlevel% neq 0 (
 
 
 set winDemoDir=%targetDir%\G6_win_demo_sourceCode
+
+  if %customIndex% EQU 4 (
+        set winDir=%sourceDir%g6MFC_%customStr%\
+    )
 
 rem copy win demo source code
 md %winDemoDir%

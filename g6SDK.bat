@@ -89,24 +89,56 @@ if %2 EQU 2 (
     set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
     set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
 
-    xcopy %SDKDir%libFAP\include\OXiScanAPI.h %winDir% /y
-      IF %errorlevel% neq 0 (
-        echo copy win OXiScanAPI.h file fail
-        pause
-        GOTO END
+    IF exist %SDKDir%libFAP\include\ScanAPI.h (
+        xcopy %SDKDir%libFAP\include\ScanAPI.h %winDir% /y
+            IF %errorlevel% neq 0 (
+            echo copy win ScanAPI.h file fail
+            pause
+            GOTO END
+        )
+    ) else (
+        xcopy %SDKDir%libFAP\include\OXiScanAPI.h %winDir% /y
+            IF %errorlevel% neq 0 (
+            echo copy win ScanAPI.h file fail
+            pause
+            GOTO END
+        )
     )
-    xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %winDir% /y
-      IF %errorlevel% neq 0 (
-        echo copy win OXiScanUltimate.h file fail
-        pause
-        GOTO END
+
+      IF exist %SDKDir%libFAP\include\ScanUltimateApi_err.h (
+        xcopy %SDKDir%libFAP\include\ScanUltimateApi_err.h %winDir% /y
+            IF %errorlevel% neq 0 (
+            echo copy win ScanUltimateApi_err.h file fail
+            pause
+            GOTO END
+        )
+    ) else (
+        xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %winDir% /y
+            IF %errorlevel% neq 0 (
+            echo copy win OXiScanUltimateApi_err.h file fail
+            pause
+            GOTO END
+        )
     )
-    xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %winDir% /y
-      IF %errorlevel% neq 0 (
-        echo copy win OXiScanUltimateApi_err.h file fail
-        pause
-        GOTO END
+
+      IF exist %SDKDir%libFAP\include\ScanUltimate.h (
+        xcopy %SDKDir%libFAP\include\ScanUltimate.h %winDir% /y
+            IF %errorlevel% neq 0 (
+            echo copy win ScanUltimate.h file fail
+            pause
+            GOTO END
+        )
+    ) else (
+        xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %winDir% /y
+            IF %errorlevel% neq 0 (
+            echo copy win OXiScanUltimate.h file fail
+            pause
+            GOTO END
+        )
     )
+
+  
+    
 
     rem copy win_x86
     rem xcopy %vs86Dir%%libName%.dll %targetDir%\libx86 /y
@@ -176,23 +208,55 @@ goto:eof
         GOTO END
     )
 
-    xcopy %SDKDir%libFAP\include\OXiScanAPI.h %jniDir%include /y
-    IF %errorlevel% neq 0 (
-         echo copy android OXiScanAPI.h file fail
-        pause
-        GOTO END
+  
+
+
+     IF exist %SDKDir%libFAP\include\ScanAPI.h (
+        xcopy %SDKDir%libFAP\include\ScanAPI.h %jniDir%include  /y
+            IF %errorlevel% neq 0 (
+            echo copy win ScanAPI.h file fail
+            pause
+            GOTO END
+        )
+    ) else (
+        xcopy %SDKDir%libFAP\include\OXiScanAPI.h %jniDir%include  /y
+            IF %errorlevel% neq 0 (
+            echo copy win ScanAPI.h file fail
+            pause
+            GOTO END
+        )
     )
-    xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %jniDir%include /y
-    IF %errorlevel% neq 0 (
-        echo copy android OXiScanUltimate.h file fail
-        pause
-        GOTO END
+
+      IF exist %SDKDir%libFAP\include\ScanUltimateApi_err.h (
+        xcopy %SDKDir%libFAP\include\ScanUltimateApi_err.h %jniDir%include  /y
+            IF %errorlevel% neq 0 (
+            echo copy win ScanUltimateApi_err.h file fail
+            pause
+            GOTO END
+        )
+    ) else (
+        xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %jniDir%include  /y
+            IF %errorlevel% neq 0 (
+            echo copy win OXiScanUltimateApi_err.h file fail
+            pause
+            GOTO END
+        )
     )
-    xcopy %SDKDir%libFAP\include\OXiScanUltimateApi_err.h %jniDir%include /y
-    IF %errorlevel% neq 0 (
-        echo copy android OXiScanUltimateApi_err.h file fail
-        pause
-        GOTO END
+
+      IF exist %SDKDir%libFAP\include\ScanUltimate.h (
+        xcopy %SDKDir%libFAP\include\ScanUltimate.h %jniDir%include  /y
+            IF %errorlevel% neq 0 (
+            echo copy win ScanUltimate.h file fail
+            pause
+            GOTO END
+        )
+    ) else (
+        xcopy %SDKDir%libFAP\include\OXiScanUltimate.h %jniDir%include  /y
+            IF %errorlevel% neq 0 (
+            echo copy win OXiScanUltimate.h file fail
+            pause
+            GOTO END
+        )
     )
 
 goto:eof

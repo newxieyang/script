@@ -20,15 +20,7 @@ def removeDir(dir_path):
         print(e)
 
 
-def ignore_predicate(src_dir, names):
-    # 定义需要忽略的文件夹名列表
-    ignore_folders = ['Release', 'x64', '.vs']
-    ignored_names = []
-    for name in names:
-        full_path = os.path.join(src_dir, name)
-        if os.path.isdir(full_path) and name in ignore_folders:
-            ignored_names.append(name)
-    return ignored_names
+
 
 def readSDKVer(sourceDir, customStr):
     verFilepathName=sourceDir + "/libFAP/include/Version.h"
@@ -43,7 +35,8 @@ def readSDKVer(sourceDir, customStr):
                 ver += line.split(" ")[2].replace(" ", "").replace("\n", "") + "."
             if "#define OXISCAN_VERSION_BUILD" in line:
                 ver += line.split(" ")[2].replace(" ", "").replace("\n", "")
-    return ver
+                return ver
+    
 
 def readMkVer(sourceDir, customStr):
     verFilepathName=sourceDir +  "/OXiMKImgLib/src/oxi_mk_image_process.cpp"
@@ -60,7 +53,8 @@ def readMkVer(sourceDir, customStr):
                 ver += line.split("=")[1].replace(" ", "").replace(";", "").replace("\n", "") + "."
             if "version[2]" in line:
                 ver += line.split("=")[1].replace(" ", "").replace(";", "").replace("\n", "")
-    return ver
+                return ver
+    
 
 
 def copyWin(srcDir, libName, targetDir, cus):
@@ -105,9 +99,9 @@ def copyHeaderFile(srcDir,customStr, targetDir, cus):
 
 
 
-def copyWinExe(srcDir,customStr, tgDir):
+def copyWinExe(srcDir, tgDir):
     #copy x86
-    exe86Src = srcDir + "g6010WinDemo_" + customStr + "/Release/"
+    exe86Src = srcDir + "/Release/"
     print(exe86Src)
     tgx86 = tgDir + "/winx86DemoWithLib"
     if not os.path.isdir(tgx86):
@@ -122,7 +116,7 @@ def copyWinExe(srcDir,customStr, tgDir):
                 shutil.copy2(os.path.join(root, file), tgx86)
 
 
-    exe64Src = srcDir + "g6010WinDemo_" + customStr + "/x64/Release/"
+    exe64Src = srcDir +  "/x64/Release/"
     tgx64 = tgDir + "/winx64DemoWithLib"
     if not os.path.isdir(tgx64):
         os.mkdir(tgx64)
@@ -135,8 +129,18 @@ def copyWinExe(srcDir,customStr, tgDir):
                 shutil.copy2(os.path.join(root, file), tgx64)
 
 
-def copyWinSource(sourceDir, customStr, target):
-    srcDir = sourceDir + "g6010WinDemo_" + customStr
+def ignore_predicate(src_dir, names):
+    # 定义需要忽略的文件夹名列表
+    ignore_folders = ['Release', 'x64', '.vs']
+    ignored_names = []
+    for name in names:
+        full_path = os.path.join(src_dir, name)
+        if os.path.isdir(full_path) and name in ignore_folders:
+            ignored_names.append(name)
+    return ignored_names
+
+
+def copyWinSource(srcDir, target):
     tgDir = target + "/winSimpleCode"
     if os.path.isdir(tgDir):
         removeDir(tgDir)
@@ -154,7 +158,7 @@ def ignore_predicate_Android(src_dir, names):
             ignored_names.append(name)
     return ignored_names 
 
-def copyAndroidSrc(srcDir, customStr, target):
+def copyAndroidSrc(srcDir, target):
     tgDir = target + "/Andoird/ScannerSimple"
     shutil.copytree(srcDir, tgDir, ignore=ignore_predicate_Android)
 
@@ -199,12 +203,12 @@ if __name__ == '__main__':
 
     copyDoc("D:\G6SDKLib\doc", targetDir)
 
-    copyWinExe(sourceDir,customStr, targetDir)
-    copyWinSource(sourceDir, customStr, targetDir)
+    winSrc = sourceDir + "g6010WinDemo_" + customStr
+    copyWinExe(winSrc, targetDir)
+    copyWinSource(winSrc, targetDir)
 
     androidSrc = sourceDir + "G6010Android_" + customStr
-    copyAndroidSrc(androidSrc, customStr, targetDir)
-
+    copyAndroidSrc(androidSrc, targetDir)
     copyAndroidAPK(androidSrc, targetDir)
 
     # winTgDir = sourceDir + "g6010WinDemo"+ customStr + "/"
