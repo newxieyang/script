@@ -105,7 +105,7 @@ if %2 EQU 2 (
         )
     )
 
-      IF exist %SDKDir%libFAP\include\ScanUltimateApi_err.h (
+    IF exist %SDKDir%libFAP\include\ScanUltimateApi_err.h (
         xcopy %SDKDir%libFAP\include\ScanUltimateApi_err.h %winDir% /y
             IF %errorlevel% neq 0 (
             echo copy win ScanUltimateApi_err.h file fail
@@ -121,7 +121,7 @@ if %2 EQU 2 (
         )
     )
 
-      IF exist %SDKDir%libFAP\include\ScanUltimate.h (
+    IF exist %SDKDir%libFAP\include\ScanUltimate.h (
         xcopy %SDKDir%libFAP\include\ScanUltimate.h %winDir% /y
             IF %errorlevel% neq 0 (
             echo copy win ScanUltimate.h file fail
@@ -211,7 +211,7 @@ goto:eof
   
 
 
-     IF exist %SDKDir%libFAP\include\ScanAPI.h (
+    IF exist %SDKDir%libFAP\include\ScanAPI.h (
         xcopy %SDKDir%libFAP\include\ScanAPI.h %jniDir%include  /y
             IF %errorlevel% neq 0 (
             echo copy win ScanAPI.h file fail
@@ -227,7 +227,7 @@ goto:eof
         )
     )
 
-      IF exist %SDKDir%libFAP\include\ScanUltimateApi_err.h (
+    IF exist %SDKDir%libFAP\include\ScanUltimateApi_err.h (
         xcopy %SDKDir%libFAP\include\ScanUltimateApi_err.h %jniDir%include  /y
             IF %errorlevel% neq 0 (
             echo copy win ScanUltimateApi_err.h file fail
@@ -243,7 +243,7 @@ goto:eof
         )
     )
 
-      IF exist %SDKDir%libFAP\include\ScanUltimate.h (
+    IF exist %SDKDir%libFAP\include\ScanUltimate.h (
         xcopy %SDKDir%libFAP\include\ScanUltimate.h %jniDir%include  /y
             IF %errorlevel% neq 0 (
             echo copy win ScanUltimate.h file fail
