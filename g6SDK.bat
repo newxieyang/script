@@ -19,7 +19,7 @@ if "%1" == "" (
     for /l %%n in (0,1,9) do ( 
     echo %%n build !custom[%%n]! 
     )
-	pause
+	pause  
     GOTO END
 )
 
