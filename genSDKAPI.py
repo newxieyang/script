@@ -427,7 +427,7 @@ def add_ordered_list_item(doc, text):
 
 if __name__ == '__main__':
     # test()
-    ret = setSDKPathName(0, -1)
+    ret = setSDKPathName(2, 8)
     if ret == 0:
         print(APIPathName)
         print("-----------------------------")
