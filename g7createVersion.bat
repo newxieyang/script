@@ -20,7 +20,7 @@ set customStr=!custom[%customIndex%]!
 set SDKDir=D:\git\oxi\g7\FAP70\
 
 
-set versionFile=%SDKDir%\libFAP\include\Version.h
+set versionFile=%SDKDir%\libFAP\include\version.h
 for /f "tokens=3 delims= " %%i in ('findstr /C:"#define OXISCAN_VERSION_MAJOR " %versionFile%') do set MAJOR=%%i 
 for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_MINOR " %versionFile%') do set MINOR=%%i 
 for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_PATCH " %versionFile%') do set PATCH=%%i 
