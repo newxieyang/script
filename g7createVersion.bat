@@ -48,7 +48,7 @@ echo %mkVerStr%
 @REM set zipFilePathName=D:\G7SDKLib\G7SDKv%version%.zip
 set vs64Dir=%SDKDir%cmake-build-release-vs2019_x64\libFAP\Release\
 set vs86Dir=%SDKDir%cmake-build-release-vs2019_x86\libFAP\Release\
-set winDir=D:\git\oxi\g7\g7010WinDemo_oxi\
+set winDir=D:\git\oxi\g7\g7010WinDemo\
 
 md %targetDir%
 

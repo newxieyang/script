@@ -20,7 +20,7 @@ set customStr=!custom[%customIndex%]!
 
 
 set SDKDir=D:\git\oxi\g7\FAP70\
-set targetDir=D:\git\oxi\g7\g7010WinDemo_%customStr%
+set targetDir=D:\git\oxi\g7\g7010WinDemo
 
 
 if "%2"=="" (
