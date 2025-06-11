@@ -67,12 +67,15 @@ def copyAndroid(srcDir,proj, libName, targetDir):
 
 # D:\git\oxi\g4\G45Win
 
+# D:\apps\Huawei\DevEco Studio\sdk\default\openharmony\native\build-tools\cmake\bin
+# D:\apps\Huawei\DevEco Studio\sdk\default\openharmony\native\build\cmake
+
 
 if __name__ == '__main__':
    
     sourceDir = "D:/git/oxi/OXiScan/"
-    libName = "FAP45"
-    projName = "fap45"
+    libName = "FAP70"
+    projName = "fap70"
 
     print(sourceDir)
 
