@@ -4,6 +4,8 @@
 import shutil
 import os
 import chardet
+from genSDKAPI import findFilePathNameByKeyWord
+from genSDKAPI import readVer
 
 
 def removeDir(dir_path):
@@ -20,22 +22,6 @@ def removeDir(dir_path):
         print(e)
 
 
-
-
-def readSDKVer(sourceDir, customStr):
-    verFilepathName=sourceDir + "/libFAP/include/Version.h"
-    ver = ""
-    with open(verFilepathName, "r") as file:
-        for line in file:
-            if "#define OXISCAN_VERSION_MAJOR" in line:
-                ver += line.split(" ")[2].replace(" ", "").replace("\n", "") + "."
-            if "#define OXISCAN_VERSION_MINOR" in line:
-                ver += line.split(" ")[2].replace(" ", "").replace("\n", "") + "."
-            if "#define OXISCAN_VERSION_PATCH" in line:
-                ver += line.split(" ")[2].replace(" ", "").replace("\n", "") + "."
-            if "#define OXISCAN_VERSION_BUILD" in line:
-                ver += line.split(" ")[2].replace(" ", "").replace("\n", "")
-                return ver
     
 
 def readMkVer(sourceDir, customStr):
@@ -85,17 +71,18 @@ def copyDoc(srcDir, targetDir):
     shutil.copytree(srcDir, targetDir+"/doc")
 
 
-def copyHeaderFile(srcDir,customStr, targetDir, cus):
+def copyHeaderFile(srcDir, targetDir):
     tgHeader = targetDir+"/include"
     if os.path.isdir(tgHeader):
         shutil.rmtree(tgHeader)
     else:
         os.mkdir(tgHeader)
-    print("tgHeader:" + tgHeader)
-    print("src:" + srcDir+ "/libFAP/include/")
-    shutil.copy2(srcDir+ "/libFAP/include/"+cus+"ScanAPI.h", tgHeader)
-    shutil.copy2(srcDir+ "/libFAP/include/"+cus+"ScanUltimate.h", tgHeader)
-    shutil.copy2(srcDir+ "/libFAP/include/"+cus+"ScanUltimateApi_err.h", tgHeader)
+    al = findFilePathNameByKeyWord(srcDir, "ScanAPI.h")
+    shutil.copy2(al, tgHeader)
+    a2 = findFilePathNameByKeyWord(srcDir, "ScanUltimate.h")
+    shutil.copy2(a2, tgHeader)
+    a3 = findFilePathNameByKeyWord(srcDir, "ScanUltimateApi_err.h")
+    shutil.copy2(a3, tgHeader)
 
 
 
@@ -170,6 +157,32 @@ def copyAndroidAPK(srcDir, target):
             if file.endswith(".apk"):
                 shutil.copy2(os.path.join(root, file), tgDir)
 
+
+
+def createVersion(dirSDK, dirWin, dirAndroid, dirTarget):
+    if not os.path.isdir(dirTarget):
+        os.mkdir(dirTarget)
+
+    buildName = readVer(dirSDK)
+    
+    dirTarget += buildName
+    if not os.path.isdir(dirTarget):
+        os.mkdir(dirTarget)
+    print(dirTarget)
+
+    copyHeaderFile(dirSDK, dirTarget)
+
+    # copyDoc("D:\G6SDKLib\doc", dirTarget)
+
+    
+    copyWinExe(dirWin, dirTarget)
+    copyWinSource(dirWin, dirTarget)
+
+    
+    copyAndroidSrc(dirAndroid, dirTarget)
+    copyAndroidAPK(dirAndroid, dirTarget)
+
+
 if __name__ == '__main__':
     custom = ["ARATEK", "MIAXIS", "win7", "fangzheng", "new", "kejin", "yinken", "huantian", "Thales", "mantra"]
     sourceDir = "D:/git/oxi/g6/"
@@ -187,17 +200,16 @@ if __name__ == '__main__':
     if not os.path.isdir(targetDir):
         os.mkdir(targetDir)
 
-    SDKver = readSDKVer(SDKDir, customStr)
+    SDKver = readVer(SDKDir)
     print("SDKver:" + SDKver + ";")
 
-    MKver = readMkVer(SDKDir, customStr)
-    print("MKver:" + MKver + ";")
+   
 
-    targetDir += "/G6SDKv" + SDKver+"mk"+MKver
+    targetDir += "/G6SDKv" + SDKver
     if not os.path.isdir(targetDir):
         os.mkdir(targetDir)
 
-    copyHeaderFile(SDKDir, customStr, targetDir, cus)
+    copyHeaderFile(SDKDir, targetDir)
 
     
 

@@ -12,59 +12,10 @@ from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.shared import Pt
 from docx.oxml import OxmlElement
 
+from fileUtils import *
 
-versionName = "/libFAP/include/Version.h"
-APIName = "/libFAP/include/ScanAPI.h"
-APIName2 = "/libFAP/include/OXiScanAPI.h"
 
-verName = ""
-APIPathName=""
-target=""
 keyword = "SCAN_API"
-
-customSer = ["_ARATEK","_MIAXIS","_win7","_fangzheng","_new","_kejin","_yinken","_huantian","_Thales","_mantra"]
-SDKSrcSer = [
-    "D:/git/oxi/g2/g2020/G2020SDK",
-    "D:/git/oxi/g4/FAP40",
-    "D:/git/oxi/g6/FAP6010",
-    "D:/git/oxi/g7/FAP70",
-]
-SDKTargetSer = [
-    "D:/G2SDKLib/doc",
-    "D:/G4SDKLib/doc",
-    "D:/G6SDKLib/doc",
-    "D:/G7SDKLib/doc",
-
-]
-
-
-
-
-
-def setSDKPathName(SDKIndex, cusomIndex):
-    global target 
-    global APIPathName
-    global verName
-
-    target = SDKTargetSer[SDKIndex]
-    
-    verPathName =  SDKSrcSer[SDKIndex] + versionName
-    APIPathName =  SDKSrcSer[SDKIndex] + APIName2
-    if cusomIndex > 0:
-        verPathName =  SDKSrcSer[SDKIndex] + customSer[cusomIndex] + versionName
-        APIPathName =  SDKSrcSer[SDKIndex] + customSer[cusomIndex] + APIName
-    if os.path.exists(verPathName):
-       verName = readVer(verPathName)
-    else:
-        print("version file not exist, file path: " + verPathName)
-        return -1
-
-    if not os.path.exists(APIPathName):
-        print("version file not exist, file path: " + APIPathName)
-        return -1
-
-    return 0
-
 
 
 
@@ -73,25 +24,12 @@ def set_cell_background(cell, colorstr):
     cell._tc.get_or_add_tcPr().append(shading_elm)
 
 
-def readVer(verPathName):
-    f = open(file=verPathName, encoding="utf-8")
-    global verName 
-    for line in f:
-        if "#define OXISCAN_VERSION_MAJOR" in line:
-            verName += line.split(" ")[2].replace('\n', '') + "."
-        if "#define OXISCAN_VERSION_MINOR" in line:
-            verName += line.split(" ")[2].replace('\n', '') + "."
-        if "#define OXISCAN_VERSION_PATCH" in line:
-            verName += line.split(" ")[2].replace('\n', '') + "."
-        if "#define OXISCAN_VERSION_BUILD" in line:
-            verName += line.split(" ")[2].replace('\n', '')
-
-    print(verName)
-    return verName
 
 
-def readAPI():
-    f = open(file=APIPathName, encoding="utf-8")
+
+
+def readAPI(APIpathName):
+    f = open(file=APIpathName, encoding="utf-8")
     liner = []
     for line in f:
         if keyword in line:
@@ -111,7 +49,7 @@ def getFuntionString(funStr):
 
 
 
-def readFunInfo(funName):
+def readFunInfo(funName, APIPathName):
 
     f = open(file=APIPathName, encoding="utf-8")
     liner = []
@@ -175,50 +113,7 @@ def writeRecord(doc):
     doc.add_page_break()
 
 
-def writeDocx(verName, liner):
-    doc = Document()
-    # doc.add_paragraph('hello world')
-    heading = doc.add_heading('Fingerprint Scanner SDK (ISO)', 0)
-    paragraph = heading._element
-    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-
-    heading = doc.add_heading('User Manual', 0)
-    paragraph = heading._element
-    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-
-    heading = doc.add_heading('V'+verName, 0)
-    paragraph = heading._element
-    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-
-    # doc.add_paragraph("\n\n\n\n\n\n\n\n\n\n\n")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    # heading = doc.add_heading('Shanghai OXi Technology Company Ltd.', 4)
-    paragraph = doc.add_paragraph()
-    run = paragraph.add_run("Shanghai OXi Technology Company Ltd.")
-   
-    run.font.size = Pt(13)  # 重置字体大小（如果需要）
-    run.font.name = "Malgun Gothic"
-    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    doc.add_page_break()
-
-    writeRecord(doc)
-
+def writeDesc(doc):
     doc.add_heading("2. What is the Fingerprint SDK (ISO)", 1)
     paragraph = doc.add_paragraph()
     run = paragraph.add_run("    Fingerprint SDK (ISO)")
@@ -256,15 +151,41 @@ def writeDocx(verName, liner):
     add_ordered_list_item(doc, "USB 1.0, 1.1 and 2.0 (Full Speed) specifications")
     doc.add_page_break()
 
+def writeDocx(verName, liner, target, APIPathName):
+    doc = Document()
+    # doc.add_paragraph('hello world')
+    heading = doc.add_heading('Fingerprint Scanner SDK (ISO)', 0)
+    paragraph = heading._element
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
+    heading = doc.add_heading('User Manual', 0)
+    paragraph = heading._element
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+    heading = doc.add_heading('V'+verName, 0)
+    paragraph = heading._element
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+    # doc.add_paragraph("\n\n\n\n\n\n\n\n\n\n\n")
+    for index in range(17):
+        doc.add_paragraph("")
+    # heading = doc.add_heading('Shanghai OXi Technology Company Ltd.', 4)
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run("Shanghai OXi Technology Company Ltd.")
+   
+    run.font.size = Pt(13)  # 重置字体大小（如果需要）
+    run.font.name = "Malgun Gothic"
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    doc.add_page_break()
+
+    writeRecord(doc)
+
+    writeDesc(doc)
+
+    # API References
     doc.add_heading("3. API References", 1)
     doc.add_paragraph("The library-calling interface includes the following functions: ")
 
-
-    # color = RGBColor(230, 230, 230)  # 黄色背景
- 
-
-    # len = len(liner)
     table = doc.add_table(rows=1, cols=3, style="Table Grid")
     hdr_cells = table.rows[0].cells
     table.rows[0].height = Inches(0.3)
@@ -325,7 +246,7 @@ def writeDocx(verName, liner):
 
 ##########
         
-        funInfo = readFunInfo(funName)
+        funInfo = readFunInfo(funName, APIPathName)
   #### Description
         sin = doc.add_paragraph()
         sin.add_run("\n")
@@ -406,6 +327,7 @@ def writeDocx(verName, liner):
 
 
  # 添加有序列表项的函数
+
 def add_ordered_list_item(doc, text):
     paragraph = doc.add_paragraph()
     paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
@@ -425,12 +347,23 @@ def add_ordered_list_item(doc, text):
 
 
 
+def createSDKAPI(pjDir, targetDir):
+    if not pjDir == "":
+        print(pjDir)
+        buildName = readVer(pjDir)
+        print("-----------------------------")
+        APIFilePath = findFilePathNameByKeyWord(pjDir, "ScanAPI")
+        print(APIFilePath)
+        liner = readAPI(APIFilePath)
+
+        
+        print(targetDir)
+        writeDocx(buildName, liner, targetDir, APIFilePath)
+
+
 if __name__ == '__main__':
     # test()
-    ret = setSDKPathName(2, 8)
-    if ret == 0:
-        print(APIPathName)
-        print("-----------------------------")
-        liner = readAPI()
-        writeDocx(verName, liner)
-        print(target)
+    # pjPathName = setSDKPathName(2, 8)
+    # target = SDKTargetSer[2]
+    createSDKAPI("D:\git\oxi\g6\FAP6010_Thales", "d:/0")
+   
