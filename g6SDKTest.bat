@@ -13,10 +13,11 @@ set custom[6]=yinken
 set custom[7]=huantian
 set custom[8]=Thales
 set custom[9]=shenzhou
+set custom[10]=mantra
 
 
 if "%1" == "" (
-    for /l %%n in (0,1,9) do ( 
+    for /l %%n in (0,1,10) do ( 
     echo %%n build !custom[%%n]! 
     )
 	pause
