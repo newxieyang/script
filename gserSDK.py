@@ -57,35 +57,23 @@ def copyAndroid(srcDir,proj, libName, targetDir):
     shutil.copy2(SDKPath + proj+ "/" + ver + "/android/arm64-v8a/lib" + libName + ".so", targetDir + "arm64-v8a")
 
 
-# D:\git\oxi\OXiScan\scanapi\include\OXiScan_Api.h
-# D:\git\oxi\OXiScan\base\include\OXiScan_def.h
-# D:\git\oxi\OXiScan\base\include\OXiScan_err.h
-
-# D:\git\oxi\g4\G45Android\libFAP\src\main\cpp\arm64-v8a
-# D:\git\oxi\g4\G45Android\libFAP\src\main\cpp\armeabi-v7a
-# D:\git\oxi\g4\G45Android\libFAP\src\main\cpp\include
-
-# D:\git\oxi\g4\G45Win
-
-# D:\apps\Huawei\DevEco Studio\sdk\default\openharmony\native\build-tools\cmake\bin
-# D:\apps\Huawei\DevEco Studio\sdk\default\openharmony\native\build\cmake
 
 
 if __name__ == '__main__':
    
     sourceDir = "D:/git/oxi/OXiScan/"
     libName = "FAP70"
-    projName = "fap70"
+    projName = libName.lower()
 
     print(sourceDir)
 
     readSDKVer(sourceDir, projName)
     print(ver)
 
-    winTgDir = "D:\\git\\oxi\\g4\\G45Win\\"
+    winTgDir = "D:\\git\\oxi\\GSerWin\\"
     print(winTgDir)
     copyWin(sourceDir, projName,  libName, winTgDir)
 
-    androidTgDir = "D:\\git\\oxi\\g4\\G45Android\\libFAP\\src\\main\\cpp\\"
+    androidTgDir = "D:\\git\\oxi\\GSerAndroid\\libFAP\\src\\main\\cpp\\"
     print(androidTgDir)
     copyAndroid(sourceDir, projName, libName, androidTgDir)

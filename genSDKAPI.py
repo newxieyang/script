@@ -15,7 +15,8 @@ from docx.oxml import OxmlElement
 from fileUtils import *
 
 
-keyword = "SCAN_API"
+# keyword = "SCAN_API"
+keyword = "OXISCAN_EXPORT"
 
 
 
@@ -45,7 +46,7 @@ def getFuntionName(funStr):
 
 
 def getFuntionString(funStr):
-    return funStr.replace("OXISCAN_API ", "").strip()
+    return funStr.replace("OXISCAN_EXPORT ", "").strip()
 
 
 
@@ -274,7 +275,7 @@ def writeDocx(verName, liner, target, APIPathName):
                 havaReturn = True
                 continue
             if havaReturn:
-                if "OXISCAN_API" not in desc:
+                if "OXISCAN_EXPORT" not in desc:
                      res.add_run(desc.replace("///", "").replace("\t","    "))
                      res.add_run("\n")
 
@@ -352,7 +353,8 @@ def createSDKAPI(pjDir, targetDir):
         print(pjDir)
         buildName = readVer(pjDir)
         print("-----------------------------")
-        APIFilePath = findFilePathNameByKeyWord(pjDir, "ScanAPI")
+        # APIFilePath = findFilePathNameByKeyWord(pjDir, "ScanAPI") 
+        APIFilePath = findFilePathNameByKeyWord("D:\\git\\oxi\\OXiScan", "OXiScan_Api") 
         print(APIFilePath)
         liner = readAPI(APIFilePath)
 
@@ -365,5 +367,6 @@ if __name__ == '__main__':
     # test()
     # pjPathName = setSDKPathName(2, 8)
     # target = SDKTargetSer[2]
-    createSDKAPI("D:\git\oxi\g6\FAP6010_Thales", "d:/0")
+    # createSDKAPI("D:\git\oxi\g6\FAP6010_Thales", "d:/0")
+    createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "d:/0")
    
