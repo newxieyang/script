@@ -79,7 +79,7 @@ def readFunInfo(funName, APIPathName):
 def writeRecord(doc):
     doc.add_heading("1. Record of Revision", 1)
     table = doc.add_table(rows=1, cols=4, style="Table Grid")
-    table.rows[0].height = Inches(0.3)
+    
     hdr_cells = table.rows[0].cells
     hdr_cells[0].text = 'Rev'
     hdr_cells[1].text = 'Issue Date'
