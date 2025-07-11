@@ -62,6 +62,9 @@ def copyAndroid(srcDir,proj, libName, targetDir):
 if __name__ == '__main__':
    
     sourceDir = "D:/git/oxi/OXiScan/"
+
+    # libName = ""
+
     libName = "FAP70"
     projName = libName.lower()
 

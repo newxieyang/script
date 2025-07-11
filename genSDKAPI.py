@@ -16,7 +16,8 @@ from fileUtils import *
 
 
 # keyword = "SCAN_API"
-keyword = "OXISCAN_EXPORT"
+# keyword = "OXISCAN_EXPORT"
+keyword = "OXISCAN_API"
 
 
 
@@ -46,7 +47,7 @@ def getFuntionName(funStr):
 
 
 def getFuntionString(funStr):
-    return funStr.replace("OXISCAN_EXPORT ", "").strip()
+    return funStr.replace(keyword +" ", "").strip()
 
 
 
@@ -275,7 +276,7 @@ def writeDocx(verName, liner, target, APIPathName):
                 havaReturn = True
                 continue
             if havaReturn:
-                if "OXISCAN_EXPORT" not in desc:
+                if keyword not in desc:
                      res.add_run(desc.replace("///", "").replace("\t","    "))
                      res.add_run("\n")
 
@@ -353,14 +354,16 @@ def createSDKAPI(pjDir, targetDir):
         print(pjDir)
         buildName = readVer(pjDir)
         print("-----------------------------")
-        # APIFilePath = findFilePathNameByKeyWord(pjDir, "ScanAPI") 
-        APIFilePath = findFilePathNameByKeyWord("D:\\git\\oxi\\OXiScan", "OXiScan_Api") 
-        print(APIFilePath)
-        liner = readAPI(APIFilePath)
-
-        
-        print(targetDir)
-        writeDocx(buildName, liner, targetDir, APIFilePath)
+        APIFilePath = findFilePathNameByKeyWord(pjDir, "ScanAPI") 
+        # APIFilePath = findFilePathNameByKeyWord(pjDir, "OXiScan_Api") 
+        if APIFilePath is None:
+             print("APIFilePath is null")
+        else:
+            print(APIFilePath)
+            liner = readAPI(APIFilePath)
+            
+            print(targetDir)
+            writeDocx(buildName, liner, targetDir, APIFilePath)
 
 
 if __name__ == '__main__':
@@ -368,5 +371,7 @@ if __name__ == '__main__':
     # pjPathName = setSDKPathName(2, 8)
     # target = SDKTargetSer[2]
     # createSDKAPI("D:\git\oxi\g6\FAP6010_Thales", "d:/0")
-    createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "d:/0")
+    createSDKAPI("D:\\git\\oxi\\g6\\FAP6010_ARATEK", "d:/0")
+    # createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "d:/0")
+    
    
