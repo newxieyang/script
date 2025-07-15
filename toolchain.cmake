@@ -1,0 +1,5 @@
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+set(TOOLCHAIN_PREFIX /home/oxi/Downloads/rk3568_sdk_v1.4.0_host_20250207/bin/aarch64-buildroot-linux-gnu)
+set(CMAKE_C_COMPILER   ${TOOLCHAIN_PREFIX}-gcc)
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
