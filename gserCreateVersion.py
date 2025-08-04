@@ -164,7 +164,7 @@ def copyAndroidSrc(srcDir, target):
     shutil.copytree(srcDir, tgDir, ignore=ignore_predicate_Android)
 
 def copyAndroidAPK(srcDir, target):
-    srouceDir = srcDir + "/app/build/outputs/apk/debug"
+    srouceDir = srcDir + "/app/build/outputs/apk/"
     tgDir = target + "/Andoird"
     for root, dirs, files in os.walk(srouceDir):
         for file in files:
