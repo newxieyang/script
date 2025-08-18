@@ -14,7 +14,7 @@ set cmake=D:\apps\CMake\bin\cmake.exe
 set ninja="D:/apps/JetBrains/CLion 2023.1.4/bin/ninja/win/x64/ninja.exe"
 set "toolchain=D:/apps/Android/Sdk/ndk/25.2.9519653/build/cmake/android.toolchain.cmake"
 
-set "androidParam=-DCMAKE_BUILD_TYPE=Release -DANDROID_STL=c++_shared -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_TOOLCHAIN_FILE=%toolchain% -DCMAKE_MAKE_PROGRAM=%ninja% -G Ninja"
+set "androidParam=-DCMAKE_BUILD_TYPE=Release -DANDROID_STL=c++_shared -DANDROID_PLATFORM=android-28 -DCMAKE_TOOLCHAIN_FILE=%toolchain% -DCMAKE_MAKE_PROGRAM=%ninja% -G Ninja"
 
 set APIPath=%projectDir%scanapi\include\OXiScan_Api.h
 set APIErrPath=%projectDir%base\include\OXiScan_err.h
@@ -28,13 +28,13 @@ set tgAndroid="D:\git\oxi\g7\G7010Android\libFAP\src\main\cpp"
 
 if "%2"=="" (
    
-    @REM call ::genArmv7
-    @REM call ::genArmv8
+    call ::genArmv7
+    call ::genArmv8
 
     call ::genX64
-    @REM call ::genX86
+    call ::genX86
  
-    call :copyWin
+    @REM call :copyWin
     @REM call :copyAndroid
 
 	GOTO END
@@ -44,14 +44,14 @@ if "%2"=="" (
 if %2 EQU 1 (
     call ::genX64
     call ::genX86
-    call :copyWin 
+    @REM call :copyWin 
 	GOTO END
 )
 
 if %2 EQU 2 (
     call ::genArmv7
     call ::genArmv8
-    call :copyAndroid 
+    @REM call :copyAndroid 
 	GOTO END
 )
 

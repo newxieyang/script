@@ -4,6 +4,7 @@
 import shutil
 import os
 import chardet
+import glob
 
 
 def removeDir(dir_path):
@@ -79,10 +80,36 @@ def copyAndroid(srcDir, libName, targetDir, cus):
     shutil.copy2(srcDir + "cmake-build-release-arm64-v8a/libFAP/lib" + libName + ".so", targetDir + "arm64-v8a")
 
 
-def copyDoc(srcDir, targetDir):
+# def getDoc(targetDir, sdkVer):
+
+
+
+def copyDoc(srcDir, targetDir, SDKver):
     if os.path.isdir(targetDir + "doc"):
         removeDir(targetDir+"/doc")
     shutil.copytree(srcDir, targetDir+"/doc")
+    # 指定目录
+    directory = targetDir+"/doc"
+
+    # 获取指定目录下的所有.docx文件
+    docx_files = glob.glob(os.path.join(directory, '*.docx'))
+
+    # 如果没有.docx文件，则直接退出
+    if not docx_files:
+        print(f"在目录 {directory} 中没有找到任何.docx文件。")
+        return
+
+    # 根据文件的最后修改时间进行排序，最近的文件会排在最后
+    docx_files.sort(key=os.path.getmtime)
+
+    # 保留最近的一个文件，删除其他的
+    for file in docx_files[:-1]:
+        try:
+            os.remove(file)
+            print(f"已删除文件: {file}")
+        except Exception as e:
+            print(f"删除文件 {file} 时出错: {e}")
+
 
 
 def copyHeaderFile(srcDir, targetDir):
@@ -213,7 +240,7 @@ if __name__ == '__main__':
 
     
 
-    copyDoc(docSrc, targetDir)
+    copyDoc(docSrc, targetDir, SDKver)
 
     winSrc = "D:\\git\\oxi\\GSerWin\\"
     copyWinExe(winSrc, targetDir)
