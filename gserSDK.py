@@ -58,6 +58,25 @@ def copyAndroid(srcDir,proj, libName, targetDir):
 
 
 
+def copyAlgo(targetAndroid, targetWin, algoVer):
+    srcDir = "D:\\git\\oxi\\3rd\\OXi_FP_AIg_V" + algoVer + "\\lib"
+    #copy Android v7a
+    shutil.copy2(srcDir + "/Android/armeabi-v7a/libAIAlg.so", targetAndroid + "armeabi-v7a")
+    shutil.copy2(srcDir + "/Android/armeabi-v7a/libOXIAlg.so", targetAndroid + "armeabi-v7a")
+    shutil.copy2(srcDir + "/Android/armeabi-v7a/libTraAlg.so", targetAndroid + "armeabi-v7a")
+    #copy Android v8a
+    shutil.copy2(srcDir + "/Android/arm64-v8a/libAIAlg.so", targetAndroid + "arm64-v8a")
+    shutil.copy2(srcDir + "/Android/arm64-v8a/libOXIAlg.so", targetAndroid + "arm64-v8a")
+    shutil.copy2(srcDir + "/Android/arm64-v8a/libTraAlg.so", targetAndroid + "arm64-v8a")
+    # copy Win x64
+    shutil.copy2(srcDir + "/vs/win-x64/AIAlg.dll", targetWin + "x64/Release")
+    shutil.copy2(srcDir + "/vs/win-x64/OXIAlg.dll", targetWin + "x64/Release")
+    shutil.copy2(srcDir + "/vs/win-x64/TraAlg.dll", targetWin + "x64/Release")
+    # copy Win x84
+    shutil.copy2(srcDir + "/vs/win-x86/AIAlg.dll", targetWin + "Release")
+    shutil.copy2(srcDir + "/vs/win-x86/OXIAlg.dll", targetWin + "Release")
+    shutil.copy2(srcDir + "/vs/win-x86/TraAlg.dll", targetWin + "Release")
+
 
 if __name__ == '__main__':
    
@@ -80,3 +99,5 @@ if __name__ == '__main__':
     androidTgDir = "D:\\git\\oxi\\GSerAndroid\\libFAP\\src\\main\\cpp\\"
     print(androidTgDir)
     copyAndroid(sourceDir, projName, libName, androidTgDir)
+
+    copyAlgo(androidTgDir, winTgDir, "1.0.0.7")
