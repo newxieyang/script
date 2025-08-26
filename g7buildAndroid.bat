@@ -1,14 +1,13 @@
 @echo OFF 
 set projectDir=D:\git\oxi\OXiScan\
-set buildDir="D:\output\build"
+set buildDir=%projectDir%
 
 
-set winX86=%buildDir%\cmake-build-release_x86
-set winX64=%buildDir%\cmake-build-release_x64
+set winX86=%buildDir%\cmake-build-release-vs2019_x86
+set winX64=%buildDir%\cmake-build-release-vs2019_x64
 
-set armv8=%buildDir%\cmake-build-release_armv8
-set armv7=%buildDir%\cmake-build-release_armv7
-
+set armv8=%buildDir%\cmake-build-release-arm64-v8a
+set armv7=%buildDir%\cmake-build-release-armeabi-v7a
 
 set cmake=D:\apps\CMake\bin\cmake.exe
 set ninja="D:/apps/JetBrains/CLion 2023.1.4/bin/ninja/win/x64/ninja.exe"

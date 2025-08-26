@@ -9,7 +9,7 @@ set platformIndex=%1
 
 
 
-echo "genareate G6SDK"
+echo "genareate G7SDK"
 echo off
 
 set sourceDir=D:\git\oxi\g7\

@@ -349,12 +349,12 @@ def add_ordered_list_item(doc, text):
 
 
 
-def createSDKAPI(pjDir, targetDir):
+def createSDKAPI(pjDir, verDir, targetDir):
     if not pjDir == "":
         print(pjDir)
-        buildName = readVer(pjDir)
+        buildName = readVer(verDir)
         print("-----------------------------")
-        APIFilePath = findFilePathNameByKeyWord(pjDir, "ScanAPI") 
+        APIFilePath = findFilePathNameByKeyWord(pjDir, "Api") 
         # APIFilePath = findFilePathNameByKeyWord(pjDir, "OXiScan_Api") 
         if APIFilePath is None:
              print("APIFilePath is null")
@@ -371,7 +371,9 @@ if __name__ == '__main__':
     # pjPathName = setSDKPathName(2, 8)
     # target = SDKTargetSer[2]
     # createSDKAPI("D:\git\oxi\g6\FAP6010_Thales", "d:/0")
-    createSDKAPI("D:\\git\\oxi\\g6\\FAP6010_ARATEK", "d:/0")
-    # createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "d:/0")
+    # createSDKAPI("D:\\git\\oxi\\g6\\FAP6010_ARATEK", "d:/0")
+    print("begin genSDK")
+    createSDKAPI("D:\\git\\oxi\\OXiScan\\scanapi", "D:\\git\\oxi\\OXiScan\\dev\\fap70", "D:\\G7SDKLib\\doc")
+    # createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "D:\\G7SDKLib\\doc")
     
    

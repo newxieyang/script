@@ -159,7 +159,7 @@ def copyWinExe(srcDir, tgDir):
 
 def ignore_predicate(src_dir, names):
     # 定义需要忽略的文件夹名列表
-    ignore_folders = ['Release', 'x64', '.vs']
+    ignore_folders = ['Release', 'x64', '.vs', '.git']
     ignored_names = []
     for name in names:
         full_path = os.path.join(src_dir, name)
@@ -234,6 +234,9 @@ if __name__ == '__main__':
 
     targetDir = "D:/"+SDKJ+"SDKLib/"+SDKJ+"SDKv" + SDKver
     if not os.path.isdir(targetDir):
+        os.mkdir(targetDir)
+    else:
+        removeDir(targetDir)
         os.mkdir(targetDir)
 
     copyHeaderFile(sourceDir, targetDir)
