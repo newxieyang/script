@@ -37,7 +37,7 @@ sudo make install
 cd testG6SDK_arm/
 
 cmake .
-make
+make -j4
 ./TestG6SDK 
 ```
   
