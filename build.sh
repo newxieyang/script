@@ -51,8 +51,8 @@ rm -f Makefile
 
 cd ${proDir}
 
-#cmake .
-#make -j4
+cmake .
+make -j4
 
 echo "cp ${proDir}/dev/fap70/libFAP70.so ${dir}/GSerQtSimple/$sys/ "
 cp ${proDir}/dev/fap70/libFAP70.so ${dir}/GSerQtSimple/$sys/
