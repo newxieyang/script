@@ -25,7 +25,7 @@ set /p input=please input number you choose:
 
 if "%input%"=="1" (
     echo "GerSDK build Win/Android SDK"
-    call g7buildAndroid.bat
+    call gserbuildSDK.bat
 	GOTO END
 )
 
