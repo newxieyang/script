@@ -1,6 +1,7 @@
 # !/usr/bin/python
 # encoding:utf-8
 import os
+import re
 from docx import Document
 
 from docx.shared import RGBColor
@@ -16,8 +17,8 @@ from fileUtils import *
 
 
 # keyword = "SCAN_API"
-# keyword = "OXISCAN_EXPORT"
-keyword = "OXISCAN_API"
+keyword = "OXISCAN_EXPORT"
+# keyword = "OXISCAN_API"
 
 
 
@@ -35,15 +36,28 @@ def readAPI(APIpathName):
     liner = []
     for line in f:
         if keyword in line:
-            if "HANDLE" in line:
+            if "OXiScan_" in line:
                 liner.append(line)
     return liner
 
 
 def getFuntionName(funStr):
-    str = funStr.split("(")[0]
-    str = str.replace("  ", " ")
-    return str.split(" ")[2]
+    # str = funStr.split("(")[0]
+    # str = str.replace("  ", " ")
+    pattern = re.compile(r'\b(?:[a-zA-Z_][a-zA-Z0-9_]*::)?(?:template\s*<.*?>\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*(?:const)?\s*(?:throw\s*\([^)]*\))?\s*;\s*|\b(?:[a-zA-Z_][a-zA-Z0-9_]*::)?(?:template\s*<.*?>\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*(?:const)?\s*(?:\{|\s*throw\s*\([^)]*\)\s*;\s*)', re.MULTILINE)
+
+    match = pattern.search(funStr)
+    if match:
+        # 由于使用了多个捕获组，我们需要检查哪个组匹配到了内容
+        function_name = next((group for group in match.groups() if group), None)
+        print("第一个匹配到的函数名是:", function_name)
+        return function_name
+    else:
+        print("没有找到匹配项")
+
+    # print("匹配到的函数名有:", function_names)
+
+    return function_names
 
 
 def getFuntionString(funStr):
@@ -128,7 +142,7 @@ def writeDesc(doc):
 
 
     doc.add_heading("Supported Fingerprint Sensor", 2)
-    add_ordered_list_item(doc, "Optical fingerprint sensor(G6xxx)")
+    add_ordered_list_item(doc, "Optical fingerprint sensor(G4 G6 G7)")
 
 
     doc.add_heading("SDK Features", 2)
@@ -219,6 +233,7 @@ def writeDocx(verName, liner, target, APIPathName):
    #document.add_paragraph('first item in unordered list', style='List Bullet')
     for index in range(len(liner)):
         funName = getFuntionName(liner[index])
+        print(funName)
         doc.add_heading(str(index+1) + "." + funName, 2)
 
         #### Signature
@@ -373,7 +388,7 @@ if __name__ == '__main__':
     # createSDKAPI("D:\git\oxi\g6\FAP6010_Thales", "d:/0")
     # createSDKAPI("D:\\git\\oxi\\g6\\FAP6010_ARATEK", "d:/0")
     print("begin genSDK")
-    createSDKAPI("D:\\git\\oxi\\OXiScan\\scanapi", "D:\\git\\oxi\\OXiScan\\dev\\fap70", "D:\\G7SDKLib\\doc")
+    createSDKAPI("D:\\git\\oxi\\OXiScan\\scanapi", "D:\\git\\oxi\\OXiScan\\base", "D:\\GSerSDKLib\\doc")
     # createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "D:\\G7SDKLib\\doc")
     
    

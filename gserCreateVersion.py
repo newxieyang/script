@@ -5,6 +5,7 @@ import shutil
 import os
 import chardet
 import glob
+from fileUtils import *
 
 
 def removeDir(dir_path):
@@ -23,20 +24,6 @@ def removeDir(dir_path):
 
 
 
-def readSDKVer(sourceDir, proj):
-    verFilepathName=sourceDir + "/dev/"+proj+"/include/version.h"
-    ver = ""
-    with open(verFilepathName, "r") as file:
-        for line in file:
-            if "#define VERSION_MAJOR" in line:
-                ver += line.split(" ")[2].replace(" ", "").replace("\n", "") + "."
-            if "#define VERSION_MINOR" in line:
-                ver += line.split(" ")[2].replace(" ", "").replace("\n", "") + "."
-            if "#define VERSION_PATCH" in line:
-                ver += line.split(" ")[2].replace(" ", "").replace("\n", "") + "."
-            if "#define VERSION_BUILD" in line:
-                ver += line.split(" ")[2].replace(" ", "").replace("\n", "")
-                return ver
     
 
 # def readMkVer(sourceDir, customStr):
@@ -202,37 +189,19 @@ if __name__ == '__main__':
   
     sourceDir = "D:/git/oxi/OXiScan/"
 
-    libName = "FAP45"
-    SDKJ = "G4"
-    pj = 4
-    if(pj == 1): 
-        libName = "FAP20"
-        SDKJ = "G2"
-    if(pj == 2):
-        libName = "FAP45"
-        SDKJ = "G4"
-    if(pj == 3):
-        libName = "FAP60"
-        SDKJ = "G6"
-    if(pj == 4):
-        libName = "FAP70"
-        SDKJ = "G7"
-
-
-
-
-    projName = libName.lower()
+    libName = "FAP"
+    SDKJ = "Gser"
    
     print(sourceDir)
 
-    SDKver = readSDKVer(sourceDir, projName)
+    SDKver = readVer(sourceDir)
     print("SDKver:" + SDKver + ";")
 
     # MKver = readMkVer(SDKDir, customStr)
     # print("MKver:" + MKver + ";")
-    docSrc = "D:/"+SDKJ+"SDKLib/doc"
+    docSrc = "D:/GSerSDKLib/doc"
 
-    targetDir = "D:/"+SDKJ+"SDKLib/"+SDKJ+"SDKv" + SDKver
+    targetDir = "D:/GSerSDKLib/"+SDKJ+"SDKv" + SDKver
     if not os.path.isdir(targetDir):
         os.mkdir(targetDir)
     else:

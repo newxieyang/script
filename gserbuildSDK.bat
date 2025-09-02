@@ -19,10 +19,9 @@ set APIPath=%projectDir%scanapi\include\OXiScan_Api.h
 set APIErrPath=%projectDir%base\include\OXiScan_err.h
 set APIDefPath=%projectDir%base\include\OXiScan_def.h
 
-set libName="FAP70"
-set pjName="fap70"
-set tgWin="D:\git\oxi\g4\G45Win"
-set tgAndroid="D:\git\oxi\g7\G7010Android\libFAP\src\main\cpp"
+set libName="FAP"
+set tgWin="D:\git\oxi\GSerWin"
+set tgAndroid="D:\git\oxi\GSerAndroid\libFAP\src\main\cpp"
 
 
 if "%2"=="" (
@@ -33,8 +32,8 @@ if "%2"=="" (
     call ::genX64
     call ::genX86
  
-    @REM call :copyWin
-    @REM call :copyAndroid
+    call :copyWin
+    call :copyAndroid
 
 	GOTO END
 
@@ -68,7 +67,7 @@ IF %errorlevel% neq 0 (
     GOTO END
 )
 
-%cmake%  --build %armv8% --target FAP70 -j 14
+%cmake%  --build %armv8% --target FAP -j 14
 IF %errorlevel% neq 0 (
     echo fail to build android v8a cmake project
     pause
@@ -91,7 +90,7 @@ IF %errorlevel% neq 0 (
     GOTO END
 )
 
-%cmake%  --build %armv7% --target FAP70 -j 14
+%cmake%  --build %armv7% --target FAP -j 14
 IF %errorlevel% neq 0 (
     echo fail to build android v8a cmake project
     pause
@@ -112,7 +111,7 @@ IF %errorlevel% neq 0 (
     GOTO END
 )
 echo "----------------build Win x86 lib-----------------------"
-%cmake% --build %winX86% --target FAP70 --config Release -j 14
+%cmake% --build %winX86% --target FAP --config Release -j 14
 IF %errorlevel% neq 0 (
     echo fail to generate Win x86 dll
     pause
@@ -133,7 +132,7 @@ IF %errorlevel% neq 0 (
     GOTO END
 )
 echo "----------------build Win x64 lib-----------------------"
-%cmake% --build %winX64% --target FAP70 --config Release -j 14
+%cmake% --build %winX64% --target FAP --config Release -j 14
 IF %errorlevel% neq 0 (
     echo fail to generate Win x64 dll
     pause
@@ -176,16 +175,16 @@ goto:eof
   
     
 
-    rem copy win_x86  dev\fap70\Release
-    rem xcopy %vs86Dir\dev\fap70\Release\%%ibName%.dll %targetDir%\libx86 /y
-    echo %winX86%\dev\%pjName%\Release\%libName%.lib
-    xcopy %winX86%\dev\%pjName%\Release\%libName%.lib %tgWin%\libx86	/y
+    rem copy win_x86  fap70\Release
+    rem xcopy %vs86Dir\fap70\Release\%%ibName%.dll %targetDir%\libx86 /y
+    echo %winX86%\Release\%libName%.lib
+    xcopy %winX86%\Release\%libName%.lib %tgWin%\libx86	/y
         IF %errorlevel% neq 0 (
         echo copy win x86 lib file fail
         pause
         GOTO END
     )
-    xcopy %winX86%\dev\%pjName%\Release\%libName%.dll %tgWin%\Release	/y
+    xcopy %winX86%\Release\%libName%.dll %tgWin%\Release	/y
         IF %errorlevel% neq 0 (
         echo copy win x86 dll file fail
         pause
@@ -194,13 +193,13 @@ goto:eof
 
     rem copy win_x64
     rem xcopy %vs64Dir%%libName%.dll %targetDir%\libx64 /y
-    xcopy %winX64%\dev\%pjName%\Release\%libName%.lib %tgWin%\libx64 /y
+    xcopy %winX64%\Release\%libName%.lib %tgWin%\libx64 /y
         IF %errorlevel% neq 0 (
         echo copy win x64 lib file fail
         pause
         GOTO END
     )
-    xcopy %winX64%\dev\%pjName%\Release\%libName%.dll %tgWin%\x64\Release /y
+    xcopy %winX64%\Release\%libName%.dll %tgWin%\x64\Release /y
         IF %errorlevel% neq 0 (
         echo copy win x64 dll file fail
         pause
@@ -243,13 +242,13 @@ goto:eof
 
 
 
-    xcopy %armv8%\dev\%pjName%\lib%libName%.so %tgAndroid%armeabi-v7a /y
+    xcopy %armv8%\lib%libName%.so %tgAndroid%\armeabi-v7a /y
     IF %errorlevel% neq 0 (
         echo copy android v7a so  fail
         pause
         GOTO END
     )
-    xcopy %armv8%\dev\%pjName%\lib%libName%.so %tgAndroid%arm64-v8a /y
+    xcopy %armv8%\lib%libName%.so %tgAndroid%\arm64-v8a /y
         IF %errorlevel% neq 0 (
         echo copy android v8a so fail
         pause
