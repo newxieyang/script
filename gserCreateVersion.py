@@ -190,7 +190,7 @@ if __name__ == '__main__':
     sourceDir = "D:/git/oxi/OXiScan/"
 
     libName = "FAP"
-    SDKJ = "Gser"
+    SDKJ = "OXi_FP_"
    
     print(sourceDir)
 
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     # print("MKver:" + MKver + ";")
     docSrc = "D:/GSerSDKLib/doc"
 
-    targetDir = "D:/GSerSDKLib/"+SDKJ+"SDKv" + SDKver
+    targetDir = "D:/GSerSDKLib/"+SDKJ+"SDK_v" + SDKver
     if not os.path.isdir(targetDir):
         os.mkdir(targetDir)
     else:
