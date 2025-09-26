@@ -89,4 +89,4 @@ if __name__ == '__main__':
     print(androidTgDir)
     copyAndroid(sourceDir,  libName, androidTgDir)
 
-    copyAlgo(androidTgDir, winTgDir, "1.0.0.8")
+    copyAlgo(androidTgDir, winTgDir, "1.0.0.11")

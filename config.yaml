@@ -1,0 +1,643 @@
+version: 3
+profiles:
+  - type: ssh
+    name: 阿里云
+    icon: fas fa-desktop
+    options:
+      host: 8.155.48.23
+      algorithms:
+        hmac:
+          - hmac-sha1
+          - hmac-sha1-etm@openssh.com
+          - hmac-sha2-256
+          - hmac-sha2-256-etm@openssh.com
+          - hmac-sha2-512
+          - hmac-sha2-512-etm@openssh.com
+        kex:
+          - curve25519-sha256
+          - curve25519-sha256@libssh.org
+          - diffie-hellman-group-exchange-sha256
+          - diffie-hellman-group14-sha256
+          - diffie-hellman-group15-sha512
+          - diffie-hellman-group16-sha512
+          - diffie-hellman-group17-sha512
+          - diffie-hellman-group18-sha512
+          - ecdh-sha2-nistp256
+          - ecdh-sha2-nistp384
+          - ecdh-sha2-nistp521
+        cipher:
+          - aes128-ctr
+          - aes128-gcm
+          - aes128-gcm@openssh.com
+          - aes192-ctr
+          - aes256-ctr
+          - aes256-gcm
+          - aes256-gcm@openssh.com
+        serverHostKey:
+          - ecdsa-sha2-nistp256
+          - ecdsa-sha2-nistp384
+          - ecdsa-sha2-nistp521
+          - rsa-sha2-256
+          - rsa-sha2-512
+          - ssh-ed25519
+          - ssh-rsa
+      privateKeys: []
+      forwardedPorts: []
+      scripts: []
+    weight: -1
+    id: ssh:custom::fc73b2f2-1856-4077-8b72-5045022a56f8
+  - type: ssh
+    name: vm ubuntu
+    icon: fas fa-desktop
+    options:
+      host: 10.20.30.20
+      user: cullen
+      algorithms:
+        hmac:
+          - hmac-sha1
+          - hmac-sha1-etm@openssh.com
+          - hmac-sha2-256
+          - hmac-sha2-256-etm@openssh.com
+          - hmac-sha2-512
+          - hmac-sha2-512-etm@openssh.com
+        kex:
+          - curve25519-sha256
+          - curve25519-sha256@libssh.org
+          - diffie-hellman-group-exchange-sha256
+          - diffie-hellman-group14-sha256
+          - diffie-hellman-group15-sha512
+          - diffie-hellman-group16-sha512
+          - diffie-hellman-group17-sha512
+          - diffie-hellman-group18-sha512
+          - ecdh-sha2-nistp256
+          - ecdh-sha2-nistp384
+          - ecdh-sha2-nistp521
+        cipher:
+          - aes128-ctr
+          - aes128-gcm
+          - aes128-gcm@openssh.com
+          - aes192-ctr
+          - aes256-ctr
+          - aes256-gcm
+          - aes256-gcm@openssh.com
+        serverHostKey:
+          - ecdsa-sha2-nistp256
+          - ecdsa-sha2-nistp384
+          - ecdsa-sha2-nistp521
+          - rsa-sha2-256
+          - rsa-sha2-512
+          - ssh-ed25519
+          - ssh-rsa
+      auth: password
+      privateKeys: []
+      forwardedPorts: []
+      scripts: []
+    weight: -1
+    id: ssh:custom:vm-ubuntu:81c870cc-e67b-4610-8d50-366fb3ab94ce
+  - type: ssh
+    name: 23.95.96.112vps
+    icon: fas fa-desktop
+    options:
+      host: 23.95.96.112
+      algorithms:
+        hmac:
+          - hmac-sha1
+          - hmac-sha1-etm@openssh.com
+          - hmac-sha2-256
+          - hmac-sha2-256-etm@openssh.com
+          - hmac-sha2-512
+          - hmac-sha2-512-etm@openssh.com
+        kex:
+          - curve25519-sha256
+          - curve25519-sha256@libssh.org
+          - diffie-hellman-group-exchange-sha256
+          - diffie-hellman-group14-sha256
+          - diffie-hellman-group15-sha512
+          - diffie-hellman-group16-sha512
+          - diffie-hellman-group17-sha512
+          - diffie-hellman-group18-sha512
+          - ecdh-sha2-nistp256
+          - ecdh-sha2-nistp384
+          - ecdh-sha2-nistp521
+        cipher:
+          - aes128-ctr
+          - aes128-gcm
+          - aes128-gcm@openssh.com
+          - aes192-ctr
+          - aes256-ctr
+          - aes256-gcm
+          - aes256-gcm@openssh.com
+        serverHostKey:
+          - ecdsa-sha2-nistp256
+          - ecdsa-sha2-nistp384
+          - ecdsa-sha2-nistp521
+          - rsa-sha2-256
+          - rsa-sha2-512
+          - ssh-ed25519
+          - ssh-rsa
+      privateKeys: []
+      forwardedPorts: []
+      scripts: []
+    weight: -1
+    id: ssh:custom:23.95.96.112vps:72bdf4e1-6d57-42d8-a567-86f9790cf23e
+  - type: ssh
+    name: rasp
+    icon: fas fa-desktop
+    options:
+      host: 192.168.137.81
+      user: umpidev
+      algorithms: {}
+      auth: password
+    weight: -1
+    id: ssh:custom:rasp:8a746391-a809-41cf-b451-0bcd6d7ddd14
+  - type: ssh
+    name: 10.20.40.143 ubuntu
+    icon: fas fa-desktop
+    options:
+      host: 10.20.40.143
+      user: oxi
+      algorithms:
+        hmac:
+          - hmac-sha1
+          - hmac-sha1-etm@openssh.com
+          - hmac-sha2-256
+          - hmac-sha2-256-etm@openssh.com
+          - hmac-sha2-512
+          - hmac-sha2-512-etm@openssh.com
+        kex:
+          - curve25519-sha256
+          - curve25519-sha256@libssh.org
+          - diffie-hellman-group-exchange-sha256
+          - diffie-hellman-group14-sha256
+          - diffie-hellman-group15-sha512
+          - diffie-hellman-group16-sha512
+          - diffie-hellman-group17-sha512
+          - diffie-hellman-group18-sha512
+          - ecdh-sha2-nistp256
+          - ecdh-sha2-nistp384
+          - ecdh-sha2-nistp521
+        cipher:
+          - aes128-ctr
+          - aes128-gcm
+          - aes128-gcm@openssh.com
+          - aes192-ctr
+          - aes256-ctr
+          - aes256-gcm
+          - aes256-gcm@openssh.com
+        serverHostKey:
+          - ecdsa-sha2-nistp256
+          - ecdsa-sha2-nistp384
+          - ecdsa-sha2-nistp521
+          - rsa-sha2-256
+          - rsa-sha2-512
+          - ssh-ed25519
+          - ssh-rsa
+      auth: password
+      privateKeys: []
+      forwardedPorts: []
+      scripts: []
+    weight: -1
+    id: ssh:custom:10.20.40.143-ubuntu:3600706f-65ad-4ea5-99fb-9d632d2f2728
+  - type: ssh
+    name: 10.20.40.143
+    icon: fas fa-desktop
+    options:
+      host: 10.20.40.143
+      user: oxi
+      algorithms: {}
+    weight: -1
+    id: ssh:custom:10.20.40.143:0393f916-ba07-48a1-b30a-a6eccf20e512
+  - type: ssh
+    name: 10.20.60.245
+    icon: fas fa-desktop
+    options:
+      host: 10.20.60.245
+      user: NZP
+      algorithms:
+        hmac:
+          - hmac-sha1
+          - hmac-sha1-etm@openssh.com
+          - hmac-sha2-256
+          - hmac-sha2-256-etm@openssh.com
+          - hmac-sha2-512
+          - hmac-sha2-512-etm@openssh.com
+        kex:
+          - curve25519-sha256
+          - curve25519-sha256@libssh.org
+          - diffie-hellman-group-exchange-sha256
+          - diffie-hellman-group14-sha256
+          - diffie-hellman-group15-sha512
+          - diffie-hellman-group16-sha512
+          - diffie-hellman-group17-sha512
+          - diffie-hellman-group18-sha512
+          - ecdh-sha2-nistp256
+          - ecdh-sha2-nistp384
+          - ecdh-sha2-nistp521
+        cipher:
+          - aes128-ctr
+          - aes128-gcm
+          - aes128-gcm@openssh.com
+          - aes192-ctr
+          - aes256-ctr
+          - aes256-gcm
+          - aes256-gcm@openssh.com
+        serverHostKey:
+          - ecdsa-sha2-nistp256
+          - ecdsa-sha2-nistp384
+          - ecdsa-sha2-nistp521
+          - rsa-sha2-256
+          - rsa-sha2-512
+          - ssh-ed25519
+          - ssh-rsa
+      auth: password
+      forwardedPorts: []
+      scripts: []
+      privateKeys: []
+    weight: -1
+    id: ssh:custom:10.20.60.245:aa57de90-2114-4953-b3cc-dd414146a472
+  - type: ssh
+    name: delay
+    icon: fas fa-desktop
+    options:
+      host: 49.235.117.252
+      algorithms: {}
+      auth: password
+    weight: -1
+    id: ssh:custom:delay:fc94f6ca-0548-4f8f-a703-28f44a424a69
+  - type: ssh
+    name: ubuntu
+    icon: fas fa-desktop
+    options:
+      host: 192.168.255.128
+      user: xieyang
+      algorithms:
+        hmac:
+          - hmac-sha1
+          - hmac-sha1-etm@openssh.com
+          - hmac-sha2-256
+          - hmac-sha2-256-etm@openssh.com
+          - hmac-sha2-512
+          - hmac-sha2-512-etm@openssh.com
+        kex:
+          - curve25519-sha256
+          - curve25519-sha256@libssh.org
+          - diffie-hellman-group-exchange-sha256
+          - diffie-hellman-group14-sha256
+          - diffie-hellman-group15-sha512
+          - diffie-hellman-group16-sha512
+          - diffie-hellman-group17-sha512
+          - diffie-hellman-group18-sha512
+          - ecdh-sha2-nistp256
+          - ecdh-sha2-nistp384
+          - ecdh-sha2-nistp521
+        cipher:
+          - aes128-ctr
+          - aes128-gcm
+          - aes128-gcm@openssh.com
+          - aes192-ctr
+          - aes256-ctr
+          - aes256-gcm
+          - aes256-gcm@openssh.com
+        serverHostKey:
+          - ecdsa-sha2-nistp256
+          - ecdsa-sha2-nistp384
+          - ecdsa-sha2-nistp521
+          - rsa-sha2-256
+          - rsa-sha2-512
+          - ssh-ed25519
+          - ssh-rsa
+      privateKeys: []
+      scripts: []
+      forwardedPorts: []
+    weight: -1
+    id: ssh:custom:ubuntu:497d7282-c774-43ac-80c9-41467c29fe3d
+  - type: ssh
+    name: 10.20.10.208
+    icon: fas fa-desktop
+    options:
+      host: 10.20.10.208
+      algorithms:
+        hmac:
+          - hmac-sha1
+          - hmac-sha1-etm@openssh.com
+          - hmac-sha2-256
+          - hmac-sha2-256-etm@openssh.com
+          - hmac-sha2-512
+          - hmac-sha2-512-etm@openssh.com
+        kex:
+          - curve25519-sha256
+          - curve25519-sha256@libssh.org
+          - diffie-hellman-group-exchange-sha256
+          - diffie-hellman-group14-sha256
+          - diffie-hellman-group15-sha512
+          - diffie-hellman-group16-sha512
+          - diffie-hellman-group17-sha512
+          - diffie-hellman-group18-sha512
+          - ecdh-sha2-nistp256
+          - ecdh-sha2-nistp384
+          - ecdh-sha2-nistp521
+        cipher:
+          - aes128-ctr
+          - aes128-gcm
+          - aes128-gcm@openssh.com
+          - aes192-ctr
+          - aes256-ctr
+          - aes256-gcm
+          - aes256-gcm@openssh.com
+        serverHostKey:
+          - ecdsa-sha2-nistp256
+          - ecdsa-sha2-nistp384
+          - ecdsa-sha2-nistp521
+          - rsa-sha2-256
+          - rsa-sha2-512
+          - ssh-ed25519
+          - ssh-rsa
+      auth: password
+      forwardedPorts: []
+      scripts: []
+      privateKeys: []
+    weight: -1
+    id: ssh:custom:10.20.10.208:dfed38f2-fdc7-4ade-b4cf-564f80f1680c
+  - type: ssh
+    name: 10.20.10.115
+    icon: fas fa-desktop
+    options:
+      host: 10.20.10.115
+      algorithms:
+        hmac:
+          - hmac-sha1
+          - hmac-sha1-etm@openssh.com
+          - hmac-sha2-256
+          - hmac-sha2-256-etm@openssh.com
+          - hmac-sha2-512
+          - hmac-sha2-512-etm@openssh.com
+        kex:
+          - curve25519-sha256
+          - curve25519-sha256@libssh.org
+          - diffie-hellman-group-exchange-sha256
+          - diffie-hellman-group14-sha256
+          - diffie-hellman-group15-sha512
+          - diffie-hellman-group16-sha512
+          - diffie-hellman-group17-sha512
+          - diffie-hellman-group18-sha512
+          - ecdh-sha2-nistp256
+          - ecdh-sha2-nistp384
+          - ecdh-sha2-nistp521
+        cipher:
+          - aes128-ctr
+          - aes128-gcm
+          - aes128-gcm@openssh.com
+          - aes192-ctr
+          - aes256-ctr
+          - aes256-gcm
+          - aes256-gcm@openssh.com
+        serverHostKey:
+          - ecdsa-sha2-nistp256
+          - ecdsa-sha2-nistp384
+          - ecdsa-sha2-nistp521
+          - rsa-sha2-256
+          - rsa-sha2-512
+          - ssh-ed25519
+          - ssh-rsa
+      auth: password
+      forwardedPorts: []
+      scripts: []
+      privateKeys: []
+    weight: -1
+    id: ssh:custom:10.20.10.115:68e9ff0e-60a4-454a-af98-3338ce9a3c4d
+hotkeys:
+  toggle-window:
+    - Ctrl-Space
+  copy-current-path: []
+  ctrl-c:
+    - Ctrl-C
+  copy:
+    - Ctrl-Shift-C
+  paste:
+    - Ctrl-Shift-V
+    - Shift-Insert
+  select-all:
+    - Ctrl-Shift-A
+  clear: []
+  zoom-in:
+    - Ctrl-=
+    - Ctrl-Shift-=
+  zoom-out:
+    - Ctrl--
+    - Ctrl-Shift--
+  reset-zoom:
+    - Ctrl-0
+  home:
+    - Home
+  end:
+    - End
+  previous-word:
+    - Ctrl-Left
+  next-word:
+    - Ctrl-Right
+  delete-previous-word:
+    - Ctrl-Backspace
+  delete-line:
+    - Ctrl-Shift-Backspace
+  delete-next-word:
+    - Ctrl-Delete
+  search:
+    - Ctrl-Shift-F
+  pane-focus-all:
+    - Ctrl-Shift-I
+  scroll-to-top:
+    - Ctrl-PageUp
+  scroll-up:
+    - PageUp
+  scroll-down:
+    - PageDown
+  scroll-to-bottom:
+    - Ctrl-PageDown
+  restart-telnet-session: []
+  restart-ssh-session: []
+  launch-winscp: []
+  settings-tab: {}
+  settings:
+    - Ctrl-,
+  serial:
+    - Alt-K
+  restart-serial-session: []
+  new-window:
+    - Ctrl-Shift-N
+  new-tab:
+    - Ctrl-Shift-T
+  profile: {}
+  profile-selectors: {}
+  toggle-fullscreen:
+    - F11
+    - Alt-Enter
+  close-tab:
+    - Ctrl-Shift-W
+  reopen-tab:
+    - Ctrl-Shift-Z
+  toggle-last-tab: []
+  rename-tab:
+    - Ctrl-Shift-R
+  next-tab:
+    - Ctrl-Shift-Right
+    - Ctrl-Tab
+  previous-tab:
+    - Ctrl-Shift-Left
+    - Ctrl-Shift-Tab
+  move-tab-left:
+    - Ctrl-Shift-PageUp
+  move-tab-right:
+    - Ctrl-Shift-PageDown
+  rearrange-panes:
+    - Ctrl-Shift
+  duplicate-tab: []
+  restart-tab: []
+  explode-tab:
+    - Ctrl-Shift-.
+  combine-tabs:
+    - Ctrl-Shift-,
+  tab-1:
+    - Alt-1
+  tab-2:
+    - Alt-2
+  tab-3:
+    - Alt-3
+  tab-4:
+    - Alt-4
+  tab-5:
+    - Alt-5
+  tab-6:
+    - Alt-6
+  tab-7:
+    - Alt-7
+  tab-8:
+    - Alt-8
+  tab-9:
+    - Alt-9
+  tab-10:
+    - Alt-0
+  tab-11: []
+  tab-12: []
+  tab-13: []
+  tab-14: []
+  tab-15: []
+  tab-16: []
+  tab-17: []
+  tab-18: []
+  tab-19: []
+  tab-20: []
+  split-right:
+    - Ctrl-Shift-S
+  split-bottom:
+    - Ctrl-Shift-D
+  split-left: []
+  split-top: []
+  pane-nav-right:
+    - Ctrl-Alt-Right
+  pane-nav-down:
+    - Ctrl-Alt-Down
+  pane-nav-up:
+    - Ctrl-Alt-Up
+  pane-nav-left:
+    - Ctrl-Alt-Left
+  pane-nav-previous:
+    - Ctrl-Alt-[
+  pane-nav-next:
+    - Ctrl-Alt-]
+  pane-nav-1: []
+  pane-nav-2: []
+  pane-nav-3: []
+  pane-nav-4: []
+  pane-nav-5: []
+  pane-nav-6: []
+  pane-nav-7: []
+  pane-nav-8: []
+  pane-nav-9: []
+  pane-maximize:
+    - Ctrl-Alt-Enter
+  close-pane: []
+  pane-increase-vertical: []
+  pane-decrease-vertical: []
+  pane-increase-horizontal: []
+  pane-decrease-horizontal: []
+  switch-profile:
+    - Ctrl-Alt-T
+  profile-selector:
+    - Ctrl-Shift-E
+terminal:
+  searchOptions: {}
+  colorScheme:
+    name: Material
+    foreground: '#eceff1'
+    background: rgba(38, 50, 56, 1)
+    selection: null
+    cursor: '#FFCC00'
+    cursorAccent: null
+    colors:
+      - '#000000'
+      - '#D62341'
+      - '#9ECE58'
+      - '#FAED70'
+      - '#396FE2'
+      - '#BB80B3'
+      - '#2DDAFD'
+      - '#d0d0d0'
+      - rgba(255, 255, 255, 0.2)
+      - '#FF5370'
+      - '#C3E88D'
+      - '#FFCB6B'
+      - '#82AAFF'
+      - '#C792EA'
+      - '#89DDFF'
+      - '#ffffff'
+ssh:
+  knownHosts:
+    - host: 10.20.10.208
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: azUI7x3aCJ+xVhJpVB05X9tg8tFG65RTjQ2nFmvqfd8=
+    - host: 10.20.10.115
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: azUI7x3aCJ+xVhJpVB05X9tg8tFG65RTjQ2nFmvqfd8=
+    - host: 49.235.117.252
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: ZBAFkKqtEmQfOXKCOlW6o1+g/H5FfyAindLh4XgJBD8=
+    - host: 192.168.255.128
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: d4MhIW5/VStYQxddm8/7D755Udiz0zpVbt+MGoYXyeg=
+    - host: 10.20.60.197
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: XzQzELfHmzU9mWguG/oWc91mRv4Diboj0rrvFXURGV4=
+    - host: 10.20.60.245
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: tTHxynt7dTx2ukjKkgeLLREAdOQW5jHGNgRfaIpvV7M=
+    - host: 10.20.40.143
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: kaDXhWsIgpMajsqA8aRZcgfEVdXsew6KFW7Hydw05bc=
+    - host: 192.168.137.81
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: evaR7gR2wNhpXTweGvs2xZ5R28qM//z/3JkCUxBMsgA=
+    - host: 23.95.96.112
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: Sl3tAlPoU3zOSTkHIaO3aDMhWTMNiX9eFDdwcwiuFCI=
+    - host: 8.155.48.23
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: cb9F04SuSi1iL/bN6WQeyOP2zyjEm9Azpl2hUpChMrY=
+configSync:
+  parts: {}
+clickableLinks: {}
+accessibility: {}
+appearance: {}
+hacks: {}
+enableWelcomeTab: false
+pluginBlacklist: []
+profileDefaults: {}
