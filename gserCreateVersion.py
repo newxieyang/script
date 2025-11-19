@@ -194,7 +194,7 @@ if __name__ == '__main__':
    
     print(sourceDir)
 
-    SDKver = readVer(sourceDir)
+    SDKver = readCmakeVer(sourceDir)
     print("SDKver:" + SDKver + ";")
 
     # MKver = readMkVer(SDKDir, customStr)
