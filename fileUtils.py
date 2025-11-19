@@ -39,3 +39,23 @@ def readVer(pjDir):
 
     print(verName)
     return verName
+
+
+def readCmakeVer(pjDir):
+    # verPN = findFilePathNameByKeyWord(pjDir, "ersion")
+  
+    f = open(file=(pjDir +"CMakeLists.txt"), encoding="utf-8")
+    verName = ""
+    for line in f:
+        if "set(FAP_VERSION_MAJOR" in line:
+            verName += line.split(" ")[1].replace(')', '').replace('\n', '') + "."
+        if "set(FAP_VERSION_MINOR" in line:
+            verName += line.split(" ")[1].replace(')', '').replace('\n', '') + "."
+        if "set(FAP_VERSION_PATCH" in line:
+            verName += line.split(" ")[1].replace(')', '').replace('\n', '') + "."
+        if "set(FAP_VERSION_BUILD" in line:
+            verName += line.split(" ")[1].replace(')', '').replace('\n', '')
+            break
+
+    print(verName)
+    return verName
