@@ -59,3 +59,17 @@ def readCmakeVer(pjDir):
 
     print(verName)
     return verName
+
+
+def readAlgoVer(pjDir):
+    # verPN = findFilePathNameByKeyWord(pjDir, "ersion")
+  
+    f = open(file=(pjDir +"CMakeLists.txt"), encoding="utf-8")
+    verName = ""
+    for line in f:
+        if "set(OXiAlgVer" in line:
+            verName += line.split(" ")[1].replace(')', '').replace('\n', '')
+            break
+
+    print(verName)
+    return verName

@@ -79,7 +79,7 @@ if __name__ == '__main__':
     print(sourceDir)
 # sourceDir + "base/include/version.h"
     ver = readVer(sourceDir)
-    print(ver)
+    # print(ver)
 
     winTgDir = "D:\\git\\oxi\\GSerWin\\"
     print(winTgDir)
@@ -89,4 +89,6 @@ if __name__ == '__main__':
     print(androidTgDir)
     copyAndroid(sourceDir,  libName, androidTgDir)
 
-    copyAlgo(androidTgDir, winTgDir, "1.0.0.15")
+    algoVer = readAlgoVer(sourceDir)
+    print("--" + algoVer + "---")
+    copyAlgo(androidTgDir, winTgDir, algoVer)
