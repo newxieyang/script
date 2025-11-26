@@ -188,7 +188,7 @@ def copyAndroidAPK(srcDir, target):
 if __name__ == '__main__':
   
     sourceDir = "D:/git/oxi/OXiScan/"
-
+    
     libName = "FAP"
     SDKJ = "OXi_FP_"
    
