@@ -5,7 +5,7 @@ import shutil
 import os
 import chardet
 import glob
-from fileUtils import *
+from utils.fileUtils import *
 
 
 def removeDir(dir_path):
@@ -107,41 +107,42 @@ def copyHeaderFile(srcDir, targetDir):
         os.mkdir(tgHeader)
     print("tgHeader:" + tgHeader)
     # print("src:" + srcDir+ "/libFAP/include/")
-    shutil.copy2(srcDir + "scanapi/include/OXiScan_Api.h", tgHeader)
+    shutil.copy2(srcDir + "base/export/OXiScan_Api.h", tgHeader)
     shutil.copy2(srcDir + "base/include/OXiScan_def.h", tgHeader)
     shutil.copy2(srcDir + "base/include/OXiScan_err.h", tgHeader)
 
 
 
+def copyWin(srcDir, tgDir, is_include_alg):
+    # def traverse_directory(exe86Src):
+    for root, dirs, files in os.walk(srcDir):
+        for file in files:
+            if file.endswith(".exe"):
+                shutil.copy2(os.path.join(root, file), tgDir)
+            if file.endswith(".dll"):
+                if  "FAP" in file:
+                    shutil.copy2(os.path.join(root, file), tgDir)
+                else:
+                    if  is_include_alg:
+                        shutil.copy2(os.path.join(root, file), tgDir)
 
-def copyWinExe(srcDir, tgDir):
+def copyWinExe(srcDir, tgDir, is_include_alg):
     #copy x86
     exe86Src = srcDir + "/Release/"
     print(exe86Src)
-    tgx86 = tgDir + "/winx86DemoWithLib"
+    tgx86 = tgDir + "/winx86Demo"
     if not os.path.isdir(tgx86):
         os.mkdir(tgx86)
 
-    # def traverse_directory(exe86Src):
-    for root, dirs, files in os.walk(exe86Src):
-        for file in files:
-            if file.endswith(".exe"):
-                shutil.copy2(os.path.join(root, file), tgx86)
-            if file.endswith(".dll"):
-                shutil.copy2(os.path.join(root, file), tgx86)
-
+    copyWin(exe86Src, tgx86, is_include_alg)
 
     exe64Src = srcDir +  "/x64/Release/"
-    tgx64 = tgDir + "/winx64DemoWithLib"
+    tgx64 = tgDir + "/winx64Demo"
     if not os.path.isdir(tgx64):
         os.mkdir(tgx64)
-    # def traverse_directory(exe64Src):
-    for root, dirs, files in os.walk(exe64Src):
-        for file in files:
-            if file.endswith(".exe"):
-                shutil.copy2(os.path.join(root, file), tgx64)
-            if file.endswith(".dll"):
-                shutil.copy2(os.path.join(root, file), tgx64)
+
+    copyWin(exe64Src, tgx64, is_include_alg)
+
 
 
 def ignore_predicate(src_dir, names):
@@ -194,14 +195,15 @@ if __name__ == '__main__':
    
     print(sourceDir)
 
-    SDKver = readCmakeVer(sourceDir)
-    print("SDKver:" + SDKver + ";")
+    result = parse_cmake_versions(sourceDir)
+    # SDKver = readCmakeVer(sourceDir)
+    print("SDKver:" + result['fap_version'] + ";")
 
     # MKver = readMkVer(SDKDir, customStr)
     # print("MKver:" + MKver + ";")
     docSrc = "D:/GSerSDKLib/doc"
 
-    targetDir = "D:/GSerSDKLib/"+SDKJ+"SDK_v" + SDKver
+    targetDir = "D:/GSerSDKLib/"+SDKJ+"SDK_v" + result['fap_version']
     if not os.path.isdir(targetDir):
         os.mkdir(targetDir)
     else:
@@ -212,10 +214,10 @@ if __name__ == '__main__':
 
     
 
-    copyDoc(docSrc, targetDir, SDKver)
+    copyDoc(docSrc, targetDir, result['fap_version'])
 
     winSrc = "D:\\git\\oxi\\GSerWin\\"
-    copyWinExe(winSrc, targetDir)
+    copyWinExe(winSrc, targetDir, result['is_include_alg'])
     copyWinSource(winSrc, targetDir)
 
     androidSrc = "D:\\git\\oxi\\GSerAndroid\\"

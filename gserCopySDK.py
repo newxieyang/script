@@ -2,7 +2,7 @@
 # encoding:utf-8
 
 import shutil
-from fileUtils import *
+from utils.fileUtils import *
 
 
 SDKPath = "D:/output/"
@@ -12,7 +12,7 @@ _v7a = "armeabi-v7a"
 
 
 def copyWin(srcDir, libName, targetDir):
-    shutil.copy2(srcDir + "scanapi/include/OXiScan_Api.h", targetDir)
+    shutil.copy2(srcDir + "base/export/OXiScan_Api.h", targetDir)
     shutil.copy2(srcDir + "base/include/OXiScan_def.h", targetDir)
     shutil.copy2(srcDir + "base/include/OXiScan_err.h", targetDir)
 
@@ -35,7 +35,7 @@ def copyWin(srcDir, libName, targetDir):
 
 def copyAndroid(srcDir,libName, targetDir):
     print(sourceDir + "cmake-build-release-armeabi-v7a/lib" + libName + ".so")
-    shutil.copy2(srcDir + "scanapi/include/OXiScan_Api.h", targetDir + "include")
+    shutil.copy2(srcDir + "base/export/OXiScan_Api.h", targetDir + "include")
     shutil.copy2(srcDir + "base/include/OXiScan_def.h", targetDir+ "include")
     shutil.copy2(srcDir + "base/include/OXiScan_err.h", targetDir+ "include")
     # D:\output\FAP45\1.0.0.1\android\arm64-v8a\libFAP45.so
@@ -72,14 +72,15 @@ if __name__ == '__main__':
    
     sourceDir = "D:/git/oxi/OXiScan/"
 
-    # libName = ""
-
     libName = "FAP"
 
     print(sourceDir)
-# sourceDir + "base/include/version.h"
-    ver = readVer(sourceDir)
-    # print(ver)
+
+    result = parse_cmake_versions(sourceDir)
+    print(f"算法版本: {result['algorithm_version']}")
+    print(f"FAP版本: {result['fap_version']}")
+    print(f"是否带算法: {result['is_include_alg']}")
+    print(f"完整标识: {result['final_string']}")
 
     winTgDir = "D:\\git\\oxi\\GSerWin\\"
     print(winTgDir)
@@ -89,6 +90,11 @@ if __name__ == '__main__':
     print(androidTgDir)
     copyAndroid(sourceDir,  libName, androidTgDir)
 
-    algoVer = readAlgoVer(sourceDir)
-    print("--" + algoVer + "---")
-    copyAlgo(androidTgDir, winTgDir, algoVer)
+    if(result['is_include_alg']):
+        print("--" + result['algorithm_version'] + "---")
+        copyAlgo(androidTgDir, winTgDir, algoVer)
+    else:
+        print("--no algo---")
+    
+
+    

@@ -31,7 +31,7 @@ if "%input%"=="1" (
 
 if "%input%"=="2" (
     echo "copy GerSDK to Gser Win/Android simple code"
-    python %script_dir%gserSDK.py
+    python %script_dir%gserCopySDK.py
 	GOTO END
 )
 

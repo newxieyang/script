@@ -1,6 +1,6 @@
 @echo OFF 
 set projectDir=D:\git\oxi\OXiScan\
-set buildDir=%projectDir%
+set buildDir=D:\GSerSDKBuild
 
 
 set winX86=%buildDir%\cmake-build-release-vs2019_x86
@@ -170,9 +170,6 @@ goto:eof
         GOTO END
     )
 
- 
-
-  
     
 
     rem copy win_x86  fap70\Release
@@ -212,8 +209,6 @@ goto:eof
 
 :copyAndroid
     echo "copy android"
-    
-
 
     echo %androidDir%
     echo %SDKDir%

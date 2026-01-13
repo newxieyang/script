@@ -15,7 +15,7 @@ set "toolchain=D:/apps/Android/Sdk/ndk/25.2.9519653/build/cmake/android.toolchai
 
 set "androidParam=-DCMAKE_BUILD_TYPE=Release -DANDROID_STL=c++_shared -DANDROID_PLATFORM=android-28 -DCMAKE_TOOLCHAIN_FILE=%toolchain% -DCMAKE_MAKE_PROGRAM=%ninja% -G Ninja"
 
-set APIPath=%projectDir%scanapi\include\OXiScan_Api.h
+set APIPath=%projectDir%base\export\OXiScan_Api.h
 set APIErrPath=%projectDir%base\include\OXiScan_err.h
 set APIDefPath=%projectDir%base\include\OXiScan_def.h
 
@@ -143,11 +143,7 @@ goto:eof
 
 
 :copyWin
-
-
     echo "copy win"
-
-
  
     xcopy %APIPath% %tgWin% /y
         IF %errorlevel% neq 0 (
@@ -163,17 +159,13 @@ goto:eof
         GOTO END
     )
 
-  xcopy %APIDefPath% %tgWin% /y
+    xcopy %APIDefPath% %tgWin% /y
         IF %errorlevel% neq 0 (
         echo copy win %APIDefPath% file fail
         pause
         GOTO END
     )
 
- 
-
-  
-    
 
     rem copy win_x86  fap70\Release
     rem xcopy %vs86Dir\fap70\Release\%%ibName%.dll %targetDir%\libx86 /y
@@ -211,10 +203,7 @@ goto:eof
 
 
 :copyAndroid
-    echo "copy android"
-    
-
-
+    echo "copy android"    
     echo %androidDir%
     echo %SDKDir%
 
@@ -240,8 +229,6 @@ goto:eof
     )
 
 
-
-
     xcopy %armv8%\lib%libName%.so %tgAndroid%\armeabi-v7a /y
     IF %errorlevel% neq 0 (
         echo copy android v7a so  fail
@@ -255,12 +242,6 @@ goto:eof
         GOTO END
     )
 
-  
-
-
-
-
-  
 
 goto:eof
 

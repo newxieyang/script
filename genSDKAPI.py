@@ -13,7 +13,7 @@ from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.shared import Pt
 from docx.oxml import OxmlElement
 
-from fileUtils import *
+from utils.fileUtils import *
 
 
 # keyword = "SCAN_API"
@@ -364,11 +364,12 @@ def add_ordered_list_item(doc, text):
 
 
 
-def createSDKAPI(pjDir, verDir, targetDir):
+def createSDKAPI(pjDir, targetDir):
     if not pjDir == "":
         print(pjDir)
-        buildName = readVer(verDir)
-        print("-----------------------------")
+        result = parse_cmake_versions(pjDir)
+        buildName = result['fap_version']
+        print(f"--------------{buildName}---------------")
         APIFilePath = findFilePathNameByKeyWord(pjDir, "Api") 
         # APIFilePath = findFilePathNameByKeyWord(pjDir, "OXiScan_Api") 
         if APIFilePath is None:
@@ -382,13 +383,12 @@ def createSDKAPI(pjDir, verDir, targetDir):
 
 
 if __name__ == '__main__':
-    # test()
-    # pjPathName = setSDKPathName(2, 8)
-    # target = SDKTargetSer[2]
-    # createSDKAPI("D:\git\oxi\g6\FAP6010_Thales", "d:/0")
-    # createSDKAPI("D:\\git\\oxi\\g6\\FAP6010_ARATEK", "d:/0")
+
+
     print("begin genSDK")
-    createSDKAPI("D:\\git\\oxi\\OXiScan\\scanapi", "D:\\git\\oxi\\OXiScan\\base", "D:\\GSerSDKLib\\doc")
+    pjDir = "D:\\git\\oxi\\OXiScan\\"
+    targetDir = "D:\\GSerSDKLib\\doc"
+    createSDKAPI(pjDir, targetDir)
     # createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "D:\\G7SDKLib\\doc")
     
    
