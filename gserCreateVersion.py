@@ -199,11 +199,9 @@ if __name__ == '__main__':
     # SDKver = readCmakeVer(sourceDir)
     print("SDKver:" + result['fap_version'] + ";")
 
-    # MKver = readMkVer(SDKDir, customStr)
-    # print("MKver:" + MKver + ";")
-    docSrc = "D:/GSerSDKLib/doc"
+    subfix = "Static" if result.get('build_static') else ""
 
-    targetDir = "D:/GSerSDKLib/"+SDKJ+"SDK_v" + result['fap_version']
+    targetDir = "D:/GSerSDKLib/"+SDKJ+"SDK_v" + result['fap_version']+ subfix
     if not os.path.isdir(targetDir):
         os.mkdir(targetDir)
     else:
@@ -211,16 +209,21 @@ if __name__ == '__main__':
         os.mkdir(targetDir)
 
     copyHeaderFile(sourceDir, targetDir)
-
     
-
+    docSrc = "D:/GSerSDKLib/doc"
     copyDoc(docSrc, targetDir, result['fap_version'])
 
     winSrc = "D:\\git\\oxi\\GSerWin\\"
+    androidSrc = "D:\\git\\oxi\\GSerAndroid\\"
+
+    if result.get('build_static'):
+        winSrc = "D:\\git\\oxi\\GSerLibWin\\"
+        androidSrc = "D:\\git\\oxi\\GSerLibAndroid\\"
+
     copyWinExe(winSrc, targetDir, result['is_include_alg'])
     copyWinSource(winSrc, targetDir)
 
-    androidSrc = "D:\\git\\oxi\\GSerAndroid\\"
+    
     copyAndroidSrc(androidSrc, targetDir)
     copyAndroidAPK(androidSrc, targetDir)
 
