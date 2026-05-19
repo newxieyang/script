@@ -41,38 +41,34 @@ set SDKDir=%sourceDir%FAP6010_%customStr%\
 set androidDir=%sourceDir%G6010Android_%customStr%\
 set winDir=%sourceDir%g6010WinDemo_%customStr%\
 set linuxDir=%targetDir%\Linux
-set versionFile=%SDKDir%\libFAP\include\Version.h
+set versionFile=%SDKDir%version.cmake
+echo %versionFile%
 
 
-for /f "tokens=3 delims= " %%i in ('findstr /C:"#define OXISCAN_VERSION_MAJOR " %versionFile%') do set MAJOR=%%i 
-@REM IF %errorlevel% neq 0 (
-@REM     echo %versionFile% error
-@REM     pause
-@REM     GOTO END
-@REM )
-for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_MINOR " %versionFile%') do set MINOR=%%i 
-@REM IF %errorlevel% neq 0 (
-@REM     echo %versionFile% error
-@REM     pause
-@REM     GOTO END
-@REM )
-for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_PATCH " %versionFile%') do set PATCH=%%i 
-@REM IF %errorlevel% neq 0 (
-@REM     echo %versionFile% error
-@REM     pause
-@REM     GOTO END
-@REM )
-for /f "tokens=3 delims= " %%i in ('findstr /C:" OXISCAN_VERSION_BUILD " %versionFile%') do set BUILD=%%i 
-@REM IF %errorlevel% neq 0 (
-@REM     echo %versionFile% error
-@REM     pause
-@REM     GOTO END
-@REM )
-set "MAJOR=%MAJOR: =%"
-set "MINOR=%MINOR: =%"
-set "PATCH=%PATCH: =%"
-set "BUILD=%BUILD: =%"
-set version=%MAJOR%.%MINOR%.%PATCH%.%BUILD%
+:: 初始化版本变量
+set "MAJOR=0"
+set "MINOR=0"
+set "PATCH=0"
+set "BUILD=0"
+:: 使用 /C: 确保精确匹配变量名，避开最后一行合成的字符串
+for /f "tokens=2" %%a in ('findstr /C:"FAP_VERSION_MAJOR " "%versionFile%"') do (
+    set "val=%%a"
+    set "MAJOR=!val:)=!"
+)
+for /f "tokens=2" %%a in ('findstr /C:"FAP_VERSION_MINOR " "%versionFile%"') do (
+    set "val=%%a"
+    set "MINOR=!val:)=!"
+)
+for /f "tokens=2" %%a in ('findstr /C:"FAP_VERSION_PATCH " "%versionFile%"') do (
+    set "val=%%a"
+    set "PATCH=!val:)=!"
+)
+for /f "tokens=2" %%a in ('findstr /C:"FAP_VERSION_BUILD " "%versionFile%"') do (
+    set "val=%%a"
+    set "BUILD=!val:)=!"
+)
+set "version=!MAJOR!.!MINOR!.!PATCH!.!BUILD!"
+echo %version%
 
 
 set mkVer=%SDKDir%\OXiMKImgLib\src\oxi_mk_image_process.cpp

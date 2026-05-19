@@ -187,7 +187,7 @@ if __name__ == '__main__':
     custom = ["ARATEK", "MIAXIS", "win7", "fangzheng", "new", "kejin", "yinken", "huantian", "Thales", "mantra"]
     sourceDir = "D:/git/oxi/g6/"
     libName = "FAP60"
-    index = 9
+    index = 4
     customStr = custom[index]
     SDKDir = sourceDir+"FAP6010_" + customStr + "/"
     cus="OXi"

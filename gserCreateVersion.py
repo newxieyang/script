@@ -199,7 +199,7 @@ if __name__ == '__main__':
     # SDKver = readCmakeVer(sourceDir)
     print("SDKver:" + result['fap_version'] + ";")
 
-    subfix = "Static" if result.get('build_static') else ""
+    subfix = "Static" if result.get('build_static') else "dy"
 
     targetDir = "D:/GSerSDKLib/"+SDKJ+"SDK_v" + result['fap_version']+ subfix
     if not os.path.isdir(targetDir):
@@ -213,7 +213,7 @@ if __name__ == '__main__':
     docSrc = "D:/GSerSDKLib/doc"
     copyDoc(docSrc, targetDir, result['fap_version'])
 
-    winSrc = "D:\\git\\oxi\\GSerWin\\"
+    winSrc = "D:\\git\\oxi\\GSerWinDynamic\\"
     androidSrc = "D:\\git\\oxi\\GSerAndroid\\"
 
     if result.get('build_static'):

@@ -2,7 +2,7 @@ CHCP 65001
 @REM @echo off
 
 setlocal enabledelayedexpansion 
-set custom[0]=ARATEK
+set custom[0]=A910
 set custom[1]=MIAXIS
 set custom[2]=win7
 set custom[3]=fangzheng

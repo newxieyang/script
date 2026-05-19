@@ -102,11 +102,13 @@ if __name__ == '__main__':
 
     
     if(result['build_static']):
+        print("copy static")
         androidLibTgDir = "D:\\git\\oxi\\GSerLibAndroid\\libFAP\\src\\main\\cpp\\"
         copyAndroidStatic(sourceDir,  libName, androidLibTgDir)
         winLibTgDir = "D:\\git\\oxi\\GSerWinStatic\\"
         copyWinStatic(sourceDir,  libName, winLibTgDir)
     else:
+        print("copy Dynamic")
         winTgDir = "D:\\git\\oxi\\GSerWinDynamic\\"
         copyWin(sourceDir,  libName, winTgDir)
         androidTgDir = "D:\\git\\oxi\\GSerAndroid\\libFAP\\src\\main\\cpp\\"
