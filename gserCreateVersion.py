@@ -188,7 +188,7 @@ def copyAndroidAPK(srcDir, target):
 
 if __name__ == '__main__':
   
-    sourceDir = "D:/git/oxi/OXiScan/"
+    sourceDir = "D:/git/oxi/shenzhen/oxiscansdk/"
     
     libName = "FAP"
     SDKJ = "OXi_FP_"
@@ -213,12 +213,12 @@ if __name__ == '__main__':
     docSrc = "D:/GSerSDKLib/doc"
     copyDoc(docSrc, targetDir, result['fap_version'])
 
-    winSrc = "D:\\git\\oxi\\GSerWinDynamic\\"
-    androidSrc = "D:\\git\\oxi\\GSerAndroid\\"
+    winSrc = "D:/git/oxi/shenzhen/winSimpleCode/"
+    androidSrc = "D:/git/oxi/shenzhen/ScannerSimple/"
 
     if result.get('build_static'):
-        winSrc = "D:\\git\\oxi\\GSerLibWin\\"
-        androidSrc = "D:\\git\\oxi\\GSerLibAndroid\\"
+        winSrc = "D:/git/oxi/shenzhen/winSimpleCode/"
+        androidSrc = "D:/git/oxi/shenzhen/ScannerSimple/"
 
     copyWinExe(winSrc, targetDir, result['is_include_alg'])
     copyWinSource(winSrc, targetDir)

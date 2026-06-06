@@ -17,8 +17,8 @@ from utils.fileUtils import *
 
 
 # keyword = "SCAN_API"
-keyword = "OXISCAN_EXPORT"
-# keyword = "OXISCAN_API"
+# keyword = "OXISCAN_EXPORT"
+keyword = "OXISCAN_API"
 
 
 
@@ -386,7 +386,7 @@ if __name__ == '__main__':
 
 
     print("begin genSDK")
-    pjDir = "D:\\git\\oxi\\OXiScan\\"
+    pjDir = "D:\\git\\oxi\\shenzhen\\oxiscansdk\\"
     targetDir = "D:\\GSerSDKLib\\doc"
     createSDKAPI(pjDir, targetDir)
     # createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "D:\\G7SDKLib\\doc")

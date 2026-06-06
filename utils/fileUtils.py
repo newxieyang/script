@@ -78,7 +78,7 @@ def readAlgoVer(pjDir):
 # algorithm_version fap_version is_include_alg
 # 使用 -> 定义返回类型，使用 : 定义参数类型
 def parse_cmake_versions(pjDir):
-    with open(pjDir +"CMakeLists.txt", 'r', encoding='utf-8') as f:
+    with open(pjDir +"version.cmake", 'r', encoding='utf-8') as f:
         content = f.read()
 
     # 1. 提取各个变量的值
@@ -93,7 +93,7 @@ def parse_cmake_versions(pjDir):
     fap_minor = get_var("FAP_VERSION_MINOR")
     fap_patch = get_var("FAP_VERSION_PATCH")
     fap_build = get_var("FAP_VERSION_BUILD")
-    build_static = get_var("BUILD_STATIC_LIBS")
+    build_static = "OFF"
 
     # 2. 拼接 FAP 版本号
     fap_full_version = f"{fap_major}.{fap_minor}.{fap_patch}.{fap_build}"
