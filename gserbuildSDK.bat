@@ -149,8 +149,8 @@ goto:eof
 
 :genWinDemo
 
-%msbuild% "D:\git\oxi\shenzhen\winSimpleCode\GSerLibWin.sln" /p:Configuration=Release /p:Platform=x64
-%msbuild% "D:\git\oxi\shenzhen\winSimpleCode\GSerLibWin.sln" /p:Configuration=Release /p:Platform=x86
+%msbuild% "%windemo_dir%\GSerLibWin.sln" /p:Configuration=Release /p:Platform=x64
+%msbuild% "%windemo_dir%\GSerLibWin.sln" /p:Configuration=Release /p:Platform=x86
 
 goto:eof
 

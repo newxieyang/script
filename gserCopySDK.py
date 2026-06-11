@@ -2,13 +2,18 @@
 # encoding:utf-8
 
 import shutil
-from utils.fileUtils import *
+import os
+from pathlib import Path
+from utils.fileUtils import parse_cmake_versions
 
 
 SDKPath = "D:/output/"
 ver = ""
 _v8a = "arm64-v8a"
 _v7a = "armeabi-v7a"
+
+BASE_DIR = Path("D:/git/oxi/OXiScan/")
+HEADER_FILES = ["base/export/OXiScan_Api.h", "base/include/OXiScan_def.h", "base/include/OXiScan_err.h"]
 
 
 def copyWin(srcDir, libName, targetDir):
@@ -114,10 +119,6 @@ if __name__ == '__main__':
         androidTgDir = "D:\\git\\oxi\\GSerAndroid\\libFAP\\src\\main\\cpp\\"
         copyAndroid(sourceDir,  libName, androidTgDir)
 
-
-   
-
-    
 
     if(result['is_include_alg']):
         print("--" + result['algorithm_version'] + "---")
