@@ -6,7 +6,7 @@ import os
 import chardet
 from genSDKAPI import findFilePathNameByKeyWord
 from genSDKAPI import readVer
-
+from utils.fileUtils import *
 
 def removeDir(dir_path):
     for root, dirs, files in os.walk(dir_path, topdown=False):
@@ -184,15 +184,13 @@ def createVersion(dirSDK, dirWin, dirAndroid, dirTarget):
 
 
 if __name__ == '__main__':
-    custom = ["ARATEK", "MIAXIS", "win7", "fangzheng", "new", "kejin", "yinken", "huantian", "Thales", "mantra"]
-    sourceDir = "D:/git/oxi/g6/"
+    custom = ["A910", "MIAXIS",  "huantian",  "Thales",  "mantra"]
+    sourceDir = "D:/git/oxi/g6/A910/"
     libName = "FAP60"
-    index = 4
+    index = 0
     customStr = custom[index]
-    SDKDir = sourceDir+"FAP6010_" + customStr + "/"
-    cus="OXi"
-    if index == 9:
-        cus=""
+    SDKDir = sourceDir+"/A910v66/"
+ 
        
     print(sourceDir)
     targetDir="D:/G6SDKLib/" + customStr
@@ -200,7 +198,10 @@ if __name__ == '__main__':
     if not os.path.isdir(targetDir):
         os.mkdir(targetDir)
 
-    SDKver = readVer(SDKDir)
+    result = parse_cmake_versions(SDKDir)
+    # SDKver = readCmakeVer(sourceDir)
+    print("SDKver:" + result['fap_version'] + ";")
+    SDKver = result['fap_version']
     print("SDKver:" + SDKver + ";")
 
    
@@ -213,13 +214,13 @@ if __name__ == '__main__':
 
     
 
-    copyDoc("D:\G6SDKLib\doc", targetDir)
+    # copyDoc("D:\G6SDKLib\doc", targetDir)
 
-    winSrc = sourceDir + "g6010WinDemo_" + customStr
+    winSrc = sourceDir + "A910_win"
     copyWinExe(winSrc, targetDir)
     copyWinSource(winSrc, targetDir)
 
-    androidSrc = sourceDir + "G6010Android_" + customStr
+    androidSrc = sourceDir + "A910_Android"
     copyAndroidSrc(androidSrc, targetDir)
     copyAndroidAPK(androidSrc, targetDir)
 

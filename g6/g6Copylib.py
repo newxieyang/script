@@ -7,22 +7,11 @@ import shutil
 from pathlib import Path
 
 # ====================== 配置区 ======================
-custom_list = [
-    "A910",      # 0
-    "MIAXIS",    # 1
-    "win7",      # 2
-    "fangzheng", # 3
-    "new",       # 4
-    "kejin",     # 5
-    "yinken",    # 6
-    "huantian",  # 7
-    "Thales",    # 8
-    "shenzhou"   # 9
-]
 
+custom_list = ["A910", "MIAXIS",  "huantian",  "Thales",  "mantra"]
 libName_default = "FAP60"
 
-sourceDir = r"D:\git\oxi\g6"
+sourceDir = r"D:\\git\\oxi\\g6\\"
 
 # ====================== 主函数 ======================
 def main():
@@ -48,18 +37,11 @@ def main():
     print(f"正在生成 custom = {customStr} | libName = {libName}")
 
     # 路径定义
-    SDKDir      = Path(sourceDir) / f"FAP6010_{customStr}"
-    androidDir  = Path(sourceDir) / f"G6010Android_{customStr}"
-    winDir      = Path(sourceDir) / f"g6010WinDemo_{customStr}"
+    SDKDir      = Path(sourceDir) / {customStr} / f"{customStr}v66"
+    androidDir  = Path(sourceDir) / {customStr} / f"{customStr}_Android"
+    winDir      = Path(sourceDir) / {customStr} / f"{customStr}_win"
 
-    if customIndex == 0:
-        SDKDir = Path(sourceDir) / f"{customStr}"
-        androidDir  = Path(sourceDir) / f"G6010Android_ARATEK"
-        winDir      = Path(sourceDir) / f"g6010WinDemo_ARATEK"
-
-    # 根据 customIndex 特殊处理 winDir
-    if customIndex == 4:
-        winDir = Path(sourceDir) / f"g6MFC_{customStr}"
+  
 
     # ====================== 执行复制 ======================
     if platformIndex is None or platformIndex == 0:
@@ -81,8 +63,8 @@ def main():
 def copy_win(SDKDir: Path, winDir: Path, libName: str, customIndex: int):
     print("正在复制 Windows 版本...")
 
-    vs64Dir = SDKDir / "cmake-build-release-vs2019_x64" / "libFAP" / "Release"
-    vs86Dir = SDKDir / "cmake-build-release-vs2019_x86" / "libFAP" / "Release"
+    vs64Dir = SDKDir / "cmake-build-release-vs2019_x64"  / "Release"
+    vs86Dir = SDKDir / "cmake-build-release-vs2019_x86"  / "Release"
 
     # 复制头文件（根据是否存在不同文件）
     header_files = [
@@ -109,7 +91,7 @@ def copy_win(SDKDir: Path, winDir: Path, libName: str, customIndex: int):
     # 复制 x86
     shutil.copy2(vs86Dir / f"{libName}.lib", winDir / "libx86")
     shutil.copy2(vs86Dir / f"{libName}.dll", winDir / "Release")
-
+    print(vs64Dir / f"{libName}.lib")
     # 复制 x64
     shutil.copy2(vs64Dir / f"{libName}.lib", winDir / "libx64")
     shutil.copy2(vs64Dir / f"{libName}.dll", winDir / "x64" / "Release")
@@ -120,12 +102,9 @@ def copy_win(SDKDir: Path, winDir: Path, libName: str, customIndex: int):
 def copy_android(SDKDir: Path, androidDir: Path, libName: str, customIndex: int):
     print("正在复制 Android 版本...")
 
-    if customIndex == 0:
-        androidv7Dir = SDKDir / "cmake-build-release-arm7-r18" / "libFAP"
-        androidv8Dir = SDKDir / "cmake-build-release-arm8-r18" / "libFAP"
-    else:
-        androidv7Dir = SDKDir / "cmake-build-release-armeabi-v7a" / "libFAP"
-        androidv8Dir = SDKDir / "cmake-build-release-arm64-v8a" / "libFAP"
+
+    androidv7Dir = SDKDir / "cmake-build-release-armeabi-v7a" 
+    androidv8Dir = SDKDir / "cmake-build-release-arm64-v8a"
 
     jniDir = androidDir / "libFAP" / "src" / "main" / "cpp"
 
