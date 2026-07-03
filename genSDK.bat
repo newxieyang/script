@@ -46,7 +46,7 @@ for %%A in (armeabi-v7a arm64-v8a) do (
     if exist "!buildPath!" rd /s /q "!buildPath!"
     %cmake% %androidParam% -DANDROID_ABI=%%A -S "%projectDir%" -B "!buildPath!"
     if !errorlevel! neq 0 exit /b 1
-    %cmake% --build "!buildPath%" --target %libName% -j 14
+    %cmake% --build "!buildPath!" --target %libName% -j 14
 )
 goto :eof
 
