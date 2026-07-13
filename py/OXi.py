@@ -113,7 +113,6 @@ def copy_android_lib(src_dir, lib_name, target_dir, headers=None):
         copy_headers(headers, include_dir)
 
     v7_dir = os.path.join(target_dir, "armeabi-v7a")
-
     v8_dir = os.path.join(target_dir, "arm64-v8a")
 
     safe_mkdir(v7_dir)
@@ -166,8 +165,6 @@ def copy_doc(src_dir, target_root, keep_latest=False):
 # ============================================================
 # SDK打包
 # ============================================================
-
-
 def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config):
 
     result = parse_cmake_versions(sdk_dir)
@@ -175,12 +172,9 @@ def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config)
 
     print(f"\n====== {sdk_name} SDK {version} ======")
 
-    suffix = ""
-
+    suffix = "dy"
     if result.get("build_static"):
         suffix = "Static"
-    else:
-        suffix = "dy"
 
     target = os.path.join(target_root, config["prefix"] + version + suffix)
 
@@ -252,8 +246,8 @@ if __name__ == "__main__":
     create_package(
         sdk_name=sdk["name"],
         sdk_dir=sdk["sdk_dir"],
-        win_dir=sdk["win_dir"],
-        android_dir=sdk["android_dir"],
+        win_dir=sdk["sdk_dir"] + "_win",
+        android_dir=sdk["sdk_dir"] + "_Andorid",
         target_root=sdk["target_root"],
         config=sdk,
     )
