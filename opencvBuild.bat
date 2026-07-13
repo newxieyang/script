@@ -172,6 +172,9 @@ for %%A in (armeabi-v7a arm64-v8a) do (
     @REM %cmake%  --build %buildDir%cmake-build-release-%%A  -j 14
     @REM if !errorlevel! neq 0 exit /b 1
 
+    if !errorlevel! neq 0 exit /b 1
+    %strip% --strip-unneeded --strip-debug !buildPath!/lib%libName%.so 
+
 )
 
 goto :eof

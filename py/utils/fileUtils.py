@@ -3,6 +3,8 @@
 
 import os
 import re
+import shutil
+import chardet
 
 def is_hidden(path):
     """判断路径是否为隐藏文件或目录"""
@@ -78,7 +80,8 @@ def readAlgoVer(pjDir):
 # algorithm_version fap_version is_include_alg
 # 使用 -> 定义返回类型，使用 : 定义参数类型
 def parse_cmake_versions(pjDir):
-    with open(pjDir +"version.cmake", 'r', encoding='utf-8') as f:
+    file_path = os.path.join(pjDir, "version.cmake")
+    with open(file_path , 'r', encoding='utf-8') as f:
         content = f.read()
 
     # 1. 提取各个变量的值
@@ -119,3 +122,54 @@ def parse_cmake_versions(pjDir):
         "final_string": final_output
 
     }
+
+
+def safe_mkdir(path: str):
+    """不存在则创建文件夹"""
+    if not os.path.isdir(path):
+        os.mkdir(path)
+        print(f"[创建目录] {path}")
+
+
+def remove_dir(dir_path: str):
+    """安全递归删除目录，优先删除内部文件再删文件夹"""
+    if not os.path.exists(dir_path):
+        return
+    try:
+        # 优先使用shutil.rmtree，极简可靠
+        shutil.rmtree(dir_path)
+        print(f"[删除目录] {dir_path}")
+    except Exception:
+        # 兜底方案：逐层删除
+        for root, dirs, files in os.walk(dir_path, topdown=False):
+            for file in files:
+                os.remove(os.path.join(root, file))
+            for d in dirs:
+                os.rmdir(os.path.join(root, d))
+        try:
+            os.removedirs(dir_path)
+        except OSError as e:
+            print(f"[删除警告] {dir_path} 清理不完全: {e}")
+
+
+def get_file_encoding(file_path: str) -> str:
+    """自动检测文件编码"""
+    with open(file_path, "rb") as f:
+        raw = f.read()
+    return chardet.detect(raw)["encoding"] or "utf-8"
+
+
+
+def copy_files_by_suffix(src_root: str, dst_dir: str, suffix_list: list[str]):
+    """通用：遍历目录复制指定后缀文件到目标文件夹"""
+    if not os.path.isdir(src_root):
+        print(f"[跳过] 源目录不存在: {src_root}")
+        return
+    safe_mkdir(dst_dir)
+
+    for root, _, files in os.walk(src_root):
+        for fname in files:
+            if any(fname.endswith(suf) for suf in suffix_list):
+                src_path = os.path.join(root, fname)
+                shutil.copy2(src_path, dst_dir)
+                print(f"  复制: {fname}")
