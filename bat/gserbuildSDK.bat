@@ -1,6 +1,7 @@
 
 @echo OFF 
 setlocal enabledelayedexpansion
+call config.bat
 
 set "projectDir=d:\\opencv4.12.0\\"
 set buildDir=%projectDir%build\
@@ -11,12 +12,6 @@ set "winX64=%buildDir%cmake-build-release-vs2019_x64"
 set "armv8=%buildDir%cmake-build-release-arm64-v8a"
 set "armv7=%buildDir%cmake-build-release-armeabi-v7a"
 
-:: 工具路径 (建议提取为外部配置文件或环境变量，这里保持你的路径)
-set cmake=D:\apps\CMake\bin\cmake.exe
-set ninja="D:/apps/JetBrains/CLion 2023.1.4/bin/ninja/win/x64/ninja.exe"
-set "toolchain=D:/apps/Android/Sdk/ndk/25.2.9519653/build/cmake/android.toolchain.cmake"
-set msbuild="D:\apps\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe"
-set "androidParam=-DCMAKE_BUILD_TYPE=Release -DANDROID_STL=c++_shared -DANDROID_PLATFORM=android-28 -DCMAKE_TOOLCHAIN_FILE=%toolchain% -DCMAKE_MAKE_PROGRAM=%ninja% -G Ninja %slimConfig%"
 
 
 : 核心精简配置参数 (Android 和 Windows 通用)

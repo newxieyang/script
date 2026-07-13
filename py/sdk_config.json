@@ -1,0 +1,46 @@
+{
+    "G6": {
+
+        "name": "G6",
+        "sdk_dir": "D:/git/oxi/g6/A910/A910",
+        "win_dir": "D:/git/oxi/g6/A910/A910_win",
+        "android_dir":"D:/git/oxi/g6/A910/A910_Android",
+        "target_root": "D:/G6SDKLib/A910",
+        "prefix": "G6SDKv",
+        "lib":"FAP60",
+        "header_keyword":
+        [
+            "ScanAPI.h",
+            "ScanUltimate.h",
+            "ScanUltimateApi_err.h"
+        ],
+
+        "copy_win_lib":false,
+        "copy_android_lib": false,
+        "doc": null,
+        "keep_latest_doc":false
+
+    },
+
+
+    "GSER": {
+
+        "name": "GSER",
+        "sdk_dir": "D:/git/oxi/shenzhen/oxiscansdk",
+        "win_dir": "D:/git/oxi/shenzhen/oxiscansdk_win",
+        "android_dir":  "D:/git/oxi/shenzhen/oxiscansdk_Android",
+        "target_root": "D:/GSerSDKLib",
+        "prefix":  "OXi_FP_SDK_v",
+        "lib": "FAP",
+        "headers":
+        [
+            "D:/git/oxi/shenzhen/oxiscansdk/base/export/OXiScan_Api.h",
+            "D:/git/oxi/shenzhen/oxiscansdk/base/include/OXiScan_def.h",
+            "D:/git/oxi/shenzhen/oxiscansdk/base/include/OXiScan_err.h"
+        ],
+        "copy_win_lib": false,
+        "copy_android_lib": false,
+        "doc": "D:/GSerSDKLib/doc",
+        "keep_latest_doc": true
+    }
+}

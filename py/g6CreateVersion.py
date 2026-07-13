@@ -3,7 +3,7 @@
 import shutil
 import os
 from genSDKAPI import findFilePathNameByKeyWord
-from utils.fileUtils import *
+from utils.fileUtils import safe_mkdir, remove_dir, parse_cmake_versions
 from utils.copyUtils import copy_android_source_code, copy_win_exe, copy_android_apk, copy_win_source_code
 
 
@@ -55,7 +55,6 @@ def copy_doc(src_doc_dir: str, target_root: str):
 
 
 def copy_header_by_keyword(src_dir: str, target_dir: str):
-    """按关键字查找并复制标准头文件"""
     tg_header = os.path.join(target_dir, "include")
     if os.path.exists(tg_header):
         remove_dir(tg_header)
@@ -67,15 +66,13 @@ def copy_header_by_keyword(src_dir: str, target_dir: str):
 
 
 
-
-
 def create_version_package(
     sdk_dir: str,
     win_src: str,
     android_src: str,
     target_root: str
 ):
-    """所有拷贝逻辑收拢在此函数"""
+
     safe_mkdir(target_root)
 
     # 读取版本
@@ -115,11 +112,9 @@ if __name__ == '__main__':
     CUSTOM_STR = CUSTOM_LIST[INDEX]
     LIB_NAME = "FAP60"
 
-    # 基础根目录
     BASE_SOURCE = r"D:\git\oxi\g6"
     BASE_TARGET = r"D:\G6SDKLib"
 
-    # 拼接各类路径
     SDK_DIR = os.path.join(BASE_SOURCE, f"{CUSTOM_STR}", f"{CUSTOM_STR}")
     target_root = os.path.join(BASE_TARGET, CUSTOM_STR)
     safe_mkdir(target_root)
@@ -127,7 +122,6 @@ if __name__ == '__main__':
     win_source_path = os.path.join(BASE_SOURCE, f"{CUSTOM_STR}", f"{CUSTOM_STR}_win")
     android_source_path = os.path.join(BASE_SOURCE, f"{CUSTOM_STR}", f"{CUSTOM_STR}_Android")
 
-    # 调用打包主函数，所有复制逻辑内部处理
     create_version_package(
         sdk_dir=SDK_DIR,
         win_src=win_source_path,
