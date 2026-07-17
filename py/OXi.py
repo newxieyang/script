@@ -165,7 +165,7 @@ def copy_doc(src_dir, target_root, keep_latest=False):
 # ============================================================
 # SDK打包
 # ============================================================
-def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config):
+def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config, onlyApp):
 
     result = parse_cmake_versions(sdk_dir)
     version = result["fap_version"]
@@ -176,7 +176,10 @@ def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config)
     if result.get("build_static"):
         suffix = "Static"
 
-    target = os.path.join(target_root, config["prefix"] + version + suffix)
+    if onlyApp:
+        target = os.path.join(target_root, config["prefix"] + version + "App")
+    else:
+        target = os.path.join(target_root, config["prefix"] + version + suffix)
 
     if os.path.exists(target):
         remove_dir(target)
@@ -186,44 +189,44 @@ def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config)
     # -------------------------
     # headers
     # -------------------------
+    if not onlyApp:
+        if config.get("header_keyword"):
+            copy_headers_by_keyword(
+                sdk_dir, os.path.join(target, "include"), config["header_keyword"]
+            )
 
-    if config.get("header_keyword"):
-        copy_headers_by_keyword(
-            sdk_dir, os.path.join(target, "include"), config["header_keyword"]
-        )
-
-    elif config.get("headers"):
-        copy_headers(config["headers"], os.path.join(target, "include"))
+        elif config.get("headers"):
+            copy_headers(config["headers"], os.path.join(target, "include"))
 
     # -------------------------
     # windows
     # -------------------------
+    if not onlyApp:
+        if config.get("copy_win_lib"):
+            copy_win_lib(sdk_dir, config["lib"], target, None)
 
-    if config.get("copy_win_lib"):
-        copy_win_lib(sdk_dir, config["lib"], target, None)
-
+        copy_win_source_code(win_dir, target)
     copy_win_exe(win_dir, target)
-    copy_win_source_code(win_dir, target)
 
     # -------------------------
     # android
     # -------------------------
+    if not onlyApp:
+        if config.get("copy_android_lib"):
+            copy_android_lib(sdk_dir, config["lib"], target, None)
 
-    if config.get("copy_android_lib"):
-        copy_android_lib(sdk_dir, config["lib"], target, None)
-
-    copy_android_source_code(android_dir, target)
+        copy_android_source_code(android_dir, target)
 
     copy_android_apk(android_dir, target)
 
     # -------------------------
     # doc
     # -------------------------
+    if not onlyApp:
+        if config.get("doc"):
+            copy_doc(config["doc"], target, config.get("keep_latest_doc"))
 
-    if config.get("doc"):
-        copy_doc(config["doc"], target, config.get("keep_latest_doc"))
-
-    print(f"\n✅ 完成:{target}")
+        print(f"\n✅ 完成:{target}")
 
     return target
 
@@ -240,14 +243,16 @@ def load_config(path="sdk_config.json"):
 
 if __name__ == "__main__":
     config = load_config()
-
-    sdk = config["GSER"]
+    # config["GSER","A910", "MIAXIS", "huantian", "Thales",]
+    sdk = config["A910"]
+    OnlyApp = False
 
     create_package(
         sdk_name=sdk["name"],
         sdk_dir=sdk["sdk_dir"],
         win_dir=sdk["sdk_dir"] + "_win",
-        android_dir=sdk["sdk_dir"] + "_Andorid",
+        android_dir=sdk["sdk_dir"] + "_Android",
         target_root=sdk["target_root"],
         config=sdk,
+        onlyApp=OnlyApp,
     )

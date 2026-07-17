@@ -1,24 +1,18 @@
 # !/usr/bin/python
 # encoding:utf-8
-import os
+import json
 import re
 from docx import Document
 
-from docx.shared import RGBColor
 from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
 from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.shared import Pt
-from docx.oxml import OxmlElement
 
-from utils.fileUtils import *
+from utils.fileUtils import findFilePathNameByKeyWord, parse_cmake_versions
 
-
-# keyword = "SCAN_API"
-# keyword = "OXISCAN_EXPORT"
-keyword = "OXISCAN_API"
 
 
 
@@ -29,55 +23,45 @@ def set_cell_background(cell, colorstr):
 
 
 
-
-
-def readAPI(APIpathName):
+def readAPI(APIpathName, keyword, funkey):
     f = open(file=APIpathName, encoding="utf-8")
     liner = []
     for line in f:
         if keyword in line:
-            if "OXiScan_" in line:
+            if funkey in line:
                 liner.append(line)
     return liner
 
 
-def getFuntionName(funStr):
-    # str = funStr.split("(")[0]
-    # str = str.replace("  ", " ")
+def extract_function_name(funStr):
+
     pattern = re.compile(r'\b(?:[a-zA-Z_][a-zA-Z0-9_]*::)?(?:template\s*<.*?>\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*(?:const)?\s*(?:throw\s*\([^)]*\))?\s*;\s*|\b(?:[a-zA-Z_][a-zA-Z0-9_]*::)?(?:template\s*<.*?>\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*(?:const)?\s*(?:\{|\s*throw\s*\([^)]*\)\s*;\s*)', re.MULTILINE)
 
     match = pattern.search(funStr)
     if match:
-        # 由于使用了多个捕获组，我们需要检查哪个组匹配到了内容
         function_name = next((group for group in match.groups() if group), None)
         print("第一个匹配到的函数名是:", function_name)
         return function_name
     else:
         print("没有找到匹配项")
 
-    # print("匹配到的函数名有:", function_names)
-
-    return function_names
+    return ""
 
 
-def getFuntionString(funStr):
+def getFuntionString(funStr, keyword):
     return funStr.replace(keyword +" ", "").strip()
 
 
 
-def readFunInfo(funName, APIPathName):
+def extract_brief_description(funName, APIPathName):
 
     f = open(file=APIPathName, encoding="utf-8")
     liner = []
-    index = 0
     havaBreak = True
     for line in f:
         
         liner.append(line.replace('\n', '').replace('\r', '').replace('\r\n', ''))
-        # cindex = line.find("rief")
-        # print("search: " + line)
         if "brief" in line:
-        # if cindex != -1:
             if havaBreak:
                 liner.clear()
                 liner.append(line.replace('\n', '').replace('\r', '').replace('\r\n', ''))
@@ -90,7 +74,7 @@ def readFunInfo(funName, APIPathName):
     return liner
 
 
-def writeRecord(doc):
+def write_revision_record(doc):
     doc.add_heading("1. Record of Revision", 1)
     table = doc.add_table(rows=1, cols=4, style="Table Grid")
     
@@ -99,15 +83,11 @@ def writeRecord(doc):
     hdr_cells[1].text = 'Issue Date'
     hdr_cells[2].text = 'Description'
     hdr_cells[3].text = 'Editor'
-    hdr_cells[0].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-    hdr_cells[1].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-    hdr_cells[2].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-    hdr_cells[3].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
     for cell in table.rows[0].cells:
         set_cell_background(cell, 'c0c0c0')
         cell.height = Inches(1.5)
-
+        cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
     for index in range(4):
         row_cells = table.add_row().cells
@@ -129,7 +109,17 @@ def writeRecord(doc):
     doc.add_page_break()
 
 
-def writeDesc(doc):
+def add_ordered_list_item(doc, text):
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+
+    run = paragraph.add_run(text)
+    run.font.size = Pt(9)  # 重置字体大小（如果需要）
+    run.font.name = "Malgun Gothic"
+
+
+
+def write_sdk_description(doc):
     doc.add_heading("2. What is the Fingerprint SDK (ISO)", 1)
     paragraph = doc.add_paragraph()
     run = paragraph.add_run("    Fingerprint SDK (ISO)")
@@ -140,10 +130,8 @@ def writeDesc(doc):
     run.font.name = "Malgun Gothic"
     run.font.size = Pt(9) 
 
-
     doc.add_heading("Supported Fingerprint Sensor", 2)
     add_ordered_list_item(doc, "Optical fingerprint sensor(G4 G6 G7)")
-
 
     doc.add_heading("SDK Features", 2)
     add_ordered_list_item(doc, "Includes FBI-certified, high-performance WSQ fingerprint image compression")
@@ -156,7 +144,6 @@ def writeDesc(doc):
     add_ordered_list_item(doc, "Example programs with source")
     add_ordered_list_item(doc, "Support for – Java Native Interface – Microsoft Windows – Linux – and Android")
   
-
     doc.add_heading("Support for", 2)
     add_ordered_list_item(doc, "Java Native Interface")
     add_ordered_list_item(doc, "Microsoft Windows")
@@ -167,7 +154,14 @@ def writeDesc(doc):
     add_ordered_list_item(doc, "USB 1.0, 1.1 and 2.0 (Full Speed) specifications")
     doc.add_page_break()
 
-def writeDocx(verName, liner, target, APIPathName):
+
+def createSDKAPI(config, verName, APIPathName):
+
+    liner = readAPI(APIPathName, config["keyword"], config["funKey"])
+    if len(liner) < 1:
+        print("liner is null keyword {keyword}".format(keyword= config["keyword"] ))
+        return
+
     doc = Document()
     # doc.add_paragraph('hello world')
     heading = doc.add_heading('Fingerprint Scanner SDK (ISO)', 0)
@@ -182,10 +176,9 @@ def writeDocx(verName, liner, target, APIPathName):
     paragraph = heading._element
     paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
-    # doc.add_paragraph("\n\n\n\n\n\n\n\n\n\n\n")
     for index in range(17):
         doc.add_paragraph("")
-    # heading = doc.add_heading('Shanghai OXi Technology Company Ltd.', 4)
+
     paragraph = doc.add_paragraph()
     run = paragraph.add_run("Shanghai OXi Technology Company Ltd.")
    
@@ -194,9 +187,9 @@ def writeDocx(verName, liner, target, APIPathName):
     paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
     doc.add_page_break()
 
-    writeRecord(doc)
+    write_revision_record(doc)
 
-    writeDesc(doc)
+    write_sdk_description(doc)
 
     # API References
     doc.add_heading("3. API References", 1)
@@ -208,12 +201,10 @@ def writeDocx(verName, liner, target, APIPathName):
     hdr_cells[0].text = 'No'
     hdr_cells[1].text = 'function'
     hdr_cells[2].text = 'explain'
-    hdr_cells[0].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-    hdr_cells[1].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-    hdr_cells[2].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
     for cell in table.rows[0].cells:
         set_cell_background(cell, 'c0c0c0')
+        cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
     for index in range(len(liner)):
         row_cells = table.add_row().cells
@@ -222,17 +213,15 @@ def writeDocx(verName, liner, target, APIPathName):
         row_cells[0].width = Inches(2)
         row_cells[1].width = Inches(4)
         row_cells[2].width = Inches(2)
-        row_cells[1].text = getFuntionName(liner[index])
+        row_cells[1].text = extract_function_name(liner[index])
         row_cells[2].text = "ok"
         row_cells[0].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
         row_cells[1].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
         row_cells[2].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
-
-
    #document.add_paragraph('first item in unordered list', style='List Bullet')
     for index in range(len(liner)):
-        funName = getFuntionName(liner[index])
+        funName = extract_function_name(liner[index])
         print(funName)
         doc.add_heading(str(index+1) + "." + funName, 2)
 
@@ -243,28 +232,20 @@ def writeDocx(verName, liner, target, APIPathName):
         run.font.italic = True
        
         table2 = doc.add_table(rows=1, cols=2,style="Table Grid")
-        # cols = table2.columns
-        # cols[0].width = Pt(42)
-        # cols[1].width = Pt(42*5)
 
         table2.rows[0].height = Inches(0.4)
         hdr_cells = table2.rows[0].cells
         hdr_cells[0].width = Inches(1.2)
         set_cell_background(hdr_cells[0], 'c9c9c9')
-        # paragraph = hdr_cells[0].paragraphs[0]
-        # paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        # 设置段落的垂直对齐方式为居中
         hdr_cells[0].text = "Method"
         hdr_cells[0].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
         hdr_cells[0].paragraphs[0].runs[0].bold = True
-        hdr_cells[1].text = getFuntionString(liner[index])
+        hdr_cells[1].text = getFuntionString(liner[index], config["keyword"])
         hdr_cells[1].width = Inches(8)
         hdr_cells[1].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-
-##########
         
-        funInfo = readFunInfo(funName, APIPathName)
-  #### Description
+        funInfo = extract_brief_description(funName, APIPathName)
+
         sin = doc.add_paragraph()
         sin.add_run("\n")
         run = sin.add_run("Description")
@@ -272,11 +253,8 @@ def writeDocx(verName, liner, target, APIPathName):
         run.font.italic = True
         sin.add_run("\n")
        
-
-        # des = doc.add_paragraph()
         for desc in funInfo:
             if "brief" in desc:
-                # msg = des.add_run(desc.split("brief")[1].strip()
                 run = sin.add_run("      " + desc.split("brief")[1].strip() + "\n")
                 break
 
@@ -291,13 +269,10 @@ def writeDocx(verName, liner, target, APIPathName):
                 havaReturn = True
                 continue
             if havaReturn:
-                if keyword not in desc:
+                if config["keyword"] not in desc:
                      res.add_run(desc.replace("///", "").replace("\t","    "))
                      res.add_run("\n")
 
-
-
-####   Parameter
         sin = doc.add_paragraph()
         run = sin.add_run("Parameter")
         run.font.bold = True
@@ -338,52 +313,36 @@ def writeDocx(verName, liner, target, APIPathName):
         sin = doc.add_paragraph()
         sin.add_run("\n")
 
-    doc.save(target+ '/Fingerprint Scanner SDK (ISO)v '+verName+'.docx')
+    doc.save(config["output_name"].format(version=verName))
     
-
-
 
  # 添加有序列表项的函数
-
-def add_ordered_list_item(doc, text):
-    paragraph = doc.add_paragraph()
-    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
     
+   
 
-    run = paragraph.add_run(text)
-    run.font.size = Pt(9)  # 重置字体大小（如果需要）
-    run.font.name = "Malgun Gothic"
-    # paragraph.style = "‌List Bullet‌"
-    # 更新编号
-    
-
-
-
-def createSDKAPI(pjDir, targetDir):
-    if not pjDir == "":
-        print(pjDir)
-        result = parse_cmake_versions(pjDir)
-        buildName = result['fap_version']
-        print(f"--------------{buildName}---------------")
-        APIFilePath = findFilePathNameByKeyWord(pjDir, "Api") 
-        # APIFilePath = findFilePathNameByKeyWord(pjDir, "OXiScan_Api") 
-        if APIFilePath is None:
-             print("APIFilePath is null")
-        else:
-            print(APIFilePath)
-            liner = readAPI(APIFilePath)
-            
-            print(targetDir)
-            writeDocx(buildName, liner, targetDir, APIFilePath)
+def load_config():
+    with open("api_config.json", encoding="utf-8") as f:
+        return json.load(f)
 
 
 if __name__ == '__main__':
 
+    config = load_config()
 
-    print("begin genSDK")
-    pjDir = "D:\\git\\oxi\\shenzhen\\oxiscansdk\\"
-    targetDir = "D:\\GSerSDKLib\\doc"
-    createSDKAPI(pjDir, targetDir)
+     # config["GSER","A910", "MIAXIS", "huantian", "Thales",]
+    sdk = config["GSER"]
+    if not sdk["sdk_dir"] == "":
+        print(sdk["sdk_dir"])
+        result = parse_cmake_versions(sdk["sdk_dir"])
+        print(sdk["output_name"].format(version=result['fap_version']))
+
+        print(f"--------------{result['fap_version']}---------------")
+        APIFilePath = findFilePathNameByKeyWord(sdk["sdk_dir"], sdk["macro"]) 
+        print(APIFilePath)
+        if APIFilePath is None:
+            print("APIFilePath is null")
+        else:
+            createSDKAPI(sdk, result['fap_version'], APIFilePath)
     # createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "D:\\G7SDKLib\\doc")
     
    

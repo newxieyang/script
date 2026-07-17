@@ -1,0 +1,43 @@
+{
+    "A910": {
+        "name": "G6",
+        "sdk_dir": "D:\\git\\oxi\\g6\\A910\\A910",
+        "output_name": "D:/G6SDKLib/A910/Fingerprint Scanner SDK (ISO)v {version}.docx",
+        "keyword": "OXISCAN_API",
+        "macro": "OXiScanAPI",
+        "funKey": "OXi_"
+    },
+    "MIAXIS": {
+        "name": "G6",
+        "sdk_dir": "D:/git/oxi/g6/MIAXIS/MIAXIS",
+        "output_name": "D:/G6SDKLib/MIAXIS/Fingerprint Scanner SDK (ISO)v {version}.docx",
+        "keyword": "OXISCAN_API",
+        "macro": "OXiScanAPI",
+        "funKey": "OXi_"
+    },
+    "Thales": {
+        "name": "G6",
+        "sdk_dir": "D:/git/oxi/g6/Thales/Thales",
+        "output_name": "D:/G6SDKLib/Thales/Fingerprint Scanner SDK (ISO)v {version}.docx",
+        "keyword": "OXISCAN_API",
+        "macro": "OXiScanAPI",
+        "funKey": "OXi_"
+    },
+    "huantian": {
+        "name": "G6",
+        "sdk_dir": "D:/git/oxi/g6/huantian/huantian",
+        "output_name": "D:/G6SDKLib/huantian/Fingerprint Scanner SDK (ISO)v {version}.docx",
+        "keyword": "OXISCAN_API",
+        "macro": "OXiScanAPI",
+        "funKey": "OXi_"
+   
+    },
+    "GSER": {
+        "name": "GSER",
+        "sdk_dir": "D:\\git\\oxi\\shenzhen\\oxiscansdk\\",
+        "output_name": "D:\\GSerSDKLib\\doc/Fingerprint Scanner SDK (ISO)v {version}.docx",
+        "keyword": "OXISCAN_API",
+        "macro": "OXiScan_Api",
+        "funKey": "OXiScan_"
+    }
+}
