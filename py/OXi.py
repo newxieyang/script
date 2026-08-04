@@ -172,9 +172,10 @@ def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config,
 
     print(f"\n====== {sdk_name} SDK {version} ======")
 
-    suffix = "dy"
-    if result.get("build_static"):
-        suffix = "Static"
+    # suffix = "dy"
+    # if result.get("build_static"):
+    #     suffix = "Static"
+    suffix=""
 
     if onlyApp:
         target = os.path.join(target_root, config["prefix"] + version + "App")
@@ -231,7 +232,9 @@ def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config,
     return target
 
 
-def load_config(path="sdk_config.json"):
+def load_config(path=None):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base_dir, "sdk_config.json")
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -244,7 +247,7 @@ def load_config(path="sdk_config.json"):
 if __name__ == "__main__":
     config = load_config()
     # config["GSER","A910", "MIAXIS", "huantian", "Thales",]
-    sdk = config["A910"]
+    sdk = config["GSER"]
     OnlyApp = False
 
     create_package(
