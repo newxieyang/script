@@ -1,8 +1,8 @@
 # NDK and target configuration
-$ndkPath = "D:\apps\Android\Sdk\ndk\28.2.13676358"
-$readelf = "$ndkPath\toolchains\llvm\prebuilt\windows-x86_64\bin\llvm-readelf.exe"
+. env_paths.ps1
 # $targetDir = "D:\git\oxi\g6\A910\A910_Android\libFAP\src\main\cpp\arm64-v8a"
-$targetDir = "D:\git\oxi\g6\A910\A910_Android\libFAP\src\main\cpp\armeabi-v7a"
+# $targetDir = "D:\git\oxi\g6\A910\A910_Android\libFAP\src\main\cpp\armeabi-v7a"
+$targetDir = "E:\3rdSRC\onnxruntime1.25.1\build\Android_arm64_Release\Release\libonnxruntime.so"
 
 $soFiles = Get-ChildItem -Path $targetDir -Filter "*.so"
 

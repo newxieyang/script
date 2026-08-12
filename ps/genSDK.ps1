@@ -6,6 +6,9 @@ Usage:
   .\build.ps1 1      # 仅编译 Windows x86/x64
   .\build.ps1 2      # 仅编译 Android armeabi-v7a/arm64-v8a
 #>
+
+. env_paths.ps1
+
 # ====================== 【配置区域】统一修改路径 ======================
 $baseDir = $PSScriptRoot
 $projectDir = Join-Path $baseDir "oxiscansdk"
@@ -16,13 +19,6 @@ $winX86Build  = Join-Path $projectDir "cmake-build-release-vs2019_x86"
 $winX64Build  = Join-Path $projectDir "cmake-build-release-vs2019_x64"
 $armv8Build   = Join-Path $projectDir "cmake-build-release-arm64-v8a"
 $armv7Build   = Join-Path $projectDir "cmake-build-release-armeabi-v7a"
-
-# 工具绝对路径
-$cmake        = "D:\apps\CMake\bin\cmake.exe"
-$ninja        = "D:/apps/JetBrains/CLion 2023.1.4/bin/ninja/win/x64/ninja.exe"
-$toolchain    = "D:/apps/Android/Sdk/ndk/25.2.9519653/build/cmake/android.toolchain.cmake"
-$msbuild      = "D:\apps\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe"
-$llvmStrip    = "D:\apps\Android\Sdk\ndk\28.2.13676358\toolchains\llvm\prebuilt\windows-x86_64\bin\llvm-strip.exe"
 
 # Android CMake公共参数
 $androidParams = @(

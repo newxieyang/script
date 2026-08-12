@@ -6,6 +6,7 @@
 #   .\SDK2.ps1 1            # 仅 Windows
 #   .\SDK2.ps1 2            # 仅 Android
 #   .\SDK2.ps1 -Version 2.0.1.7
+. env_paths.ps1
 
 param(
     [string]$Version = ""
@@ -16,11 +17,6 @@ $baseDir      = "D:\git\oxi\shenzhen\"
 $projectDir   = Join-Path $baseDir "oxiscansdk"
 $libName      = "FAP"
 
-$cmake        = "D:\apps\CMake\bin\cmake.exe"
-$ninja        = "D:/apps/JetBrains/CLion 2023.1.4/bin/ninja/win/x64/ninja.exe"
-$toolchain    = "D:/apps/Android/Sdk/ndk/25.2.9519653/build/cmake/android.toolchain.cmake"
-$msbuild      = "D:\apps\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe"
-$llvmStrip    = "D:\apps\Android\Sdk\ndk\28.2.13676358\toolchains\llvm\prebuilt\windows-x86_64\bin\llvm-strip.exe"
 
 $outputRoot   = "D:\GserSDK"
 
