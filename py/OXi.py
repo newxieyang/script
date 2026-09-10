@@ -136,6 +136,26 @@ def copy_android_lib(src_dir, lib_name, target_dir, headers=None):
     )
 
 
+def copy_qt_simple_linux(qt_dir, target_root):
+    """
+    复制 oxiscansdk_qt 到最终 SDK 的 simpleLinux 目录
+    """
+
+    if not os.path.exists(qt_dir):
+        print(f"[跳过] oxiscansdk_qt 不存在: {qt_dir}")
+        return
+
+    dst = os.path.join(target_root, "simpleLinux")
+
+    if os.path.exists(dst):
+        remove_dir(dst)
+
+    shutil.copytree(qt_dir, dst)
+
+    print(f"[复制Qt Linux] {qt_dir} -> {dst}")
+
+
+
 def copy_doc(src_dir, target_root, keep_latest=False):
     """
     文档复制
@@ -165,7 +185,16 @@ def copy_doc(src_dir, target_root, keep_latest=False):
 # ============================================================
 # SDK打包
 # ============================================================
-def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config, onlyApp):
+def create_package(
+    sdk_name,
+    sdk_dir,
+    win_dir,
+    android_dir,
+    qt_dir,
+    target_root,
+    config,
+    onlyApp
+):
 
     result = parse_cmake_versions(sdk_dir)
     version = result["fap_version"]
@@ -221,6 +250,12 @@ def create_package(sdk_name, sdk_dir, win_dir, android_dir, target_root, config,
     copy_android_apk(android_dir, target)
 
     # -------------------------
+    # Qt simpleLinux
+    # -------------------------
+    if not onlyApp:
+        copy_qt_simple_linux(qt_dir, target)
+
+    # -------------------------
     # doc
     # -------------------------
     if not onlyApp:
@@ -246,7 +281,7 @@ def load_config(path=None):
 
 if __name__ == "__main__":
     config = load_config()
-    # config["GSER","A910", "MIAXIS", "huantian", "Thales",]
+    # config["GSER","A910", "MIAXIS", "huantian", "Thales"]
     sdk = config["GSER"]
     OnlyApp = False
 
@@ -255,6 +290,7 @@ if __name__ == "__main__":
         sdk_dir=sdk["sdk_dir"],
         win_dir=sdk["sdk_dir"] + "_win",
         android_dir=sdk["sdk_dir"] + "_Android",
+        qt_dir=sdk["sdk_dir"] + "_qt",
         target_root=sdk["target_root"],
         config=sdk,
         onlyApp=OnlyApp,
