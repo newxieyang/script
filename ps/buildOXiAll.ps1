@@ -1,32 +1,83 @@
+param (
+    [string]$SdkKey = "GSER",
+    [string]$ConfigFile = "D:\git\script\ps\sdk_config.json"
+)
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
+# Encoding Fix - Final Cleanup
 <#
 .SYNOPSIS
     OXiScan SDK One-Click Build and Package Script
     Targets: Linux (x64/arm), Windows (x86/x64), Android (v7/v8)
 #>
 
+
+
+# 解决中文乱码问题
+
+. (Join-Path $PSScriptRoot "BuildUtils.ps1")
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 # ============================================================
-# 1. Path Configuration
+# 1. Load Configuration
 # ============================================================
-$SdkRoot = "D:\git\oxi\shenzhen\oxiscansdk"
-$BuildRoot = "D:\git\oxi\shenzhen\build"
+if (-not (Test-Path $ConfigFile)) {
+    throw "Configuration file not found: $ConfigFile"
+}
+
+$config = Get-Content $ConfigFile -Raw | ConvertFrom-Json
+if (-not $config.PSObject.Properties[$SdkKey]) {
+    throw "SDK Key '$SdkKey' not found in config file."
+}
+
+$sdkConfig = $config.$SdkKey
+
+# ============================================================
+# 2. Path Configuration from Config
+# ============================================================
+$SdkRoot = $sdkConfig.sdk_dir -replace '/', '\'
+$LibBaseName = $sdkConfig.lib
+
+# Derived Paths
+$BuildRoot = Join-Path (Split-Path $SdkRoot -Parent) "build"
 $VersionFile = Join-Path $SdkRoot "version.cmake"
 
-# $WslBuildScript = "/mnt/d/wsl/buildOXiAll.sh"
+# Find 3rd directory by traversing up from SdkRoot
+$ThirdPartyDir = ""
+$currentDir = $SdkRoot
+while (-not [string]::IsNullOrEmpty($currentDir)) {
+    $potential3rd = Join-Path $currentDir "3rd"
+    if (Test-Path $potential3rd -PathType Container) {
+        $ThirdPartyDir = $potential3rd
+        break
+    }
+    $parent = Split-Path $currentDir -Parent
+    if ($parent -eq $currentDir) { break }
+    $currentDir = $parent
+}
+
+if ([string]::IsNullOrEmpty($ThirdPartyDir)) {
+    # Default fallback to the known location if discovery fails
+    $ThirdPartyDir = "D:\git\oxi\3rd"
+    Write-Warning "Could not dynamically find '3rd' directory. Falling back to: $ThirdPartyDir"
+}
+
 $WslBuildScript = "/mnt/d/git/script/shell/buildOXiAll.sh"
-$WinAndroidScript = "D:\git\script\ps\BuildWinAndroid.ps1"
-$PackageScript = "D:\git\script\ps\OXi.ps1"
-# $PythonScript = "D:\git\script\py\OXi.py"
+$BuildWinScript = Join-Path $PSScriptRoot "BuildWin.ps1"
+$BuildAndroidScript = Join-Path $PSScriptRoot "BuildAndroid.ps1"
+$PackageScript = Join-Path $PSScriptRoot "OXi.ps1"
 
 # Demo Directories
-$DemoAndroid = "D:\git\oxi\shenzhen\oxiscansdk_Android\libFAP\src\main\cpp"
-$DemoQt = "D:\git\oxi\shenzhen\oxiscansdk_qt"
-$DemoWin = "D:\git\oxi\shenzhen\oxiscansdk_win"
+$AndroidProjectRoot = $SdkRoot + "_Android"
+$DemoAndroid = Join-Path $AndroidProjectRoot "lib$LibBaseName\src\main\cpp"
+$DemoQt = $SdkRoot + "_qt"
+$DemoWin = $SdkRoot + "_win"
 
 # ============================================================
-# 2. Parse Version
+# 3. Parse Version
 # ============================================================
 if (-not (Test-Path $VersionFile)) {
     throw "Version file not found: $VersionFile"
@@ -43,36 +94,78 @@ if (-not ($major -and $minor -and $patch -and $build)) {
 }
 
 $version = "$major.$minor.$patch.$build"
-$outRoot = Join-Path $BuildRoot "OXiScanV$version"
+$outRoot = Join-Path $BuildRoot "$($sdkConfig.prefix)$version"
 
 
 Write-Host "`n============================================================"
-Write-Host " OXiScan SDK Build - Version: $version"
+Write-Host " OXiScan SDK Build - Key: $SdkKey, Version: $version"
+Write-Host " SdkRoot: $SdkRoot"
 Write-Host " Output Directory: $outRoot"
 Write-Host "============================================================`n"
 
 $startTime = Get-Date
 
-# ============================================================
-# 3. Build Linux (WSL)
-# ============================================================
-Write-Host "[1/5] Building Linux via WSL (x64 and ARM64)..."
-wsl bash $WslBuildScript --linux-only
+$wslSdkRoot = Get-WslPath $SdkRoot
+$wslOutRoot = Get-WslPath $outRoot
+$wslThirdPartyDir = Get-WslPath $ThirdPartyDir
 
 # ============================================================
-# 4. Build Windows and Android
+# 4. Build Linux (WSL)
 # ============================================================
-Write-Host "`n[2/5] Building Windows and Android libraries..."
-if (-not (Test-Path $WinAndroidScript)) {
-    throw "Windows build script not found: $WinAndroidScript"
+if ($sdkConfig.build_linux) {
+    Write-Host "[1/5] Building Linux via WSL (x64 and ARM64)..."
+    $wslDemoAndroid = Get-WslPath $DemoAndroid
+    $wslDemoQt = Get-WslPath $DemoQt
+    $wslDemoWin = Get-WslPath $DemoWin
+
+    wsl bash $WslBuildScript `
+        --src-dir "$wslSdkRoot" `
+        --build-root "$wslOutRoot" `
+        --third-party "$wslThirdPartyDir" `
+        --lib-name "$LibBaseName" `
+        --demo-android "$wslDemoAndroid" `
+        --demo-qt "$wslDemoQt" `
+        --demo-win "$wslDemoWin" `
+        --linux-only
+} else {
+    Write-Host "[1/5] Skipping Linux build."
 }
 
-& $WinAndroidScript -OutRootWsl $outRoot
+# ============================================================
+# 5. Build Windows
+# ============================================================
+if ($sdkConfig.build_windows) {
+    Write-Host "`n[2/5] Building Windows libraries..."
+    & $BuildWinScript `
+        -OutRootWsl $wslOutRoot `
+        -SdkRoot $SdkRoot `
+        -ThirdPartyDir $ThirdPartyDir `
+        -LibBaseName $LibBaseName `
+        -BuildStatic ([bool]$sdkConfig.build_static)
+} else {
+    Write-Host "`n[2/5] Skipping Windows build."
+}
 
 # ============================================================
-# 5. Sync Libraries to Demo Folders
+# 6. Build Android
 # ============================================================
-Write-Host "`n[3/5] Syncing artifacts to Demo directories..."
+if ($sdkConfig.build_android) {
+    Write-Host "`n[3/5] Building Android libraries..."
+    & $BuildAndroidScript `
+        -OutRootWsl $wslOutRoot `
+        -SdkRoot $SdkRoot `
+        -ThirdPartyDir $ThirdPartyDir `
+        -LibBaseName $LibBaseName `
+        -BuildStatic ([bool]$sdkConfig.build_static) `
+        -AndroidProjectRoot $AndroidProjectRoot
+} else {
+    Write-Host "`n[3/5] Skipping Android build."
+}
+
+# ============================================================
+# 7. Sync Libraries to Demo Folders
+# ============================================================
+Write-Host "`n[4/5] Syncing artifacts to Demo directories..."
 
 function Copy-Library {
     param($Src, $Dst)
@@ -80,63 +173,54 @@ function Copy-Library {
         if (-not (Test-Path $Dst)) { New-Item -ItemType Directory -Path $Dst -Force | Out-Null }
         Copy-Item -Path $Src -Destination $Dst -Force
         Write-Host "  [COPY] $(Split-Path $Src -Leaf) -> $Dst"
-    } else {
-        Write-Warning "  [SKIP] File not found: $Src"
     }
 }
 
-# Android
-Copy-Library "$outRoot\Android\arm64-v8a\libFAP.a" "$DemoAndroid\arm64-v8a\"
-Copy-Library "$outRoot\Android\arm64-v8a\libFAP.so" "$DemoAndroid\arm64-v8a\"
-Copy-Library "$outRoot\Android\armeabi-v7a\libFAP.a" "$DemoAndroid\armeabi-v7a\"
-Copy-Library "$outRoot\Android\armeabi-v7a\libFAP.so" "$DemoAndroid\armeabi-v7a\"
+$AndroidLibA = "lib$LibBaseName.a"
+$AndroidLibSo = "lib$LibBaseName.so"
+$WinLib = "$LibBaseName.lib"
+$WinDll = "$LibBaseName.dll"
 
-# Linux (Qt)
-Copy-Library "$outRoot\Linux\arm\libFAP.a" "$DemoQt\arm\"
-Copy-Library "$outRoot\Linux\arm\libFAP.so" "$DemoQt\arm\"
-Copy-Library "$outRoot\Linux\x64\libFAP.a" "$DemoQt\x64\"
-Copy-Library "$outRoot\Linux\x64\libFAP.so" "$DemoQt\x64\"
+# Android Sync
+if ($sdkConfig.build_android) {
+    Copy-Library "$outRoot\Android\arm64-v8a\$AndroidLibA" "$DemoAndroid\arm64-v8a\"
+    Copy-Library "$outRoot\Android\arm64-v8a\$AndroidLibSo" "$DemoAndroid\arm64-v8a\"
+    Copy-Library "$outRoot\Android\armeabi-v7a\$AndroidLibA" "$DemoAndroid\armeabi-v7a\"
+    Copy-Library "$outRoot\Android\armeabi-v7a\$AndroidLibSo" "$DemoAndroid\armeabi-v7a\"
+}
 
-# Windows
-Copy-Library "$outRoot\Windows\x64\static\FAP.lib" "$DemoWin\static\libx64\"
-Copy-Library "$outRoot\Windows\x64\shared\FAP.lib" "$DemoWin\shared\libx64\"
-Copy-Library "$outRoot\Windows\x64\shared\FAP.dll" "$DemoWin\shared\libx64\"
-Copy-Library "$outRoot\Windows\x64\shared\FAP.dll" "$DemoWin\x64\Release"
+# Linux Sync
+if ($sdkConfig.build_linux) {
+    Copy-Library "$outRoot\Linux\arm\$AndroidLibA" "$DemoQt\arm\"
+    Copy-Library "$outRoot\Linux\arm\$AndroidLibSo" "$DemoQt\arm\"
+    Copy-Library "$outRoot\Linux\x64\$AndroidLibA" "$DemoQt\x64\"
+    Copy-Library "$outRoot\Linux\x64\$AndroidLibSo" "$DemoQt\x64\"
+}
 
-Copy-Library "$outRoot\Windows\x86\static\FAP.lib" "$DemoWin\static\libx86\"
-Copy-Library "$outRoot\Windows\x86\shared\FAP.lib" "$DemoWin\shared\libx86\"
-Copy-Library "$outRoot\Windows\x86\shared\FAP.dll" "$DemoWin\shared\libx86\"
-Copy-Library "$outRoot\Windows\x86\shared\FAP.dll" "$DemoWin\Release\"
+# Windows Sync
+if ($sdkConfig.build_windows) {
+    Copy-Library "$outRoot\Windows\x64\static\$WinLib" "$DemoWin\static\libx64\"
+    Copy-Library "$outRoot\Windows\x64\shared\$WinLib" "$DemoWin\shared\libx64\"
+    Copy-Library "$outRoot\Windows\x64\shared\$WinDll" "$DemoWin\shared\libx64\"
+    Copy-Library "$outRoot\Windows\x64\shared\$WinDll" "$DemoWin\x64\Release"
+    Copy-Library "$outRoot\Windows\x86\static\$WinLib" "$DemoWin\static\libx86\"
+    Copy-Library "$outRoot\Windows\x86\shared\$WinLib" "$DemoWin\shared\libx86\"
+    Copy-Library "$outRoot\Windows\x86\shared\$WinDll" "$DemoWin\shared\libx86\"
+    Copy-Library "$outRoot\Windows\x86\shared\$WinDll" "$DemoWin\Release\"
+}
 
 # ============================================================
-# 6. Run Python SDK Packager
+# 8. Run SDK Packager
 # ============================================================
-# Write-Host "`n[4/5] Running Python SDK packager..."
-# if (-not (Test-Path $PythonScript)) {
-#     throw "Python packager script not found: $PythonScript"
-# }
-
-# $pythonDir = Split-Path $PythonScript -Parent
-# Push-Location $pythonDir
-# try {
-#     python OXi.py
-# } finally {
-#     Pop-Location
-# }
-# ============================================================
-# 6. Run Python SDK Packager
-# ============================================================
+Write-Host "`n[5/5] Running SDK packager..."
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-& $PackageScript -SdkKey GSER
-
-
+& $PackageScript -SdkKey $SdkKey
 
 # ============================================================
-# 7. Complete
+# 9. Complete
 # ============================================================
 $endTime = Get-Date
 $duration = $endTime - $startTime
-
 Write-Host "`n============================================================"
 Write-Host " ALL TASKS COMPLETED SUCCESSFULLY"
 Write-Host " Version: $version"

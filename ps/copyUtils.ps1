@@ -1,3 +1,7 @@
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
+# Encoding Fix - Final Cleanup
 # copyUtils.ps1
 # encoding: utf-8
 
@@ -29,9 +33,10 @@ function Copy-AndroidApk {
 function Copy-WinSourceCode {
     param(
         [Parameter(Mandatory)][string]$SrcDir,
-        [Parameter(Mandatory)][string]$TargetRoot
+        [Parameter(Mandatory)][string]$TargetRoot,
+        [Parameter(Mandatory)][string]$Version
     )
-    $dstCode = Join-Path $TargetRoot "simpleWin"
+    $dstCode = Join-Path $TargetRoot "simpleWin_v$Version"
     if (Test-Path $dstCode) { Remove-DirectorySafe $dstCode }
 
     $ignore = @("Release", "x64", ".vs", ".git")
@@ -45,9 +50,10 @@ function Copy-WinSourceCode {
 function Copy-AndroidSourceCode {
     param(
         [Parameter(Mandatory)][string]$SrcDir,
-        [Parameter(Mandatory)][string]$TargetRoot
+        [Parameter(Mandatory)][string]$TargetRoot,
+        [Parameter(Mandatory)][string]$Version
     )
-    $dstCode = Join-Path $TargetRoot "simpleAndroid"
+    $dstCode = Join-Path $TargetRoot "simpleAndroid_v$Version"
     if (Test-Path $dstCode) { Remove-DirectorySafe $dstCode }
 
     $ignore = @(".gradle", ".git", ".idea", "build", ".cxx")

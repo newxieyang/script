@@ -13,7 +13,11 @@
         "copy_win_lib": false,
         "copy_android_lib": false,
         "doc": null,
-        "keep_latest_doc": false
+        "keep_latest_doc": false,
+        "build_static": false,
+        "build_android": false,
+        "build_windows": false,
+        "build_linux": false
     },
     "MIAXIS": {
         "name": "G6",
@@ -29,7 +33,11 @@
         "copy_win_lib": false,
         "copy_android_lib": false,
         "doc": null,
-        "keep_latest_doc": false
+        "keep_latest_doc": false,
+        "build_static": false,
+        "build_android": false,
+        "build_windows": false,
+        "build_linux": false
     },
     "Thales": {
         "name": "G6",
@@ -45,7 +53,11 @@
         "copy_win_lib": false,
         "copy_android_lib": false,
         "doc": null,
-        "keep_latest_doc": false
+        "keep_latest_doc": false,
+        "build_static": true,
+        "build_android": true,
+        "build_windows": true,
+        "build_linux": true
     },
     "huantian": {
         "name": "G6",
@@ -61,7 +73,11 @@
         "copy_win_lib": false,
         "copy_android_lib": false,
         "doc": null,
-        "keep_latest_doc": false
+        "keep_latest_doc": false,
+        "build_static": true,
+        "build_android": true,
+        "build_windows": true,
+        "build_linux": true
     },
     "GSER": {
         "name": "GSER",
@@ -77,6 +93,10 @@
         "copy_win_lib": false,
         "copy_android_lib": false,
         "doc": "D:/GSerSDKLib/doc",
-        "keep_latest_doc": true
+        "keep_latest_doc": true,
+        "build_static": true,
+        "build_android": false,
+        "build_windows": false,
+        "build_linux": true
     }
 }

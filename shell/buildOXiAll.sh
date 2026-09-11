@@ -1,37 +1,79 @@
 #!/bin/bash
 set -Eeuo pipefail
-# ============================================================
-# 全局路径配置(WSL视角)
-# ============================================================
-SRC_DIR="/mnt/d/git/oxi/shenzhen/oxiscansdk"
-BUILD_ROOT="/mnt/d/git/oxi/shenzhen/build"
-THIRD_PARTY_DIR="/mnt/d/git/oxi/3rd"
 
-# Demo输出目录
-DEMO_ANDROID="/mnt/d/git/oxi/shenzhen/oxiscansdk_Android/libFAP/src/main/cpp"
-DEMO_QT="/mnt/d/git/oxi/shenzhen/oxiscansdk_qt"
-DEMO_WIN="/mnt/d/git/oxi/shenzhen/oxiscansdk_win"
+# ============================================================
+# Parameter Parsing
+# ============================================================
+usage() {
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  --src-dir PATH        SDK source directory (WSL path)"
+    echo "  --build-root PATH     Build root directory (WSL path)"
+    echo "  --third-party PATH    Third party directory (WSL path)"
+    echo "  --lib-name NAME       Base library name (e.g. FAP)"
+    echo "  --demo-android PATH   Demo Android path"
+    echo "  --demo-qt PATH        Demo Qt path"
+    echo "  --demo-win PATH       Demo Win path"
+    echo "  --linux-only          (Optional) Flag to indicate linux-only build"
+    exit 1
+}
 
-# AArch64 交叉编译器
+# Default values
+SRC_DIR=""
+BUILD_ROOT=""
+THIRD_PARTY_DIR=""
+LIB_BASE_NAME="FAP"
+DEMO_ANDROID=""
+DEMO_QT=""
+DEMO_WIN=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --src-dir) SRC_DIR="$2"; shift 2 ;;
+        --build-root) BUILD_ROOT="$2"; shift 2 ;;
+        --third-party) THIRD_PARTY_DIR="$2"; shift 2 ;;
+        --lib-name) LIB_BASE_NAME="$2"; shift 2 ;;
+        --demo-android) DEMO_ANDROID="$2"; shift 2 ;;
+        --demo-qt) DEMO_QT="$2"; shift 2 ;;
+        --demo-win) DEMO_WIN="$2"; shift 2 ;;
+        --linux-only) shift ;;
+        *) usage ;;
+    esac
+done
+
+if [ -z "$SRC_DIR" ] || [ -z "$BUILD_ROOT" ]; then
+    echo "[ERROR] Missing required arguments --src-dir and --build-root"
+    usage
+fi
+
+echo "DEBUG: THIRD_PARTY_DIR received: $THIRD_PARTY_DIR"
+
+# ============================================================
+# Global Path Configuration (WSL Perspective)
+# ============================================================
+if [ -z "$THIRD_PARTY_DIR" ]; then
+    THIRD_PARTY_DIR="$(dirname "$(dirname "$SRC_DIR")")/3rd"
+fi
+
+# Compiler Roots
 AARCH64_GCC_ROOT="/opt/aarch64-gcc9.3"
+LOCAL_GCC_ROOT="/opt/gcc-9.3.0"
+
+# AArch64 Cross Compiler
 AARCH64_GCC="${AARCH64_GCC_ROOT}/bin/aarch64-linux-gnu-gcc"
 AARCH64_GXX="${AARCH64_GCC_ROOT}/bin/aarch64-linux-gnu-g++"
 AARCH64_SYSROOT="$("${AARCH64_GCC}" --print-sysroot 2>/dev/null || true)"
 AARCH64_TOOLCHAIN_FILE="${AARCH64_GCC_ROOT}/cmake/aarch64-gcc9.3.cmake"
 
-# WSL本地x64编译器
-LOCAL_GCC_ROOT="/opt/gcc-9.3.0"
+# WSL Local x64 Compiler
 LOCAL_GCC="${LOCAL_GCC_ROOT}/bin/gcc"
 LOCAL_GXX="${LOCAL_GCC_ROOT}/bin/g++"
 
 BUILD_JOBS="${BUILD_JOBS:-$(nproc)}"
 CURRENT_BUILD=""
 
-# Windows侧脚本路径（Windows路径）
-PS1_SCRIPT="D:\\git\\oxi\\shenzhen\\BuildWinAndroid.ps1"
-
 # ============================================================
-# 错误捕获
+# Error Trap
 # ============================================================
 error_trap()
 {
@@ -50,7 +92,7 @@ error_trap()
 trap error_trap ERR
 
 # ============================================================
-# 工具检查函数
+# Helper Functions
 # ============================================================
 check_command()
 {
@@ -61,9 +103,6 @@ check_command()
     fi
 }
 
-# ============================================================
-# 库架构校验函数
-# ============================================================
 check_shared_library_arch()
 {
     local lib="$1"
@@ -182,9 +221,6 @@ check_library_arch()
     esac
 }
 
-# ============================================================
-# 读取版本号
-# ============================================================
 read_version()
 {
     VERSION_FILE="${SRC_DIR}/version.cmake"
@@ -197,7 +233,7 @@ read_version()
         exit 1
     fi
     VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_BUILD}"
-    VERSION_DIR="${BUILD_ROOT}/OXiScanV${VERSION}"
+    VERSION_DIR="${BUILD_ROOT}"
 
     mkdir -p "${VERSION_DIR}/Linux/arm"
     mkdir -p "${VERSION_DIR}/Linux/x64"
@@ -208,22 +244,25 @@ read_version()
     mkdir -p "${VERSION_DIR}/Android/arm64-v8a"
     mkdir -p "${VERSION_DIR}/Android/armeabi-v7a"
 
-    mkdir -p "${DEMO_ANDROID}/arm64-v8a"
-    mkdir -p "${DEMO_ANDROID}/armeabi-v7a"
-    mkdir -p "${DEMO_QT}/arm"
-    mkdir -p "${DEMO_QT}/x64"
-    mkdir -p "${DEMO_WIN}/shared/libx64"
-    mkdir -p "${DEMO_WIN}/shared/libx86"
-    mkdir -p "${DEMO_WIN}/static/libx64"
-    mkdir -p "${DEMO_WIN}/static/libx86"
+    if [ -n "$DEMO_ANDROID" ]; then
+        mkdir -p "${DEMO_ANDROID}/arm64-v8a"
+        mkdir -p "${DEMO_ANDROID}/armeabi-v7a"
+    fi
+    if [ -n "$DEMO_QT" ]; then
+        mkdir -p "${DEMO_QT}/arm"
+        mkdir -p "${DEMO_QT}/x64"
+    fi
+    if [ -n "$DEMO_WIN" ]; then
+        mkdir -p "${DEMO_WIN}/shared/libx64"
+        mkdir -p "${DEMO_WIN}/shared/libx86"
+        mkdir -p "${DEMO_WIN}/static/libx64"
+        mkdir -p "${DEMO_WIN}/static/libx86"
+    fi
 
     echo "Parsed SDK Version: ${VERSION}"
     echo "Output root: ${VERSION_DIR}"
 }
 
-# ============================================================
-# Linux通用构建函数
-# ============================================================
 build_platform_linux()
 {
     local PLATFORM="$1"
@@ -246,10 +285,10 @@ build_platform_linux()
     for TYPE in static shared; do
         if [ "${TYPE}" = "static" ]; then
             STATIC=ON
-            LIB_NAME="libFAP.a"
+            LIB_NAME="lib${LIB_BASE_NAME}.a"
         else
             STATIC=OFF
-            LIB_NAME="libFAP.so"
+            LIB_NAME="lib${LIB_BASE_NAME}.so"
         fi
         BUILD_DIR="${HOME}/build_tmp/${PLATFORM}/${TYPE}/cmake-build"
         OUTPUT_DIR="${VERSION_DIR}/Linux/${OUT_PLATFORM_DIR}"
@@ -300,12 +339,6 @@ build_linux_x64()
     build_platform_linux "Linux-x64" "${LOCAL_GCC}" "${LOCAL_GXX}" "x64" "x86_64"
 }
 
-
-
-
-# ============================================================
-# 主流程
-# ============================================================
 main()
 {
     echo "Checking environment..."
@@ -321,8 +354,8 @@ main()
     check_command readelf
 
     if [ ! -x "${AARCH64_GCC}" ] || [ ! -x "${AARCH64_GXX}" ]; then echo "[ERROR] AArch64 cross compiler missing"; exit 1; fi
-    if [ ! -f "${AARCH64_TOOLCHAIN_FILE}" ];then echo "[ERROR] aarch64‑gcc9.3.cmake missing"; exit 1; fi
-    if [ ! -x "${LOCAL_GCC}" ] || [ ! -x "${LOCAL_GXX}" ]; then echo "[ERROR] local gcc‑9.3 missing"; exit 1; fi
+    if [ ! -f "${AARCH64_TOOLCHAIN_FILE}" ];then echo "[ERROR] aarch64-gcc9.3.cmake missing"; exit 1; fi
+    if [ ! -x "${LOCAL_GCC}" ] || [ ! -x "${LOCAL_GXX}" ]; then echo "[ERROR] local gcc-9.3 missing"; exit 1; fi
 
     read_version
 
@@ -333,11 +366,8 @@ main()
     echo "============================================================"
 
     BUILD_START=$(date +%s)
-
     build_linux_arm64
     build_linux_x64
-
-
     BUILD_END=$(date +%s)
     DURATION=$((BUILD_END - BUILD_START))
 

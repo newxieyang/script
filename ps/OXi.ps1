@@ -1,11 +1,15 @@
-# OXi.ps1
-# encoding: utf-8
-# 用法: .\OXi.ps1
-# 可选: .\OXi.ps1 -SdkKey GSER -OnlyApp
 param (
     [string]$SdkKey = "GSER",
     [switch]$OnlyApp
 )
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
+# Encoding Fix - Final Cleanup
+# OXi.ps1
+# 用法: .\OXi.ps1
+# 可选: .\OXi.ps1 -SdkKey GSER -OnlyApp
+
 
 $ErrorActionPreference = "Stop"
 . "$PSScriptRoot\fileUtils.ps1"
@@ -98,13 +102,14 @@ function Copy-AndroidLib {
 function Copy-QtSimpleLinux {
     param(
         [Parameter(Mandatory)][string]$QtDir,
-        [Parameter(Mandatory)][string]$TargetRoot
+        [Parameter(Mandatory)][string]$TargetRoot,
+        [Parameter(Mandatory)][string]$Version
     )
     if (-not (Test-Path $QtDir)) {
         Write-Host "[跳过] oxiscansdk_qt 不存在: $QtDir"
         return
     }
-    $dst = Join-Path $TargetRoot "simpleLinux"
+    $dst = Join-Path $TargetRoot "simpleLinux_v$Version"
     if (Test-Path $dst) { Remove-DirectorySafe $dst }
     Copy-Item -LiteralPath $QtDir -Destination $dst -Recurse -Force
     Write-Host "[复制Qt Linux] $QtDir -> $dst"
@@ -165,7 +170,8 @@ function New-SdkPackage {
                 -TargetDir (Join-Path $target "include") `
                 -Keywords $Config.header_keyword
         }
-        elseif ($Config.ContainsKey('headers') -and $Config.headers -and $Config.headers.Count -gt 0) {
+        elseif ($Config.ContainsKey('headers') -and $Config.headers -and $Config.headers.Count -gt 0)
+{
             Copy-Headers -SrcFiles $Config.headers `
                 -TargetDir (Join-Path $target "include")
         }
@@ -173,7 +179,7 @@ function New-SdkPackage {
         if ($Config.copy_win_lib) {
             Copy-WinLib -SrcDir $SdkDir -LibName $Config.lib -TargetDir $target
         }
-        Copy-WinSourceCode -SrcDir $WinDir -TargetRoot $target
+        Copy-WinSourceCode -SrcDir $WinDir -TargetRoot $target -Version $version
     }
     Copy-WinExe -SrcDir $WinDir -TgRoot $target
 
@@ -181,12 +187,12 @@ function New-SdkPackage {
         if ($Config.copy_android_lib) {
             Copy-AndroidLib -SrcDir $SdkDir -LibName $Config.lib -TargetDir $target
         }
-        Copy-AndroidSourceCode -SrcDir $AndroidDir -TargetRoot $target
+        Copy-AndroidSourceCode -SrcDir $AndroidDir -TargetRoot $target -Version $version
     }
     Copy-AndroidApk -SrcDir $AndroidDir -TargetDir $target
 
     if (-not $OnlyApp) {
-        Copy-QtSimpleLinux -QtDir $QtDir -TargetRoot $target
+        Copy-QtSimpleLinux -QtDir $QtDir -TargetRoot $target -Version $version
 
         if ($Config.doc) {
             $keep = [bool]$Config.keep_latest_doc
@@ -240,18 +246,18 @@ if (-not $sdkNode) { throw "sdk_config.json 中找不到键: $SdkKey" }
 
 $sdk = Convert-ToSdkHashtable $sdkNode
 
-# header_keyword 统一成 string[]
+# header_keyword 统一为 string[]
 if ($sdk.ContainsKey('header_keyword') -and $sdk.header_keyword) {
     $sdk.header_keyword = @($sdk.header_keyword)
 }
-if ($sdk.headers) {
+if ($sdk.ContainsKey('headers') -and $sdk.headers) {
     $sdk.headers = @($sdk.headers)
 }
 
-# JSON 里 false 进来是 Boolean
-$sdk.copy_win_lib     = [bool]$sdk.copy_win_lib
-$sdk.copy_android_lib = [bool]$sdk.copy_android_lib
-$sdk.keep_latest_doc  = [bool]$sdk.keep_latest_doc
+# 布尔值安全转换
+$sdk.copy_win_lib     = if ($sdk.ContainsKey('copy_win_lib')) { [bool]$sdk.copy_win_lib } else { $false }
+$sdk.copy_android_lib = if ($sdk.ContainsKey('copy_android_lib')) { [bool]$sdk.copy_android_lib } else { $false }
+$sdk.keep_latest_doc  = if ($sdk.ContainsKey('keep_latest_doc')) { [bool]$sdk.keep_latest_doc } else { $false }
 
 $winDir     = $sdk.sdk_dir.TrimEnd('\', '/') + "_win"
 $androidDir = $sdk.sdk_dir.TrimEnd('\', '/') + "_Android"
