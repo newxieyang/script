@@ -41,6 +41,13 @@ $sdkConfig = $config.$SdkKey
 $SdkRoot = $sdkConfig.sdk_dir -replace '/', '\'
 $LibBaseName = $sdkConfig.lib
 
+# build_static may be absent in some configs; guard against StrictMode
+$BuildStatic = $false
+if ($sdkConfig.PSObject.Properties["build_static"]) {
+    $BuildStatic = [bool]$sdkConfig.build_static
+}
+$BuildStaticStr = if ($BuildStatic) { "true" } else { "false" }
+
 # Derived Paths
 $BuildRoot = Join-Path (Split-Path $SdkRoot -Parent) "build"
 $VersionFile = Join-Path $SdkRoot "version.cmake"
@@ -101,6 +108,7 @@ Write-Host "`n============================================================"
 Write-Host " OXiScan SDK Build - Key: $SdkKey, Version: $version"
 Write-Host " SdkRoot: $SdkRoot"
 Write-Host " Output Directory: $outRoot"
+Write-Host " Build Static: $BuildStaticStr"
 Write-Host "============================================================`n"
 
 $startTime = Get-Date
@@ -126,6 +134,7 @@ if ($sdkConfig.build_linux) {
         --demo-android "$wslDemoAndroid" `
         --demo-qt "$wslDemoQt" `
         --demo-win "$wslDemoWin" `
+        --build-static "$BuildStaticStr" `
         --linux-only
 } else {
     Write-Host "[1/5] Skipping Linux build."
@@ -191,9 +200,11 @@ if ($sdkConfig.build_android) {
 
 # Linux Sync
 if ($sdkConfig.build_linux) {
-    Copy-Library "$outRoot\Linux\arm\$AndroidLibA" "$DemoQt\arm\"
+    if ($BuildStatic) {
+        Copy-Library "$outRoot\Linux\arm\$AndroidLibA" "$DemoQt\arm\"
+        Copy-Library "$outRoot\Linux\x64\$AndroidLibA" "$DemoQt\x64\"
+    }
     Copy-Library "$outRoot\Linux\arm\$AndroidLibSo" "$DemoQt\arm\"
-    Copy-Library "$outRoot\Linux\x64\$AndroidLibA" "$DemoQt\x64\"
     Copy-Library "$outRoot\Linux\x64\$AndroidLibSo" "$DemoQt\x64\"
 }
 

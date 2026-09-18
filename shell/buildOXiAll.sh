@@ -15,6 +15,7 @@ usage() {
     echo "  --demo-qt PATH        Demo Qt path"
     echo "  --demo-win PATH       Demo Win path"
     echo "  --linux-only          (Optional) Flag to indicate linux-only build"
+    echo "  --build-static BOOL   (Optional) Build static libraries: true|false (default: true)"
     exit 1
 }
 
@@ -26,6 +27,7 @@ LIB_BASE_NAME="FAP"
 DEMO_ANDROID=""
 DEMO_QT=""
 DEMO_WIN=""
+BUILD_STATIC="true"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -37,9 +39,24 @@ while [[ $# -gt 0 ]]; do
         --demo-qt) DEMO_QT="$2"; shift 2 ;;
         --demo-win) DEMO_WIN="$2"; shift 2 ;;
         --linux-only) shift ;;
+        --build-static)
+            case "$(echo "$2" | tr '[:upper:]' '[:lower:]')" in
+                true|on|1|yes)  BUILD_STATIC="true" ;;
+                false|off|0|no) BUILD_STATIC="false" ;;
+                *) echo "[ERROR] Invalid value for --build-static: '$2' (expected true|false)"; usage ;;
+            esac
+            shift 2
+            ;;
         *) usage ;;
     esac
 done
+
+# Normalize build targets: shared is always built, static only when requested
+if [ "${BUILD_STATIC}" = "true" ]; then
+    BUILD_TYPES=(static shared)
+else
+    BUILD_TYPES=(shared)
+fi
 
 if [ -z "$SRC_DIR" ] || [ -z "$BUILD_ROOT" ]; then
     echo "[ERROR] Missing required arguments --src-dir and --build-root"
@@ -282,7 +299,7 @@ build_platform_linux()
     ccache --set-config=max_size="${CCACHE_MAXSIZE}"
 
     local TYPE STATIC LIB_NAME BUILD_DIR OUTPUT_DIR LIB_PATH
-    for TYPE in static shared; do
+    for TYPE in "${BUILD_TYPES[@]}"; do
         if [ "${TYPE}" = "static" ]; then
             STATIC=ON
             LIB_NAME="lib${LIB_BASE_NAME}.a"
@@ -363,6 +380,10 @@ main()
     echo "Start building all targets"
     echo "Version: ${VERSION}"
     echo "Build output: ${VERSION_DIR}"
+    echo "Build types: ${BUILD_TYPES[*]}"
+    if [ "${BUILD_STATIC}" != "true" ]; then
+        echo "[INFO] Static libraries disabled (--build-static false), building shared only."
+    fi
     echo "============================================================"
 
     BUILD_START=$(date +%s)

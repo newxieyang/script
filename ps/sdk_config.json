@@ -17,7 +17,7 @@
         "build_static": false,
         "build_android": false,
         "build_windows": false,
-        "build_linux": false
+        "build_linux": true
     },
     "MIAXIS": {
         "name": "G6",
