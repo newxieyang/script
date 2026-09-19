@@ -17,7 +17,8 @@
         "build_static": false,
         "build_android": false,
         "build_windows": false,
-        "build_linux": true
+        "build_linux": true,
+        "should_package": false
     },
     "MIAXIS": {
         "name": "G6",
@@ -37,7 +38,8 @@
         "build_static": false,
         "build_android": false,
         "build_windows": false,
-        "build_linux": false
+        "build_linux": false,
+        "should_package": false
     },
     "Thales": {
         "name": "G6",
@@ -57,7 +59,8 @@
         "build_static": true,
         "build_android": true,
         "build_windows": true,
-        "build_linux": true
+        "build_linux": true,
+        "should_package": false
     },
     "huantian": {
         "name": "G6",
@@ -77,7 +80,8 @@
         "build_static": true,
         "build_android": true,
         "build_windows": true,
-        "build_linux": true
+        "build_linux": true,
+        "should_package": false
     },
     "GSER": {
         "name": "GSER",
@@ -97,6 +101,7 @@
         "build_static": true,
         "build_android": false,
         "build_windows": false,
-        "build_linux": true
+        "build_linux": true,
+        "should_package": false
     }
 }

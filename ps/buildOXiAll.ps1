@@ -48,6 +48,12 @@ if ($sdkConfig.PSObject.Properties["build_static"]) {
 }
 $BuildStaticStr = if ($BuildStatic) { "true" } else { "false" }
 
+# should_package may be absent in some configs; default to false
+$ShouldPackage = $false
+if ($sdkConfig.PSObject.Properties["should_package"]) {
+    $ShouldPackage = [bool]$sdkConfig.should_package
+}
+
 # Derived Paths
 $BuildRoot = Join-Path (Split-Path $SdkRoot -Parent) "build"
 $VersionFile = Join-Path $SdkRoot "version.cmake"
@@ -68,7 +74,7 @@ while (-not [string]::IsNullOrEmpty($currentDir)) {
 
 if ([string]::IsNullOrEmpty($ThirdPartyDir)) {
     # Default fallback to the known location if discovery fails
-    $ThirdPartyDir = "D:\git\oxi\3rd"
+    $ThirdPartyDir = "D:\git\3rd"
     Write-Warning "Could not dynamically find '3rd' directory. Falling back to: $ThirdPartyDir"
 }
 
@@ -201,11 +207,11 @@ if ($sdkConfig.build_android) {
 # Linux Sync
 if ($sdkConfig.build_linux) {
     if ($BuildStatic) {
-        Copy-Library "$outRoot\Linux\arm\$AndroidLibA" "$DemoQt\arm\"
-        Copy-Library "$outRoot\Linux\x64\$AndroidLibA" "$DemoQt\x64\"
+        Copy-Library "$outRoot\Linux\aarch64\$AndroidLibA" "$DemoQt\Linux\aarch64\"
+        Copy-Library "$outRoot\Linux\x64\$AndroidLibA" "$DemoQt\Linux\x64\"
     }
-    Copy-Library "$outRoot\Linux\arm\$AndroidLibSo" "$DemoQt\arm\"
-    Copy-Library "$outRoot\Linux\x64\$AndroidLibSo" "$DemoQt\x64\"
+    Copy-Library "$outRoot\Linux\aarch64\$AndroidLibSo" "$DemoQt\Linux\aarch64\"
+    Copy-Library "$outRoot\Linux\x64\$AndroidLibSo" "$DemoQt\Linux\x64\"
 }
 
 # Windows Sync
@@ -223,9 +229,13 @@ if ($sdkConfig.build_windows) {
 # ============================================================
 # 8. Run SDK Packager
 # ============================================================
-Write-Host "`n[5/5] Running SDK packager..."
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-& $PackageScript -SdkKey $SdkKey
+if ($ShouldPackage) {
+    Write-Host "`n[5/5] Running SDK packager..."
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+    & $PackageScript -SdkKey $SdkKey
+} else {
+    Write-Host "`n[5/5] Skipping SDK packager (should_package = false)."
+}
 
 # ============================================================
 # 9. Complete

@@ -115,10 +115,10 @@ if ($BuildLinux) {
     # Collect artifacts from WSL output
     $linuxOut = Join-Path $OutDir "Linux"
     Ensure-Directory (Join-Path $linuxOut "x64")
-    Ensure-Directory (Join-Path $linuxOut "arm")
+    Ensure-Directory (Join-Path $linuxOut "aarch64")
 
     $x64So = Join-Path $WslReleaseDir "x64\lib\libopencv_world.so"
-    $armSo = Join-Path $WslReleaseDir "arm\lib\libopencv_world.so"
+    $armSo = Join-Path $WslReleaseDir "aarch64\lib\libopencv_world.so"
 
     if (Test-Path $x64So) {
         Copy-Item $x64So (Join-Path $linuxOut "x64\libopencv_world.so") -Force
@@ -128,10 +128,10 @@ if ($BuildLinux) {
     }
 
     if (Test-Path $armSo) {
-        Copy-Item $armSo (Join-Path $linuxOut "arm\libopencv_world.so") -Force
-        Write-Host "  [COPY] libopencv_world.so (arm) -> Linux\arm\"
+        Copy-Item $armSo (Join-Path $linuxOut "aarch64\libopencv_world.so") -Force
+        Write-Host "  [COPY] libopencv_world.so (aarch64) -> Linux\aarch64\"
     } else {
-        Write-Warning "Linux arm artifact not found: $armSo"
+        Write-Warning "Linux aarch64 artifact not found: $armSo"
     }
 
 } else {

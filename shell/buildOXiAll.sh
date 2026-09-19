@@ -252,7 +252,7 @@ read_version()
     VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_BUILD}"
     VERSION_DIR="${BUILD_ROOT}"
 
-    mkdir -p "${VERSION_DIR}/Linux/arm"
+    mkdir -p "${VERSION_DIR}/Linux/aarch64"
     mkdir -p "${VERSION_DIR}/Linux/x64"
     mkdir -p "${VERSION_DIR}/Windows/x64/static"
     mkdir -p "${VERSION_DIR}/Windows/x64/shared"
@@ -266,7 +266,7 @@ read_version()
         mkdir -p "${DEMO_ANDROID}/armeabi-v7a"
     fi
     if [ -n "$DEMO_QT" ]; then
-        mkdir -p "${DEMO_QT}/arm"
+        mkdir -p "${DEMO_QT}/aarch64"
         mkdir -p "${DEMO_QT}/x64"
     fi
     if [ -n "$DEMO_WIN" ]; then
@@ -307,7 +307,7 @@ build_platform_linux()
             STATIC=OFF
             LIB_NAME="lib${LIB_BASE_NAME}.so"
         fi
-        BUILD_DIR="${HOME}/build_tmp/${PLATFORM}/${TYPE}/cmake-build"
+        BUILD_DIR="$(dirname "$SRC_DIR")/build_temp/linux/${PLATFORM}/${TYPE}/cmake-build"
         OUTPUT_DIR="${VERSION_DIR}/Linux/${OUT_PLATFORM_DIR}"
         rm -rf "${BUILD_DIR}"
         mkdir -p "${BUILD_DIR}"
@@ -326,7 +326,7 @@ build_platform_linux()
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
             -DTHIRD_PARTY_DIR="${THIRD_PARTY_DIR}"
         )
-        if [ "${OUT_PLATFORM_DIR}" = "arm" ]; then
+        if [ "${OUT_PLATFORM_DIR}" = "aarch64" ]; then
             CMAKE_ARGS+=( -DCMAKE_TOOLCHAIN_FILE="${AARCH64_TOOLCHAIN_FILE}" )
         fi
         cmake "${CMAKE_ARGS[@]}"
@@ -347,7 +347,7 @@ build_platform_linux()
 build_linux_arm64()
 {
     echo "===== Build Linux ARM64 ====="
-    build_platform_linux "Linux-ARM64" "${AARCH64_GCC}" "${AARCH64_GXX}" "arm" "arm64"
+    build_platform_linux "Linux-ARM64" "${AARCH64_GCC}" "${AARCH64_GXX}" "aarch64" "arm64"
 }
 
 build_linux_x64()
