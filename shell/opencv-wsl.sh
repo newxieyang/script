@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# OpenCV 4.12.0 Build Script
+# OpenCV 4.6.0 Build Script
 #
 # Build:
 #   x64    -> Local GCC 9.3
@@ -23,7 +23,7 @@
 #   2. BUILD_opencv_world=ON
 #   3. 最终只保留 libopencv_world.so
 #   4. libopencv_world.so 是真实 ELF 文件，不是软链接
-#   5. 删除 .so.4.12 / .so.4.12.0 等版本文件
+#   5. 删除 .so.4.6 / .so.4.6.0 等版本文件
 #   6. 修改 SONAME 为 libopencv_world.so
 # ==============================================================================
 
@@ -33,7 +33,7 @@ set -e
 # 1. 路径配置
 # ==============================================================================
 
-OPENCV_SRC="/mnt/e/3rdSRC/opencv-4.12.0"
+OPENCV_SRC="/mnt/e/3rdSRC/opencv-4.6.0"
 
 AARCH64_GCC_ROOT="/opt/aarch64-gcc9.3"
 LOCAL_GCC_ROOT="/opt/gcc-9.3.0"
@@ -106,28 +106,60 @@ fi
 # ==============================================================================
 
 COMMON_FLAGS=(
-    "-DBUILD_SHARED_LIBS=ON" 
-    "-DBUILD_opencv_world=ON" 
-    "-DCMAKE_BUILD_TYPE=Release" 
-    "-DBUILD_TESTS=OFF"
-    "-DBUILD_PERF_TESTS=OFF"
-    "-DBUILD_EXAMPLES=OFF"
-    "-DBUILD_DOCS=OFF"
-    "-DWITH_IPP=OFF"
-    "-DBUILD_IPP_IW=OFF"
+    "-DBUILD_SHARED_LIBS=ON"
+       "-DBUILD_opencv_world=ON"
+       "-DCMAKE_BUILD_TYPE=Release"
+       "-DBUILD_TESTS=OFF"
+       "-DBUILD_PERF_TESTS=OFF"
+       "-DBUILD_EXAMPLES=OFF"
+       "-DBUILD_DOCS=OFF"
+       "-DWITH_IPP=OFF"
+       "-DBUILD_IPP_IW=OFF"
 
-    "-DDOWNLOAD_EXTERNAL_TEST_DATA=OFF"
+       "-DDOWNLOAD_EXTERNAL_TEST_DATA=OFF"
 
-    "-DWITH_GTK=OFF"
-    "-DWITH_QT=OFF"
+       "-DWITH_GTK=OFF"
+       "-DWITH_QT=OFF"
 
-    "-DWITH_TIFF=OFF"
-    "-DWITH_JASPER=OFF"
-    "-DWITH_OPENEXR=OFF"
-    "-DWITH_WEBP=OFF"
+       "-DWITH_TIFF=OFF"
+       "-DWITH_JASPER=OFF"
+       "-DWITH_OPENEXR=OFF"
+       "-DWITH_WEBP=OFF"
 
-    "-DWITH_OPENCL=OFF"
-    "-DWITH_CUDA=OFF"
+       "-DWITH_OPENCL=OFF"
+       "-DWITH_CUDA=OFF"
+
+       # ------------------------------------------------------------------
+       # 模块裁剪：只保留 core, imgproc, imgcodecs, videoio, highgui, world
+       # ------------------------------------------------------------------
+       "-DBUILD_opencv_calib3d=OFF"
+       "-DBUILD_opencv_dnn=OFF"
+       "-DBUILD_opencv_features2d=OFF"
+       "-DBUILD_opencv_flann=OFF"
+       "-DBUILD_opencv_gapi=OFF"
+       "-DBUILD_opencv_ml=OFF"
+       "-DBUILD_opencv_objdetect=OFF"
+       "-DBUILD_opencv_photo=OFF"
+       "-DBUILD_opencv_stitching=OFF"
+       "-DBUILD_opencv_video=OFF"
+
+       # ------------------------------------------------------------------
+       # videoio: highgui 硬依赖，保留但关闭所有视频采集后端
+       # ------------------------------------------------------------------
+       "-DWITH_FFMPEG=OFF"
+       "-DWITH_GSTREAMER=OFF"
+       "-DWITH_V4L=OFF"
+       "-DWITH_1394=OFF"
+       "-DWITH_OPENNI=OFF"
+       "-DWITH_OPENNI2=OFF"
+
+       # ------------------------------------------------------------------
+       # Python / Java 包装层
+       # ------------------------------------------------------------------
+       "-DBUILD_opencv_python2=OFF"
+       "-DBUILD_opencv_python3=OFF"
+       "-DBUILD_opencv_java=OFF"
+       "-DBUILD_opencv_js=OFF"
 )
 
 # ==============================================================================
@@ -148,21 +180,15 @@ mkdir -p "$INSTALL_PREFIX/arm"
 
 # ==============================================================================
 # 7. 最终处理 OpenCV
-#
 # 最终：
-#
 #     libopencv_world.so
-#
 # 必须：
-#
 #     1. regular file
 #     2. ELF
 #     3. SONAME = libopencv_world.so
-#
 # 删除：
-#
-#     libopencv_world.so.4.12
-#     libopencv_world.so.4.12.0
+#     libopencv_world.so.4.6
+#     libopencv_world.so.4.6.0
 # ==============================================================================
 
 finalize_opencv_world()
@@ -203,8 +229,8 @@ finalize_opencv_world()
     local real_so=""
 
     for f in \
-        libopencv_world.so.4.12.0 \
-        libopencv_world.so.4.12
+        libopencv_world.so.4.6.0 \
+        libopencv_world.so.4.6
     do
         if [ -f "$f" ] && [ ! -L "$f" ]; then
 
@@ -242,13 +268,9 @@ finalize_opencv_world()
 
     # ==========================================================================
     # 临时保存真实 ELF
-    #
     # 不能直接：
-    #
     #     cp real.so libopencv_world.so
-    #
     # 因为 libopencv_world.so 可能已经是软链接。
-    #
     # 所以先复制到临时文件。
     # ==========================================================================
 
@@ -256,18 +278,6 @@ finalize_opencv_world()
     tmp_so="/tmp/libopencv_world.so.$$"
 
     cp -f "$real_so" "$tmp_so"
-
-    # ==========================================================================
-    # 删除所有 OpenCV world 文件
-    #
-    # 包括：
-    #
-    #     libopencv_world.so
-    #     libopencv_world.so.4.12
-    #     libopencv_world.so.4.12.0
-    #
-    # 无论是普通文件还是软链接都会删除。
-    # ==========================================================================
 
     echo ""
     echo ">>> Removing old OpenCV world files..."
@@ -281,17 +291,6 @@ finalize_opencv_world()
 
     mv "$tmp_so" libopencv_world.so
 
-    # ==========================================================================
-    # 修改 SONAME
-    #
-    # 原来 OpenCV 可能是：
-    #
-    #     SONAME: libopencv_world.so.4.12
-    #
-    # 修改成：
-    #
-    #     SONAME: libopencv_world.so
-    # ==========================================================================
 
     echo ""
     echo ">>> Setting SONAME..."
@@ -566,8 +565,8 @@ echo "  libopencv_world.so"
 echo ""
 
 echo "No:"
-echo "  libopencv_world.so.4.12"
-echo "  libopencv_world.so.4.12.0"
+echo "  libopencv_world.so.4.6"
+echo "  libopencv_world.so.4.6.0"
 echo "  symlink"
 echo ""
 

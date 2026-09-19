@@ -1,0 +1,19 @@
+{
+"OPENCV": {
+"name": "OpenCV",
+"src_dir": "E:/3rdSRC/opencv-4.6.0",
+"version": "4.6.0",
+"output_root": "E:/3rdSRC/opencv_build",
+"build_linux": true,
+"build_windows": true,
+"build_android": true,
+"wsl_gcc_x64": "/opt/gcc-9.3.0",
+"wsl_gcc_arm64": "/opt/aarch64-gcc9.3",
+"wsl_script": "/mnt/d/git/script/shell/opencv-wsl.sh",
+"win_cmake": "D:/apps/CMake/bin/cmake.exe",
+"win_vs_generator": "Visual Studio 16 2019",
+"android_ndk": "D:/apps/Android/Sdk/ndk/28.2.13676358",
+"android_platform": "android-28",
+"android_ninja": "D:/apps/JetBrains/CLion 2023.1.4/bin/ninja/win/x64/ninja.exe"
+}
+}
