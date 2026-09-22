@@ -1,4 +1,4 @@
-param (
+﻿param (
     [string]$SdkKey = "GSER",
     [string]$ConfigFile = "D:\git\script\ps\sdk_config.json"
 )
@@ -17,6 +17,9 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # 解决中文乱码问题
 
 . (Join-Path $PSScriptRoot "BuildUtils.ps1")
+# 复用与 py 一致的复制工具（Copy-WinExe / Copy-WinSourceCode / Copy-AndroidApk / Copy-AndroidSourceCode）
+. (Join-Path $PSScriptRoot "copyUtils.ps1")
+. (Join-Path $PSScriptRoot "fileUtils.ps1")
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -191,6 +194,9 @@ function Copy-Library {
     }
 }
 
+# Copy-WinExe / Copy-WinSourceCode / Copy-AndroidApk / Copy-AndroidSourceCode
+# 统一由 copyUtils.ps1 提供（脚本开头已 dot-source），避免两处命名漂移
+
 $AndroidLibA = "lib$LibBaseName.a"
 $AndroidLibSo = "lib$LibBaseName.so"
 $WinLib = "$LibBaseName.lib"
@@ -198,9 +204,11 @@ $WinDll = "$LibBaseName.dll"
 
 # Android Sync
 if ($sdkConfig.build_android) {
-    Copy-Library "$outRoot\Android\arm64-v8a\$AndroidLibA" "$DemoAndroid\arm64-v8a\"
+    if ($BuildStatic) {
+        Copy-Library "$outRoot\Android\arm64-v8a\$AndroidLibA" "$DemoAndroid\arm64-v8a\"
+        Copy-Library "$outRoot\Android\armeabi-v7a\$AndroidLibA" "$DemoAndroid\armeabi-v7a\"
+    }
     Copy-Library "$outRoot\Android\arm64-v8a\$AndroidLibSo" "$DemoAndroid\arm64-v8a\"
-    Copy-Library "$outRoot\Android\armeabi-v7a\$AndroidLibA" "$DemoAndroid\armeabi-v7a\"
     Copy-Library "$outRoot\Android\armeabi-v7a\$AndroidLibSo" "$DemoAndroid\armeabi-v7a\"
 }
 
@@ -216,14 +224,32 @@ if ($sdkConfig.build_linux) {
 
 # Windows Sync
 if ($sdkConfig.build_windows) {
-    Copy-Library "$outRoot\Windows\x64\static\$WinLib" "$DemoWin\static\libx64\"
+    if ($BuildStatic) {
+      Copy-Library "$outRoot\Windows\x64\static\$WinLib" "$DemoWin\static\libx64\"
+      Copy-Library "$outRoot\Windows\x86\static\$WinLib" "$DemoWin\static\libx86\"
+    }
+
     Copy-Library "$outRoot\Windows\x64\shared\$WinLib" "$DemoWin\shared\libx64\"
     Copy-Library "$outRoot\Windows\x64\shared\$WinDll" "$DemoWin\shared\libx64\"
-    Copy-Library "$outRoot\Windows\x64\shared\$WinDll" "$DemoWin\x64\Release"
-    Copy-Library "$outRoot\Windows\x86\static\$WinLib" "$DemoWin\static\libx86\"
+
     Copy-Library "$outRoot\Windows\x86\shared\$WinLib" "$DemoWin\shared\libx86\"
     Copy-Library "$outRoot\Windows\x86\shared\$WinDll" "$DemoWin\shared\libx86\"
-    Copy-Library "$outRoot\Windows\x86\shared\$WinDll" "$DemoWin\Release\"
+
+}
+
+# ============================================================
+# 7.5. Copy Demo Source Code & Artifacts to Output
+# ============================================================
+Write-Host "`n[4.5/5] Copying demo source code and artifacts..."
+
+if ($sdkConfig.build_windows) {
+    Copy-WinExe -SrcDir $DemoWin -TgRoot $outRoot
+    Copy-WinSourceCode -SrcDir $DemoWin -TargetRoot $outRoot
+}
+
+if ($sdkConfig.build_android) {
+    Copy-AndroidApk -SrcDir $AndroidProjectRoot -TargetDir $outRoot
+    Copy-AndroidSourceCode -SrcDir $AndroidProjectRoot -TargetRoot $outRoot
 }
 
 # ============================================================

@@ -1,4 +1,4 @@
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+﻿[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Encoding Fix - Final Cleanup
@@ -14,18 +14,34 @@ function Test-IsHiddenName {
     return $false
 }
 
+function Get-VisibleChildItem {
+    <#
+        .SYNOPSIS
+            深度优先遍历文件（不返回目录），遇到隐藏目录直接剪枝。
+            等价于 py fileUtils.is_hidden + os.walk(dirs[:] = ...) 的行为，
+            即：任意一层祖先目录以 . / $ / cmake / src 开头，则该目录下的文件全部忽略。
+    #>
+    param([Parameter(Mandatory)][string]$Path)
+    foreach ($item in (Get-ChildItem -LiteralPath $Path -Force -ErrorAction SilentlyContinue)) {
+        if ($item.PSIsContainer) {
+            if (Test-IsHiddenName $item.Name) { continue }
+            Get-VisibleChildItem -Path $item.FullName
+        } else {
+            $item
+        }
+    }
+}
+
 function Find-FilePathByKeyword {
     param(
         [Parameter(Mandatory)][string]$ProjectDir,
         [Parameter(Mandatory)][string]$Key
     )
-    if (-not (Test-Path $ProjectDir)) { return $null }
+    if (-not (Test-Path -LiteralPath $ProjectDir -PathType Container)) { return $null }
 
-    Get-ChildItem -Path $ProjectDir -Recurse -File -ErrorAction SilentlyContinue |
-        Where-Object {
-            -not (Test-IsHiddenName $_.Directory.Name) -and
-            ($_.Name -like "*$Key*")
-        } |
+    # 用 Contains 而非 -like：关键字里的 . [ ] 等字符不应被当成通配符，且与 py 一样大小写敏感
+    Get-VisibleChildItem -Path $ProjectDir |
+        Where-Object { $_.Name.Contains($Key) } |
         Select-Object -First 1 -ExpandProperty FullName
 }
 
@@ -94,6 +110,41 @@ function Remove-DirectorySafe {
     } catch {
         Write-Warning "[删除警告] $DirPath : $_"
     }
+}
+
+function Copy-DirectoryFiltered {
+    <#
+        .SYNOPSIS
+            目录整体复制（robocopy），可排除指定名称的子目录。
+            对应 py 的 shutil.copytree(..., ignore=...)，但用 robocopy 更稳。
+        .OUTPUTS
+            [bool] 是否真的执行了复制（源目录不存在时返回 $false）
+    #>
+    param(
+        [Parameter(Mandatory)][string]$SrcDir,
+        [Parameter(Mandatory)][string]$DstDir,
+        [string[]]$ExcludeNames = @(),
+        [string]$Label = ""
+    )
+    if (-not (Test-Path -LiteralPath $SrcDir -PathType Container)) {
+        Write-Host "[跳过] $Label 源目录不存在: $SrcDir"
+        return $false
+    }
+    if (Test-Path -LiteralPath $DstDir) { Remove-DirectorySafe $DstDir }
+    New-SafeDirectory $DstDir
+
+    $robocopyArgs = @($SrcDir, $DstDir, "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/nc", "/ns", "/np")
+    if ($ExcludeNames.Count -gt 0) {
+        $robocopyArgs += ($ExcludeNames | ForEach-Object { "/XD"; $_ })
+    }
+    & robocopy @robocopyArgs | Out-Null
+
+    # robocopy: 0~7 为成功（位标志），>=8 才是失败
+    if ($LASTEXITCODE -ge 8) {
+        throw "robocopy 复制失败 (exit=$LASTEXITCODE): $SrcDir -> $DstDir"
+    }
+    Write-Host "[复制$Label] $SrcDir -> $DstDir"
+    return $true
 }
 
 function Copy-FilesBySuffix {

@@ -9,12 +9,12 @@ def copy_win_exe(src_dir: str, tg_root: str):
     """复制Windows x86/x64 exe dll"""
     # x86
     src_x86 = os.path.join(src_dir, "Release")
-    dst_x86 = os.path.join(tg_root, "winx86DemoWithLib")
+    dst_x86 = os.path.join(tg_root, "win_X86Demo")
     copy_files_by_suffix(src_x86, dst_x86, [".exe", ".dll"])
 
     # x64
     src_x64 = os.path.join(src_dir, "x64", "Release")
-    dst_x64 = os.path.join(tg_root, "winx64DemoWithLib")
+    dst_x64 = os.path.join(tg_root, "win_X64Demo")
     copy_files_by_suffix(src_x64, dst_x64, [".exe", ".dll"])
 
 

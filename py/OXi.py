@@ -282,7 +282,7 @@ def load_config(path=None):
 if __name__ == "__main__":
     config = load_config()
     # config["GSER","A910", "MIAXIS", "huantian", "Thales"]
-    sdk = config["GSER"]
+    sdk = config["MIAXIS"]
     OnlyApp = False
 
     create_package(
