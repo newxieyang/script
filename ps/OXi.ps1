@@ -23,8 +23,14 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 #   simpleWin/          Windows 源码
 #   simpleAndroid/      Android 源码
 #   *.apk               Android 调试包
-#   simpleLinux/        Qt Linux 源码
+#   simpleLinux/        Qt Linux 源码（含 linux/ 下的预编译库，原样拷贝，不重新构建）
 #   doc/                文档
+#
+# 拷贝开关（sdk_config.json，为 false 表示该平台整块不进包）:
+#   copy_win_lib     ：Win 库(Copy-WinLib) + simpleWin 源码 + win_X86Demo/win_X64Demo 测试案例
+#   copy_android_lib ：Android 库 + simpleAndroid 源码 + *.apk 测试案例
+#   copy_linux_lib   ：simpleLinux（Qt 源码 + linux/ 下的预编译库，只拷不构建）
+#   should_package   ：是否由 buildOXiAll.ps1 自动调用本脚本出包（手动直接调用本脚本时仅提示、不阻断）
 # ============================================================
 
 $ErrorActionPreference = "Stop"
@@ -111,11 +117,18 @@ function Copy-WinLib {
 
     # x86: lib -> libx86, dll -> Release
     $x86Src = Join-Path $SrcDir "cmake-build-release-vs2019_x86\libFAP\Release"
+    # x64: lib -> libx64, dll -> x64\Release
+    $x64Src = Join-Path $SrcDir "cmake-build-release-vs2019_x64\libFAP\Release"
+    if (-not (Test-Path -LiteralPath $x86Src) -and -not (Test-Path -LiteralPath $x64Src)) {
+        # 本机各机型都属这种形态（库由构建流程产出，不在这两个 cmake-build 目录里），
+        # 给一行提示即可，不必逐个文件刷 4 条 [跳过]
+        Write-Host "[跳过] Win 库源目录不存在: $SrcDir\cmake-build-release-vs2019_{x86,x64}\libFAP\Release"
+        return
+    }
+
     Copy-FileSafe -SrcFile (Join-Path $x86Src "$LibName.lib") -DstDir (Join-Path $TargetDir "libx86")
     Copy-FileSafe -SrcFile (Join-Path $x86Src "$LibName.dll") -DstDir (Join-Path $TargetDir "Release")
 
-    # x64: lib -> libx64, dll -> x64\Release
-    $x64Src = Join-Path $SrcDir "cmake-build-release-vs2019_x64\libFAP\Release"
     Copy-FileSafe -SrcFile (Join-Path $x64Src "$LibName.lib") -DstDir (Join-Path $TargetDir "libx64")
     Copy-FileSafe -SrcFile (Join-Path $x64Src "$LibName.dll") -DstDir (Join-Path $TargetDir "x64\Release")
 }
@@ -132,13 +145,85 @@ function Copy-AndroidLib {
     if ($Headers) { Copy-Headers -SrcFiles $Headers -TargetDir $includeDir }
 
     $soName = "lib$LibName.so"
-    Copy-FileSafe -SrcFile (Join-Path $SrcDir "cmake-build-release-armeabi-v7a\libFAP\$soName") -DstDir (Join-Path $TargetDir "armeabi-v7a")
-    Copy-FileSafe -SrcFile (Join-Path $SrcDir "cmake-build-release-arm64-v8a\libFAP\$soName") -DstDir (Join-Path $TargetDir "arm64-v8a")
+    $srcV7 = Join-Path $SrcDir "cmake-build-release-armeabi-v7a\libFAP"
+    $srcV8 = Join-Path $SrcDir "cmake-build-release-arm64-v8a\libFAP"
+    if (-not (Test-Path -LiteralPath (Join-Path $srcV7 $soName)) -and -not (Test-Path -LiteralPath (Join-Path $srcV8 $soName))) {
+        Write-Host "[跳过] Android 库源目录不存在: $SrcDir\cmake-build-release-{arm64-v8a,armeabi-v7a}\libFAP\$soName"
+        return
+    }
+
+    Copy-FileSafe -SrcFile (Join-Path $srcV7 $soName) -DstDir (Join-Path $TargetDir "armeabi-v7a")
+    Copy-FileSafe -SrcFile (Join-Path $srcV8 $soName) -DstDir (Join-Path $TargetDir "arm64-v8a")
 }
 
 # ============================================================
 # 源码 / 文档复制
 # ============================================================
+function Find-QtLinuxLibDir {
+    <#
+        .SYNOPSIS
+            在 Qt 工程目录下找预编译库目录：<QtDir>\linux（大小写不敏感，实际多为 Linux）。
+        .OUTPUTS
+            [System.IO.DirectoryInfo] 命中的目录；没有则 $null
+    #>
+    param([Parameter(Mandatory)][string]$QtDir)
+    if (-not (Test-Path -LiteralPath $QtDir -PathType Container)) { return $null }
+    Get-ChildItem -LiteralPath $QtDir -Directory -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -ieq "linux" } |
+        Select-Object -First 1
+}
+
+function Copy-QtLinuxLibs {
+    <#
+        .SYNOPSIS
+            把 <QtDir>\linux 下的预编译库整份拷进 simpleLinux\<原名>。**只拷贝，不做任何构建。**
+            该目录是源码树之外的预编译产物（按架构分子目录，如 aarch64/x64/arm）；
+            由于 WSL 下建的 .so 多为符号链接，robocopy 容易拷成 0 字节，
+            这里按文件逐个拷：Copy-Item 会跟随链接取到真实内容，并保留子目录结构。
+        .OUTPUTS
+            [bool] 是否真的复制到了文件
+    #>
+    param(
+        [Parameter(Mandatory)][string]$QtDir,
+        [Parameter(Mandatory)][string]$DstDir
+    )
+    $libDir = Find-QtLinuxLibDir -QtDir $QtDir
+    if (-not $libDir) {
+        Write-Host "[跳过] $QtDir 下没有 linux 库目录"
+        return $false
+    }
+    $dstLib = Join-Path $DstDir $libDir.Name
+    if (Test-Path -LiteralPath $dstLib) { Remove-DirectorySafe $dstLib }
+    New-SafeDirectory $dstLib
+
+    $copied = 0
+    $failed = 0
+    $files = @(Get-ChildItem -LiteralPath $libDir.FullName -Recurse -Force -ErrorAction SilentlyContinue |
+        Where-Object { -not $_.PSIsContainer })
+
+    foreach ($f in $files) {
+        $rel = $f.FullName.Substring($libDir.FullName.Length).TrimStart('\', '/')
+        $dstFile = Join-Path $dstLib $rel
+        New-SafeDirectory (Split-Path $dstFile -Parent)
+        try {
+            Copy-Item -LiteralPath $f.FullName -Destination $dstFile -Force -ErrorAction Stop
+            $copied++
+        } catch {
+            $failed++
+            Write-Warning "[Qt Linux库] 复制失败: $rel ($($_.Exception.Message))"
+        }
+    }
+
+    $archs = @(Get-ChildItem -LiteralPath $dstLib -Directory -Force -ErrorAction SilentlyContinue |
+        ForEach-Object { "$($_.Name)($(@(Get-ChildItem -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { -not $_.PSIsContainer }).Count))" })
+    $summary = "复制 $copied 个文件"
+    if ($failed -gt 0) { $summary += "，失败 $failed 个" }
+    if ($archs.Count -gt 0) { $summary += "（" + ($archs -join ', ') + "）" }
+    Write-Host "[Qt Linux库] $($libDir.Name): $summary"
+
+    return ($copied -gt 0)
+}
+
 function Copy-QtSimpleLinux {
     param(
         [Parameter(Mandatory)][string]$QtDir,
@@ -147,7 +232,13 @@ function Copy-QtSimpleLinux {
     # py 直接 copytree；这里排除 IDE/构建目录，避免把 .git、build 传进 SDK
     $ignore = @(".git", ".idea", "build", ".cxx", "CMakeFiles", "cmake-build-release", "cmake-build-debug")
     $dst = Join-Path $TargetRoot "simpleLinux"
+
+    # 库目录单独处理，避免被源码树那趟拷贝漏掉/拷成空文件
+    $libDir = Find-QtLinuxLibDir -QtDir $QtDir
+    if ($libDir) { $ignore += $libDir.Name }
+
     [void](Copy-DirectoryFiltered -SrcDir $QtDir -DstDir $dst -ExcludeNames $ignore -Label "Qt Linux源码")
+    [void](Copy-QtLinuxLibs -QtDir $QtDir -DstDir $dst)
 }
 
 function Copy-Doc {
@@ -225,32 +316,40 @@ function New-SdkPackage {
     }
 
     # -------------------------
-    # windows
+    # windows  （copy_win_lib 控制：库 + simpleWin 源码 + demo 测试案例）
     # -------------------------
-    if (-not $OnlyApp) {
-        if ($Config.copy_win_lib) {
+    if ($Config.copy_win_lib) {
+        if (-not $OnlyApp) {
             Copy-WinLib -SrcDir $SdkDir -LibName $Config.lib -TargetDir $target
+            Copy-WinSourceCode -SrcDir $WinDir -TargetRoot $target
         }
-        Copy-WinSourceCode -SrcDir $WinDir -TargetRoot $target
+        Copy-WinExe -SrcDir $WinDir -TgRoot $target
+    } else {
+        Write-Host "[跳过] copy_win_lib=false：不拷贝 Win demo（库 / simpleWin 源码 / win_X86Demo、win_X64Demo 测试案例）"
     }
-    Copy-WinExe -SrcDir $WinDir -TgRoot $target
 
     # -------------------------
-    # android
+    # android  （copy_android_lib 控制：库 + simpleAndroid 源码 + apk 测试案例）
     # -------------------------
-    if (-not $OnlyApp) {
-        if ($Config.copy_android_lib) {
+    if ($Config.copy_android_lib) {
+        if (-not $OnlyApp) {
             Copy-AndroidLib -SrcDir $SdkDir -LibName $Config.lib -TargetDir $target
+            Copy-AndroidSourceCode -SrcDir $AndroidDir -TargetRoot $target
         }
-        Copy-AndroidSourceCode -SrcDir $AndroidDir -TargetRoot $target
+        Copy-AndroidApk -SrcDir $AndroidDir -TargetDir $target
+    } else {
+        Write-Host "[跳过] copy_android_lib=false：不拷贝 Android demo（库 / simpleAndroid 源码 / *.apk 测试案例）"
     }
-    Copy-AndroidApk -SrcDir $AndroidDir -TargetDir $target
 
     # -------------------------
-    # Qt simpleLinux
+    # Qt simpleLinux  （copy_linux_lib 控制：Qt 源码 + linux/ 预编译库，只拷不构建）
     # -------------------------
-    if (-not $OnlyApp) {
-        Copy-QtSimpleLinux -QtDir $QtDir -TargetRoot $target
+    if ($Config.copy_linux_lib) {
+        if (-not $OnlyApp) {
+            Copy-QtSimpleLinux -QtDir $QtDir -TargetRoot $target
+        }
+    } else {
+        Write-Host "[跳过] copy_linux_lib=false：不拷贝 simpleLinux（Qt 源码 + linux/ 下的预编译库）"
     }
 
     # -------------------------
@@ -324,8 +423,8 @@ $sdk['headers'] = if ($sdk.ContainsKey('headers') -and $sdk.headers) {
     @($sdk.headers | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 } else { @() }
 
-# 布尔值安全转换
-foreach ($flag in @('copy_win_lib', 'copy_android_lib', 'keep_latest_doc')) {
+# 布尔值安全转换（缺字段按 false 处理，避免 StrictMode/绑定异常）
+foreach ($flag in @('copy_win_lib', 'copy_android_lib', 'copy_linux_lib', 'keep_latest_doc', 'should_package')) {
     $sdk[$flag] = if ($sdk.ContainsKey($flag) -and $null -ne $sdk[$flag]) { [bool]$sdk[$flag] } else { $false }
 }
 
@@ -337,6 +436,14 @@ $qtDir      = $sdkDir + "_qt"
 Write-Host "====== 打包 $SdkKey ======"
 Write-Host "  源码目录 : $sdkDir"
 Write-Host "  输出根目录: $($sdk.target_root)"
+Write-Host ("  拷贝开关 : copy_win_lib={0}  copy_android_lib={1}  copy_linux_lib={2}  should_package={3}" -f `
+        $sdk.copy_win_lib.ToString().ToLower(), `
+        $sdk.copy_android_lib.ToString().ToLower(), `
+        $sdk.copy_linux_lib.ToString().ToLower(), `
+        $sdk.should_package.ToString().ToLower())
+if (-not $sdk.should_package) {
+    Write-Host "  [提示] should_package=false：buildOXiAll.ps1 不会自动调用打包；当前是手动直接调用，继续出包。"
+}
 
 $target = New-SdkPackage `
     -SdkName    $sdk.name `

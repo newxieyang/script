@@ -16,18 +16,66 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 #   Qt Linux 源码   : simpleLinux
 # ------------------------------------------------------------
 
+# ------------------------------------------------------------
+# Windows 产物目录解析
+#   同一套 demo 代码有两种工程形态，exe/dll 落点不同：
+#     VS 工程   : <SdkDir>\Release                    / <SdkDir>\x64\Release
+#     CMake 工程: <SdkDir>\cmake-build-release-vs2019_x86\Release
+#                 <SdkDir>\cmake-build-release-vs2019_x64\Release
+#   （A910_win、oxiscansdk_win_mut 这类只有 CMake 产物）
+# ------------------------------------------------------------
+function Get-WinDemoCandidateDirs {
+    param(
+        [Parameter(Mandatory)][string]$SrcDir,
+        [Parameter(Mandatory)][ValidateSet("x86", "x64")][string]$Arch
+    )
+    $vsSub    = if ($Arch -eq "x64") { "x64\Release" } else { "Release" }
+    $cmakeSub = if ($Arch -eq "x64") { "cmake-build-release-vs2019_x64\Release" } else { "cmake-build-release-vs2019_x86\Release" }
+    @(
+        (Join-Path $SrcDir $vsSub),
+        (Join-Path $SrcDir $cmakeSub)
+    )
+}
+
+function Resolve-WinDemoDir {
+    <#
+        .SYNOPSIS
+            按优先级挑出该架构下真正含有 .exe 的输出目录：
+            先看 VS 的 Release / x64\Release，里面没有 .exe（或目录不存在）时，
+            回退到 CMake 的 cmake-build-release-vs2019_<arch>\Release。
+        .OUTPUTS
+            [string] 命中的目录；候选目录都没有 .exe 时返回 $null
+    #>
+    param(
+        [Parameter(Mandatory)][string]$SrcDir,
+        [Parameter(Mandatory)][ValidateSet("x86", "x64")][string]$Arch
+    )
+    foreach ($dir in (Get-WinDemoCandidateDirs -SrcDir $SrcDir -Arch $Arch)) {
+        if (-not (Test-Path -LiteralPath $dir -PathType Container)) { continue }
+        $exe = Get-ChildItem -LiteralPath $dir -Recurse -File -Filter "*.exe" -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($exe) { return $dir }
+    }
+    return $null
+}
+
 function Copy-WinExe {
     param(
         [Parameter(Mandatory)][string]$SrcDir,
         [Parameter(Mandatory)][string]$TgRoot
     )
-    $srcX86 = Join-Path $SrcDir "Release"
-    $dstX86 = Join-Path $TgRoot "win_X86Demo"
-    Copy-FilesBySuffix -SrcRoot $srcX86 -DstDir $dstX86 -SuffixList @(".exe", ".dll")
+    foreach ($arch in @("x86", "x64")) {
+        $dst = Join-Path $TgRoot $(if ($arch -eq "x64") { "win_X64Demo" } else { "win_X86Demo" })
+        $src = Resolve-WinDemoDir -SrcDir $SrcDir -Arch $arch
 
-    $srcX64 = Join-Path $SrcDir "x64\Release"
-    $dstX64 = Join-Path $TgRoot "win_X64Demo"
-    Copy-FilesBySuffix -SrcRoot $srcX64 -DstDir $dstX64 -SuffixList @(".exe", ".dll")
+        if (-not $src) {
+            $tried = (Get-WinDemoCandidateDirs -SrcDir $SrcDir -Arch $arch) -join "  |  "
+            Write-Host "[跳过] $arch 未找到含 .exe 的输出目录，已尝试: $tried"
+            continue
+        }
+        Write-Host "[$arch 产物目录] $src"
+        Copy-FilesBySuffix -SrcRoot $src -DstDir $dst -SuffixList @(".exe", ".dll")
+    }
 }
 
 function Copy-AndroidApk {

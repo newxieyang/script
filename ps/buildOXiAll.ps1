@@ -131,18 +131,14 @@ $wslThirdPartyDir = Get-WslPath $ThirdPartyDir
 # ============================================================
 if ($sdkConfig.build_linux) {
     Write-Host "[1/5] Building Linux via WSL (x64 and ARM64)..."
-    $wslDemoAndroid = Get-WslPath $DemoAndroid
-    $wslDemoQt = Get-WslPath $DemoQt
-    $wslDemoWin = Get-WslPath $DemoWin
 
+    # 只传构建所需的路径；demo 目录不在这里预建（各 SDK 的 qt/demo 目录约定不统一，
+    # 预建会往源码树里塞空目录），改由下面的同步/打包步骤按需创建。
     wsl bash $WslBuildScript `
         --src-dir "$wslSdkRoot" `
         --build-root "$wslOutRoot" `
         --third-party "$wslThirdPartyDir" `
         --lib-name "$LibBaseName" `
-        --demo-android "$wslDemoAndroid" `
-        --demo-qt "$wslDemoQt" `
-        --demo-win "$wslDemoWin" `
         --build-static "$BuildStaticStr" `
         --linux-only
 } else {

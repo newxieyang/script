@@ -11,9 +11,6 @@ usage() {
     echo "  --build-root PATH     Build root directory (WSL path)"
     echo "  --third-party PATH    Third party directory (WSL path)"
     echo "  --lib-name NAME       Base library name (e.g. FAP)"
-    echo "  --demo-android PATH   Demo Android path"
-    echo "  --demo-qt PATH        Demo Qt path"
-    echo "  --demo-win PATH       Demo Win path"
     echo "  --linux-only          (Optional) Flag to indicate linux-only build"
     echo "  --build-static BOOL   (Optional) Build static libraries: true|false (default: true)"
     exit 1
@@ -24,9 +21,6 @@ SRC_DIR=""
 BUILD_ROOT=""
 THIRD_PARTY_DIR=""
 LIB_BASE_NAME="FAP"
-DEMO_ANDROID=""
-DEMO_QT=""
-DEMO_WIN=""
 BUILD_STATIC="true"
 
 while [[ $# -gt 0 ]]; do
@@ -35,9 +29,6 @@ while [[ $# -gt 0 ]]; do
         --build-root) BUILD_ROOT="$2"; shift 2 ;;
         --third-party) THIRD_PARTY_DIR="$2"; shift 2 ;;
         --lib-name) LIB_BASE_NAME="$2"; shift 2 ;;
-        --demo-android) DEMO_ANDROID="$2"; shift 2 ;;
-        --demo-qt) DEMO_QT="$2"; shift 2 ;;
-        --demo-win) DEMO_WIN="$2"; shift 2 ;;
         --linux-only) shift ;;
         --build-static)
             case "$(echo "$2" | tr '[:upper:]' '[:lower:]')" in
@@ -261,20 +252,11 @@ read_version()
     mkdir -p "${VERSION_DIR}/Android/arm64-v8a"
     mkdir -p "${VERSION_DIR}/Android/armeabi-v7a"
 
-    if [ -n "$DEMO_ANDROID" ]; then
-        mkdir -p "${DEMO_ANDROID}/arm64-v8a"
-        mkdir -p "${DEMO_ANDROID}/armeabi-v7a"
-    fi
-    if [ -n "$DEMO_QT" ]; then
-        mkdir -p "${DEMO_QT}/aarch64"
-        mkdir -p "${DEMO_QT}/x64"
-    fi
-    if [ -n "$DEMO_WIN" ]; then
-        mkdir -p "${DEMO_WIN}/shared/libx64"
-        mkdir -p "${DEMO_WIN}/shared/libx86"
-        mkdir -p "${DEMO_WIN}/static/libx64"
-        mkdir -p "${DEMO_WIN}/static/libx86"
-    fi
+    # 本脚本只负责把产物落到 ${VERSION_DIR}（= --build-root）。
+    # Demo 工程目录（simpleWin / simpleAndroid / *_qt 下的库目录）由打包侧
+    # （ps/OXi.ps1、py/OXi.py）在真正复制时按需创建——各 SDK 的目录约定并不统一
+    # （A910_qt 是 Linux/{aarch64,x64}，oxiscansdk_qt 是 {arm,x64}），
+    # 在这里硬编码 mkdir 只会往源码树里塞空目录。
 
     echo "Parsed SDK Version: ${VERSION}"
     echo "Output root: ${VERSION_DIR}"
