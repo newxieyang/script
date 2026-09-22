@@ -224,4 +224,6 @@ cmake-build-debug/
 .history
 __pycache__/
 BuildTools/target/
-.workbuddy/memory/2026-09-17.md
+.workbuddy
+/.workbuddy/memory/2026-09-22.md
+/.workbuddy/memory/MEMORY.md
