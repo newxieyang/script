@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true)][string]$OutRootWsl,
     [Parameter(Mandatory = $true)][string]$SdkRoot,
     [Parameter(Mandatory = $true)][string]$ThirdPartyDir,
@@ -59,14 +59,32 @@ function Build-Windows-Arch {
     $cmakeSdkRoot = $SdkRoot -replace '\\', '/'
     $cmakeThirdPartyDir = $ThirdPartyDir -replace '\\', '/'
 
-    $configureArgs = @(
-        "-S", $cmakeSdkRoot,
-        "-B", $buildDir,
-        "-G", "Visual Studio 16 2019",
-        "-A", $vsArch,
-        "-DBUILD_STATIC_LIBS=$isStaticStr",
-        "-DTHIRD_PARTY_DIR=$cmakeThirdPartyDir"
-    )
+    # 生成器/架构/静态开关交给 preset（真源 D:/git/script/cmake-presets/sdk-presets.json，
+    # 源目录里只有一个 include 它的 CMakePresets.json）。-B 仍由本脚本指定，
+    # 因为 --preset 之外的 -B 会覆盖 preset 的 binaryDir。
+    $mode = "shared"
+    if ($StaticFlag) { $mode = "static" }
+    $presetName = "win-$Arch-$mode"
+
+    if (Test-CMakePresetAvailable -CmakeExe $CmakeExe -SrcDir $SdkRoot -PresetName $presetName) {
+        Write-Host "[preset] ${presetName}  (生成器/架构/静态开关由 preset 提供，build 目录仍由脚本指定)"
+        $configureArgs = @(
+            "--preset", $presetName,
+            "-S", $cmakeSdkRoot,
+            "-B", $buildDir,
+            "-DTHIRD_PARTY_DIR=$cmakeThirdPartyDir"
+        )
+    } else {
+        Write-Warning "[preset] ${presetName} 不可用，回退到手工参数（源目录没有有效的 CMakePresets.json，或本机缺少对应生成器）"
+        $configureArgs = @(
+            "-S", $cmakeSdkRoot,
+            "-B", $buildDir,
+            "-G", "Visual Studio 16 2019",
+            "-A", $vsArch,
+            "-DBUILD_STATIC_LIBS=$isStaticStr",
+            "-DTHIRD_PARTY_DIR=$cmakeThirdPartyDir"
+        )
+    }
     Invoke-CMakeConfigure -Arguments $configureArgs -TargetName "Windows $Arch $isStaticStr" -CmakeExe $CmakeExe
     Invoke-CMakeBuild -BuildDir $buildDir -TargetName "Windows $Arch $isStaticStr" -VisualStudio -CmakeExe $CmakeExe
 

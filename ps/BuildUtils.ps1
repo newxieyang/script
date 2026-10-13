@@ -1,4 +1,4 @@
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+﻿[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Encoding Fix - Final Cleanup
@@ -117,4 +117,42 @@ function Get-WslPath {
         return "/mnt/$drive/$rest"
     }
     return $WinPath -replace '\\', '/'
+}
+
+function Test-CMakePresetAvailable {
+    <#
+        .SYNOPSIS
+            判断某个 configure preset 在当前机器上能不能直接用。
+        .DESCRIPTION
+            拿 `cmake --list-presets` 当探针：它不需要工具链就能跑通，能读通说明
+            源目录的 CMakePresets.json（含 include 到 D:/git/script/cmake-presets/sdk-presets.json
+            的引用链）是有效的；而且 CMake 会按当前平台过滤掉生成器不可用的 preset
+            （Linux 下列不出 VS2019 的那些），所以命中即代表"本机真的能用它构建"。
+            任一环节不满足就返回 $false，调用方回退到手工参数数组。
+            调用期间临时放宽 $ErrorActionPreference —— 本脚本的调用方普遍设了 Stop，
+            探针失败属于预期情况，不该把整个构建打断。
+        .OUTPUTS
+            [bool]
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$CmakeExe,
+        [Parameter(Mandatory = $true)][string]$SrcDir,
+        [Parameter(Mandatory = $true)][string]$PresetName
+    )
+    if (-not (Test-Path -LiteralPath (Join-Path $SrcDir "CMakePresets.json") -PathType Leaf) -and
+        -not (Test-Path -LiteralPath (Join-Path $SrcDir "CMakeUserPresets.json") -PathType Leaf)) {
+        return $false
+    }
+
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & $CmakeExe --list-presets -S $SrcDir 2>&1 | Out-String
+        if ($LASTEXITCODE -ne 0) { return $false }
+        return $output -match ("`"" + [regex]::Escape($PresetName) + "`"")
+    } catch {
+        return $false
+    } finally {
+        $ErrorActionPreference = $previous
+    }
 }

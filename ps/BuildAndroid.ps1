@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true)][string]$OutRootWsl,
     [Parameter(Mandatory = $true)][string]$SdkRoot,
     [Parameter(Mandatory = $true)][string]$ThirdPartyDir,
@@ -61,14 +61,31 @@ function Build-Android-Abi {
     $cmakeSdkRoot = $SdkRoot -replace '\\', '/'
     $cmakeThirdPartyDir = $ThirdPartyDir -replace '\\', '/'
 
-    $configureArgs = @(
-        "-S", $cmakeSdkRoot, "-B", $buildDir, "-G", "Ninja",
-        "-DCMAKE_MAKE_PROGRAM=$NinjaExe", "-DCMAKE_BUILD_TYPE=Release",
-        "-DANDROID_STL=c++_shared", "-DANDROID_PLATFORM=$AndroidPlatform",
-        "-DCMAKE_TOOLCHAIN_FILE=$toolchain", "-DANDROID_ABI=$Abi",
-        "-DBUILD_STATIC_LIBS=$isStaticStr",
-        "-DTHIRD_PARTY_DIR=$cmakeThirdPartyDir"
-    )
+    # 生成器/NDK 工具链/ABI/静态开关交给 preset（真源 D:/git/script/cmake-presets/sdk-presets.json）。
+    # 注意 preset 里的 NDK 与 ninja 路径是本机绝对路径，换机器要在那边改。
+    $mode = "shared"
+    if ($StaticFlag) { $mode = "static" }
+    $presetName = "android-$Abi-$mode"
+
+    if (Test-CMakePresetAvailable -CmakeExe $CmakeExe -SrcDir $SdkRoot -PresetName $presetName) {
+        Write-Host "[preset] ${presetName}  (工具链/ABI/静态开关由 preset 提供，build 目录仍由脚本指定)"
+        $configureArgs = @(
+            "--preset", $presetName,
+            "-S", $cmakeSdkRoot,
+            "-B", $buildDir,
+            "-DTHIRD_PARTY_DIR=$cmakeThirdPartyDir"
+        )
+    } else {
+        Write-Warning "[preset] ${presetName} 不可用，回退到手工参数（源目录没有有效的 CMakePresets.json）"
+        $configureArgs = @(
+            "-S", $cmakeSdkRoot, "-B", $buildDir, "-G", "Ninja",
+            "-DCMAKE_MAKE_PROGRAM=$NinjaExe", "-DCMAKE_BUILD_TYPE=Release",
+            "-DANDROID_STL=c++_shared", "-DANDROID_PLATFORM=$AndroidPlatform",
+            "-DCMAKE_TOOLCHAIN_FILE=$toolchain", "-DANDROID_ABI=$Abi",
+            "-DBUILD_STATIC_LIBS=$isStaticStr",
+            "-DTHIRD_PARTY_DIR=$cmakeThirdPartyDir"
+        )
+    }
 
     Invoke-CMakeConfigure -Arguments $configureArgs -TargetName "Android $Abi $isStaticStr" -CmakeExe $CmakeExe
     Invoke-CMakeBuild -BuildDir $buildDir -TargetName "Android $Abi $isStaticStr" -CmakeExe $CmakeExe

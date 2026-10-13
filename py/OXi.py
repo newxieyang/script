@@ -12,6 +12,8 @@ from utils.copyUtils import (
     copy_android_source_code,
     copy_win_exe,
     copy_win_source_code,
+    ignore_doc,
+    ignore_qt_simple_linux,
 )
 
 from genSDKAPI import findFilePathNameByKeyWord
@@ -139,6 +141,8 @@ def copy_android_lib(src_dir, lib_name, target_dir, headers=None):
 def copy_qt_simple_linux(qt_dir, target_root):
     """
     复制 oxiscansdk_qt 到最终 SDK 的 simpleLinux 目录
+
+    打包时排除 .git / cmake-build* 等非源码目录（见 ignore_qt_simple_linux）。
     """
 
     if not os.path.exists(qt_dir):
@@ -150,7 +154,7 @@ def copy_qt_simple_linux(qt_dir, target_root):
     if os.path.exists(dst):
         remove_dir(dst)
 
-    shutil.copytree(qt_dir, dst)
+    shutil.copytree(qt_dir, dst, ignore=ignore_qt_simple_linux)
 
     print(f"[复制Qt Linux] {qt_dir} -> {dst}")
 
@@ -159,6 +163,8 @@ def copy_qt_simple_linux(qt_dir, target_root):
 def copy_doc(src_dir, target_root, keep_latest=False):
     """
     文档复制
+
+    打包时排除 .workbuddy / .git 等工程元数据（见 ignore_doc）。
     """
 
     dst = os.path.join(target_root, "doc")
@@ -166,7 +172,7 @@ def copy_doc(src_dir, target_root, keep_latest=False):
     if os.path.exists(dst):
         remove_dir(dst)
 
-    shutil.copytree(src_dir, dst)
+    shutil.copytree(src_dir, dst, ignore=ignore_doc)
 
     print(f"[复制文档] {src_dir} -> {dst}")
 

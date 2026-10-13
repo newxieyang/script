@@ -17,6 +17,36 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # ------------------------------------------------------------
 
 # ------------------------------------------------------------
+# 打包忽略目录（ps / py 两侧必须一致：py/utils/copyUtils.py 的 PACK_IGNORE_DIRS）
+#   统一在这里定义，别在各处复制粘贴 —— 新增一类要忽略的目录只需改这一处。
+#   注意：
+#     * .workbuddy / .git / .idea / .vs 都是编辑器或工具目录，任何一份 SDK 都不该带
+#     * cmake-build* 只能用通配：真实目录名是 cmake-build-release-vs2019_x64 之类，
+#       写精确名（cmake-build-release）根本匹配不上
+#     * "cmake"（无横线）不在列表里 —— A910_qt\cmake 下是 toolchain-*.cmake 源码
+# ------------------------------------------------------------
+function Get-PackIgnoreDirs {
+    <#
+        .SYNOPSIS
+            按用途取"打包时要排除的子目录名"列表。
+        .PARAMETER Kind
+            win     : simpleWin（Windows 源码树）
+            android : simpleAndroid（Android 源码树）
+            qt      : simpleLinux（Qt 源码树）
+            doc     : doc（文档目录）
+        .OUTPUTS
+            [string[]] 目录名列表；bare 名（如 .workbuddy）匹配任意层级，带 * 的按通配匹配
+    #>
+    param([Parameter(Mandatory)][ValidateSet("win", "android", "qt", "doc")][string]$Kind)
+    switch ($Kind) {
+        "win" { @("Release", "x64", ".vs", ".vscode", ".git", ".idea", ".workbuddy", "CMakeFiles", "cmake-build*") }
+        "android" { @(".gradle", ".git", ".idea", ".workbuddy", ".cxx", "build", "cmake-build*") }
+        "qt" { @(".git", ".idea", ".vs", ".vscode", ".workbuddy", "build", ".cxx", "CMakeFiles", "cmake-build*") }
+        "doc" { @(".git", ".workbuddy") }
+    }
+}
+
+# ------------------------------------------------------------
 # Windows 产物目录解析
 #   同一套 demo 代码有两种工程形态，exe/dll 落点不同：
 #     VS 工程   : <SdkDir>\Release                    / <SdkDir>\x64\Release
@@ -92,12 +122,9 @@ function Copy-WinSourceCode {
         [Parameter(Mandatory)][string]$SrcDir,
         [Parameter(Mandatory)][string]$TargetRoot
     )
-    # py: ignore_win_code = ["Release", "x64", ".vs", ".git"]
-    # 额外排除 IDE/构建中间目录，避免把 cmake-build-* 传进 SDK
-    $ignore = @(
-        "Release", "x64", ".vs", ".git", ".idea", "CMakeFiles",
-        "cmake-build-release-vs2019_x86", "cmake-build-release-vs2019_x64"
-    )
+    # py: ignore_win_code（PACK_IGNORE_DIRS["win"]）
+    # 排除 IDE/构建中间目录 + .workbuddy/.git 之类的工程元数据（用 Get-PackIgnoreDirs，别写死）
+    $ignore = @(Get-PackIgnoreDirs -Kind win)
     $dstCode = Join-Path $TargetRoot "simpleWin"
     [void](Copy-DirectoryFiltered -SrcDir $SrcDir -DstDir $dstCode -ExcludeNames $ignore -Label "Windows源码")
 }
@@ -107,8 +134,8 @@ function Copy-AndroidSourceCode {
         [Parameter(Mandatory)][string]$SrcDir,
         [Parameter(Mandatory)][string]$TargetRoot
     )
-    # py: ignore_android_code = [".gradle", ".git", ".idea", "build", ".cxx"]
-    $ignore = @(".gradle", ".git", ".idea", "build", ".cxx")
+    # py: ignore_android_code（PACK_IGNORE_DIRS["android"]）
+    $ignore = @(Get-PackIgnoreDirs -Kind android)
     $dstCode = Join-Path $TargetRoot "simpleAndroid"
     [void](Copy-DirectoryFiltered -SrcDir $SrcDir -DstDir $dstCode -ExcludeNames $ignore -Label "Android源码")
 }

@@ -1,0 +1,161 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "win-common",
+      "hidden": true,
+      "generator": "Visual Studio 16 2019",
+      "binaryDir": "${sourceDir}/../build_temp/win/${presetName}",
+      "description": "Windows 公共段。x86/x64 差异只在 architecture，静态/动态差异只在 BUILD_STATIC_LIBS。"
+    },
+    {
+      "name": "win-x86-shared",
+      "inherits": "win-common",
+      "displayName": "Windows x86 (VS2019) 动态库",
+      "description": "对应 ps/BuildWin.ps1 的 x86 + 动态；产物 win_X86Demo 取 Release 下的 dll+lib。",
+      "architecture": "Win32",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "OFF"
+      }
+    },
+    {
+      "name": "win-x86-static",
+      "inherits": "win-x86-shared",
+      "displayName": "Windows x86 (VS2019) 静态库",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "ON"
+      }
+    },
+    {
+      "name": "win-x64-shared",
+      "inherits": "win-common",
+      "displayName": "Windows x64 (VS2019) 动态库",
+      "description": "对应 ps/BuildWin.ps1 的 x64 + 动态。",
+      "architecture": "x64",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "OFF"
+      }
+    },
+    {
+      "name": "win-x64-static",
+      "inherits": "win-x64-shared",
+      "displayName": "Windows x64 (VS2019) 静态库",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "ON"
+      }
+    },
+    {
+      "name": "android-common",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/../build_temp/android/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_MAKE_PROGRAM": "D:/apps/JetBrains/CLion 2023.1.4/bin/ninja/win/x64/ninja.exe",
+        "CMAKE_TOOLCHAIN_FILE": "D:/apps/Android/Sdk/ndk/28.2.13676358/build/cmake/android.toolchain.cmake",
+        "ANDROID_PLATFORM": "android-28",
+        "ANDROID_STL": "c++_shared"
+      },
+      "description": "Android 公共段。NDK 与 ninja 路径是本机绝对路径，换机器改这里（ps/env_paths.ps1 里也有一份，注意同步）。"
+    },
+    {
+      "name": "android-arm64-v8a-shared",
+      "inherits": "android-common",
+      "displayName": "Android arm64-v8a 动态库",
+      "description": "对应 ps/BuildAndroid.ps1 的 arm64-v8a + 动态。",
+      "cacheVariables": {
+        "ANDROID_ABI": "arm64-v8a",
+        "BUILD_STATIC_LIBS": "OFF"
+      }
+    },
+    {
+      "name": "android-arm64-v8a-static",
+      "inherits": "android-arm64-v8a-shared",
+      "displayName": "Android arm64-v8a 静态库",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "ON"
+      }
+    },
+    {
+      "name": "android-armeabi-v7a-shared",
+      "inherits": "android-common",
+      "displayName": "Android armeabi-v7a 动态库",
+      "cacheVariables": {
+        "ANDROID_ABI": "armeabi-v7a",
+        "BUILD_STATIC_LIBS": "OFF"
+      }
+    },
+    {
+      "name": "android-armeabi-v7a-static",
+      "inherits": "android-armeabi-v7a-shared",
+      "displayName": "Android armeabi-v7a 静态库",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "ON"
+      }
+    },
+    {
+      "name": "linux-common",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/../build_temp/linux/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "/opt/gcc-9.3.0/bin/gcc",
+        "CMAKE_CXX_COMPILER": "/opt/gcc-9.3.0/bin/g++",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+      },
+      "description": "Linux 公共段。编译器根路径固定为 WSL 容器内 /opt/gcc-9.3.0，只在 WSL 下可用（Windows 侧跑会找不到编译器）。"
+    },
+    {
+      "name": "linux-x64-shared",
+      "inherits": "linux-common",
+      "displayName": "Linux x86_64 (Ninja + gcc-9.3 + ccache) 动态库",
+      "description": "对应 shell/buildOXiAll.sh 的 Linux-x64 + shared。",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "OFF"
+      }
+    },
+    {
+      "name": "linux-x64-static",
+      "inherits": "linux-x64-shared",
+      "displayName": "Linux x86_64 静态库",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "ON"
+      }
+    },
+    {
+      "name": "linux-aarch64-common",
+      "hidden": true,
+      "inherits": "linux-common",
+      "toolchainFile": "/opt/aarch64-gcc9.3/cmake/aarch64-gcc9.3.cmake",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/opt/aarch64-gcc9.3/bin/aarch64-linux-gnu-gcc",
+        "CMAKE_CXX_COMPILER": "/opt/aarch64-gcc9.3/bin/aarch64-linux-gnu-g++"
+      },
+      "description": "aarch64 交叉编译段：toolchainFile + 交叉编译器覆盖掉 linux-common 里的本地 gcc-9.3。"
+    },
+    {
+      "name": "linux-aarch64-shared",
+      "inherits": "linux-aarch64-common",
+      "displayName": "Linux aarch64 交叉编译 动态库",
+      "description": "对应 shell/buildOXiAll.sh 的 Linux-ARM64 + shared。",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "OFF"
+      }
+    },
+    {
+      "name": "linux-aarch64-static",
+      "inherits": "linux-aarch64-shared",
+      "displayName": "Linux aarch64 交叉编译 静态库",
+      "cacheVariables": {
+        "BUILD_STATIC_LIBS": "ON"
+      }
+    }
+  ]
+}

@@ -111,6 +111,27 @@ check_command()
     fi
 }
 
+# 判断某个 configure preset 在当前环境能不能用。
+# 拿 `cmake --list-presets` 当探针：它不需要工具链就能跑通，能读通说明源目录的
+# CMakePresets.json（含 include 到 /mnt/d/git/script/cmake-presets/sdk-presets.json 的引用链）
+# 有效；而且 CMake 会按当前平台过滤掉生成器不可用的 preset（Linux 下列不出 VS2019 那些），
+# 所以命中即代表本机真的能用它构建。任一环节不满足就返回非 0，调用方回退手工参数。
+# 构建配置的真源只有一份：/mnt/d/git/script/cmake-presets/sdk-presets.json。
+preset_available()
+{
+    local src="$1"
+    local name="$2"
+    if [ ! -f "${src}/CMakePresets.json" ] && [ ! -f "${src}/CMakeUserPresets.json" ]; then
+        return 1
+    fi
+    local list
+    list="$(cmake --list-presets -S "${src}" 2>/dev/null)" || return 1
+    case "${list}" in
+        *"\"${name}\""*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 check_shared_library_arch()
 {
     local lib="$1"
@@ -296,20 +317,36 @@ build_platform_linux()
         echo "Build dir: ${BUILD_DIR}"
         echo "Output dir: ${OUTPUT_DIR}"
 
-        local CMAKE_ARGS=(
-            -S "${SRC_DIR}"
-            -B "${BUILD_DIR}"
-            -G Ninja
-            -DCMAKE_BUILD_TYPE=Release
-            -DBUILD_STATIC_LIBS="${STATIC}"
-            -DCMAKE_C_COMPILER="${C_COMPILER}"
-            -DCMAKE_CXX_COMPILER="${CXX_COMPILER}"
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-            -DTHIRD_PARTY_DIR="${THIRD_PARTY_DIR}"
-        )
-        if [ "${OUT_PLATFORM_DIR}" = "aarch64" ]; then
-            CMAKE_ARGS+=( -DCMAKE_TOOLCHAIN_FILE="${AARCH64_TOOLCHAIN_FILE}" )
+        # 生成器/编译器/ccache/静态开关交给 preset（真源 /mnt/d/git/script/cmake-presets/sdk-presets.json，
+        # 源目录里只有一个 include 它的 CMakePresets.json）。-B 仍由本脚本指定，
+        # 因为 --preset 之外的 -B 会覆盖 preset 的 binaryDir。
+        local PRESET="linux-${OUT_PLATFORM_DIR}-${TYPE}"
+        local CMAKE_ARGS
+        if preset_available "${SRC_DIR}" "${PRESET}"; then
+            echo "[preset] ${PRESET}  (生成器/编译器/ccache 由 preset 提供，build 目录仍由脚本指定)"
+            CMAKE_ARGS=(
+                --preset "${PRESET}"
+                -S "${SRC_DIR}"
+                -B "${BUILD_DIR}"
+                -DTHIRD_PARTY_DIR="${THIRD_PARTY_DIR}"
+            )
+        else
+            echo "[WARN] preset ${PRESET} 不可用，回退到手工参数（源目录没有有效的 CMakePresets.json）"
+            CMAKE_ARGS=(
+                -S "${SRC_DIR}"
+                -B "${BUILD_DIR}"
+                -G Ninja
+                -DCMAKE_BUILD_TYPE=Release
+                -DBUILD_STATIC_LIBS="${STATIC}"
+                -DCMAKE_C_COMPILER="${C_COMPILER}"
+                -DCMAKE_CXX_COMPILER="${CXX_COMPILER}"
+                -DCMAKE_C_COMPILER_LAUNCHER=ccache
+                -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+                -DTHIRD_PARTY_DIR="${THIRD_PARTY_DIR}"
+            )
+            if [ "${OUT_PLATFORM_DIR}" = "aarch64" ]; then
+                CMAKE_ARGS+=( -DCMAKE_TOOLCHAIN_FILE="${AARCH64_TOOLCHAIN_FILE}" )
+            fi
         fi
         cmake "${CMAKE_ARGS[@]}"
         cmake --build "${BUILD_DIR}" --parallel "${BUILD_JOBS}"

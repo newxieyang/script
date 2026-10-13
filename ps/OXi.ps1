@@ -24,7 +24,9 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 #   simpleAndroid/      Android 源码
 #   *.apk               Android 调试包
 #   simpleLinux/        Qt Linux 源码（含 linux/ 下的预编译库，原样拷贝，不重新构建）
-#   doc/                文档
+#                        打包时排除 .git / .workbuddy / cmake-build* / build / .idea
+#                        等非源码目录（规则见 copyUtils.ps1 的 Get-PackIgnoreDirs）
+#   doc/                文档（打包时同样排除 .workbuddy / .git）
 #
 # 拷贝开关（sdk_config.json，为 false 表示该平台整块不进包）:
 #   copy_win_lib     ：Win 库(Copy-WinLib) + simpleWin 源码 + win_X86Demo/win_X64Demo 测试案例
@@ -198,8 +200,9 @@ function Copy-QtLinuxLibs {
 
     $copied = 0
     $failed = 0
+    # 按文件逐个拷的同时也把 .workbuddy 之类的工程元数据目录剪掉（该目录理论上只有库文件，做个兜底）
     $files = @(Get-ChildItem -LiteralPath $libDir.FullName -Recurse -Force -ErrorAction SilentlyContinue |
-        Where-Object { -not $_.PSIsContainer })
+        Where-Object { -not $_.PSIsContainer -and $_.FullName -notmatch '[\\/]\.workbuddy[\\/]' })
 
     foreach ($f in $files) {
         $rel = $f.FullName.Substring($libDir.FullName.Length).TrimStart('\', '/')
@@ -229,8 +232,12 @@ function Copy-QtSimpleLinux {
         [Parameter(Mandatory)][string]$QtDir,
         [Parameter(Mandatory)][string]$TargetRoot
     )
-    # py 直接 copytree；这里排除 IDE/构建目录，避免把 .git、build 传进 SDK
-    $ignore = @(".git", ".idea", "build", ".cxx", "CMakeFiles", "cmake-build-release", "cmake-build-debug")
+    # 排除非源码目录，避免把 .git（几十~上百 MB）、.workbuddy、cmake-build*（IDE/构建产物）打进 SDK。
+    # 规则集中在 copyUtils.ps1 的 Get-PackIgnoreDirs（"qt"），与 py 的 PACK_IGNORE_DIRS["qt"] 一一对应：
+    #   * cmake-build* 必须写成通配：实际目录名是 cmake-build-release-vs2019_x64 / cmake-build-debug 等，
+    #     写精确名（cmake-build-release）根本匹配不上，会整份拷进 simpleLinux。
+    #   * "cmake"（无横线）不能排除 —— A910_qt\cmake 里是 toolchain-*.cmake 源码。
+    $ignore = @(Get-PackIgnoreDirs -Kind qt)
     $dst = Join-Path $TargetRoot "simpleLinux"
 
     # 库目录单独处理，避免被源码树那趟拷贝漏掉/拷成空文件
@@ -253,10 +260,10 @@ function Copy-Doc {
     }
 
     $dst = Join-Path $TargetRoot "doc"
-    if (Test-Path $dst) { Remove-DirectorySafe $dst }
-    New-SafeDirectory $dst
-    Get-ChildItem -LiteralPath $SrcDir -Force | Copy-Item -Destination $dst -Recurse -Force
-    Write-Host "[复制文档] $SrcDir -> $dst"
+    # 文档目录同样排除 .workbuddy/.git 之类的工程元数据（Get-PackIgnoreDirs "doc"）；
+    # 该函数自带"先删目标目录再建"，等价于原实现
+    [void](Copy-DirectoryFiltered -SrcDir $SrcDir -DstDir $dst `
+            -ExcludeNames (Get-PackIgnoreDirs -Kind doc) -Label "文档")
 
     if ($KeepLatest) {
         $docs = @(Get-ChildItem -Path $dst -Filter "*.docx" -File -ErrorAction SilentlyContinue |
