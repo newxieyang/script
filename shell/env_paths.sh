@@ -2,7 +2,7 @@
 # ============================================================
 # 公共路径配置（WSL 侧读取器）
 #
-# 唯一真源：<仓库根>/paths.json。用法（放在脚本最前面）：
+# 唯一真源：<仓库根>/config/paths.json。用法（放在脚本最前面）：
 #     source "$(dirname "${BASH_SOURCE[0]}")/env_paths.sh"
 #
 # 导出变量：
@@ -13,7 +13,7 @@
 #   WSL_BUILD_SCRIPT / WSL_OPENCV_SCRIPT 两个 WSL 侧入口脚本
 #
 # 解析方式用 sed/grep，不依赖 python3（WSL 容器里不一定装）。
-# 依赖 paths.json 的格式约定：每个键独占一行、值是用双引号包住的字符串。
+# 依赖 config/paths.json 的格式约定：每个键独占一行、值是用双引号包住的字符串。
 # ============================================================
 
 if [ -n "${SCRIPT_ENV_PATHS_LOADED:-}" ]; then
@@ -22,7 +22,7 @@ fi
 SCRIPT_ENV_PATHS_LOADED=1
 
 SCRIPT_REPO_WSL="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SCRIPT_PATHS_JSON="${SCRIPT_REPO_WSL}/paths.json"
+SCRIPT_PATHS_JSON="${SCRIPT_REPO_WSL}/config/paths.json"
 
 if [ ! -f "${SCRIPT_PATHS_JSON}" ]; then
     echo "[ERROR] 找不到公共路径配置: ${SCRIPT_PATHS_JSON}" >&2

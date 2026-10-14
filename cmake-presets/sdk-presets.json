@@ -61,7 +61,7 @@
         "ANDROID_PLATFORM": "android-28",
         "ANDROID_STL": "c++_shared"
       },
-      "description": "Android 公共段。此处 NDK / ninja 是本机绝对路径的展开值，真源是仓库根 paths.json；两者一致性由 py/checkPaths.py 校验（--write 可回写）。"
+      "description": "Android 公共段。此处 NDK / ninja 是本机绝对路径的展开值，真源是 config/paths.json；两者一致性由 py/checkPaths.py 校验（--write 可回写）。"
     },
     {
       "name": "android-arm64-v8a-shared",

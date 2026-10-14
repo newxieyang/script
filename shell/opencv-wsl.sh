@@ -30,7 +30,7 @@
 set -e
 
 # ==============================================================================
-# 0. 公共路径配置（真源：仓库根 paths.json）
+# 0. 公共路径配置（真源：config/paths.json）
 #    提供 LOCAL_GCC_ROOT / AARCH64_GCC_ROOT，别在本脚本里再写死 /opt/... 路径。
 # ==============================================================================
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/env_paths.sh"
@@ -39,7 +39,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/env_paths.sh"
 # 1. 路径配置
 # ==============================================================================
 
-# OpenCV 源码目录：由调用方（ps/buildOpenCVAll.ps1 从 opencv_config.json 的 src_dir
+# OpenCV 源码目录：由调用方（ps/buildOpenCVAll.ps1 从 config/opencv_config.json 的 src_dir
 # 转成 WSL 路径后）通过环境变量传入；直接跑本脚本时用下面的默认值兜底。
 OPENCV_SRC="${OPENCV_SRC:-/mnt/e/3rdSRC/opencv-4.6.0}"
 

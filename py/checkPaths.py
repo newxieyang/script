@@ -1,19 +1,19 @@
 # encoding:utf-8
 """
-路径一致性检查 / 同步工具 —— 守住「paths.json 是唯一真源」这条约定。
+路径一致性检查 / 同步工具 —— 守住「config/paths.json 是唯一真源」这条约定。
 
 背景：script 仓库里 cmake / ninja / NDK / 交叉编译器这些路径原来散落在
 ps、py、shell、bat 四端的十来个脚本里，版本还漂过（NDK 25.2 / 26.3 / 28.2 各写一份）。
-现在统一收敛到仓库根 paths.json，本工具负责防止它再退化：
+现在统一收敛到 config/paths.json，本工具负责防止它再退化：
 
   1) 扫描四端脚本，报告残留的机器相关绝对路径（D:/apps/...、/opt/gcc-9.3.0、/mnt/d/... 等）
-  2) 校验 cmake-presets/sdk-presets.json 里的机器相关路径与 paths.json 一致
+  2) 校验 cmake-presets/sdk-presets.json 里的机器相关路径与 config/paths.json 一致
      （preset 要能被 CLion 独立使用，所以不能改成 $env{} 宏，只能靠本工具同步）
-  3) 校验 paths.json 仍符合 shell 端简易解析（sed/grep）所要求的格式
+  3) 校验 config/paths.json 仍符合 shell 端简易解析（sed/grep）所要求的格式
 
 用法：
     python py/checkPaths.py              # 只检查，有问题退出码 1
-    python py/checkPaths.py --write      # 把 paths.json 的值回写到 preset
+    python py/checkPaths.py --write      # 把 config/paths.json 的值回写到 preset
     python py/checkPaths.py --quiet      # 只输出结论
 
 给某一行加白名单（确实需要写死的地方）：
@@ -26,7 +26,7 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-PATHS_FILE = REPO / "paths.json"
+PATHS_FILE = REPO / "config" / "paths.json"
 PRESET_FILE = REPO / "cmake-presets" / "sdk-presets.json"
 
 # 扫描范围：四端脚本目录
@@ -151,8 +151,8 @@ def check_paths_format(cfg):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="paths.json 唯一真源一致性检查")
-    ap.add_argument("--write", action="store_true", help="把 paths.json 的值回写到 cmake-presets/sdk-presets.json")
+    ap = argparse.ArgumentParser(description="config/paths.json 唯一真源一致性检查")
+    ap.add_argument("--write", action="store_true", help="把 config/paths.json 的值回写到 cmake-presets/sdk-presets.json")
     ap.add_argument("--quiet", action="store_true", help="只输出结论")
     args = ap.parse_args()
 
@@ -173,27 +173,27 @@ def main():
     diffs = check_preset(cfg, write=args.write)
     if diffs:
         if args.write:
-            print("[FIXED] 已把 %d 处 preset 路径同步为 paths.json 的值：" % len(diffs))
+            print("[FIXED] 已把 %d 处 preset 路径同步为 config/paths.json 的值：" % len(diffs))
             for preset_name, key, have, want in diffs:
                 print("  %s.%s: %s -> %s" % (preset_name, key, have, want))
         else:
             failed = True
-            print("[FAIL] preset 与 paths.json 不一致（%d 处，可用 --write 同步）：" % len(diffs))
+            print("[FAIL] preset 与 config/paths.json 不一致（%d 处，可用 --write 同步）：" % len(diffs))
             for preset_name, key, have, want in diffs:
                 print("  %s.%s" % (preset_name, key))
                 print("       preset    : %s" % have)
-                print("       paths.json: %s" % want)
+                print("       config/paths.json: %s" % want)
     else:
-        print("[OK] cmake-presets/sdk-presets.json 与 paths.json 一致")
+        print("[OK] cmake-presets/sdk-presets.json 与 config/paths.json 一致")
 
     problems = check_paths_format(cfg)
     if problems:
         failed = True
-        print("[FAIL] paths.json 格式不符合 shell 端解析约定：")
+        print("[FAIL] config/paths.json 格式不符合 shell 端解析约定：")
         for p in problems:
             print("  - %s" % p)
     else:
-        print("[OK] paths.json 格式可被 shell 端 sed/grep 解析")
+        print("[OK] config/paths.json 格式可被 shell 端 sed/grep 解析")
 
     return 1 if failed else 0
 

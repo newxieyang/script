@@ -28,7 +28,7 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 #                        等非源码目录（规则见 copyUtils.ps1 的 Get-PackIgnoreDirs）
 #   doc/                文档（打包时同样排除 .workbuddy / .git）
 #
-# 拷贝开关（sdk_config.json，为 false 表示该平台整块不进包）:
+# 拷贝开关（config/sdk_config.json，为 false 表示该平台整块不进包）:
 #   copy_win_lib     ：Win 库(Copy-WinLib) + simpleWin 源码 + win_X86Demo/win_X64Demo 测试案例
 #   copy_android_lib ：Android 库 + simpleAndroid 源码 + *.apk 测试案例
 #   copy_linux_lib   ：simpleLinux（Qt 源码 + linux/ 下的预编译库，只拷不构建）
@@ -128,11 +128,14 @@ function Copy-WinLib {
         return
     }
 
-    Copy-FileSafe -SrcFile (Join-Path $x86Src "$LibName.lib") -DstDir (Join-Path $TargetDir "libx86")
-    Copy-FileSafe -SrcFile (Join-Path $x86Src "$LibName.dll") -DstDir (Join-Path $TargetDir "Release")
+    # ⚠️ 必须用 [void](...) 吃掉返回值：Copy-FileSafe 会 return $true/$false，
+    # 不被吞掉就会漏进 New-SdkPackage 的输出流，使 $target 变成
+    # "True True True True True True <路径>" 这样的数组，末尾的包内容清单随之报错。
+    [void](Copy-FileSafe -SrcFile (Join-Path $x86Src "$LibName.lib") -DstDir (Join-Path $TargetDir "libx86"))
+    [void](Copy-FileSafe -SrcFile (Join-Path $x86Src "$LibName.dll") -DstDir (Join-Path $TargetDir "Release"))
 
-    Copy-FileSafe -SrcFile (Join-Path $x64Src "$LibName.lib") -DstDir (Join-Path $TargetDir "libx64")
-    Copy-FileSafe -SrcFile (Join-Path $x64Src "$LibName.dll") -DstDir (Join-Path $TargetDir "x64\Release")
+    [void](Copy-FileSafe -SrcFile (Join-Path $x64Src "$LibName.lib") -DstDir (Join-Path $TargetDir "libx64"))
+    [void](Copy-FileSafe -SrcFile (Join-Path $x64Src "$LibName.dll") -DstDir (Join-Path $TargetDir "x64\Release"))
 }
 
 function Copy-AndroidLib {
@@ -154,8 +157,9 @@ function Copy-AndroidLib {
         return
     }
 
-    Copy-FileSafe -SrcFile (Join-Path $srcV7 $soName) -DstDir (Join-Path $TargetDir "armeabi-v7a")
-    Copy-FileSafe -SrcFile (Join-Path $srcV8 $soName) -DstDir (Join-Path $TargetDir "arm64-v8a")
+    # 同上：吃掉 Copy-FileSafe 的布尔返回值，别让它污染 $target
+    [void](Copy-FileSafe -SrcFile (Join-Path $srcV7 $soName) -DstDir (Join-Path $TargetDir "armeabi-v7a"))
+    [void](Copy-FileSafe -SrcFile (Join-Path $srcV8 $soName) -DstDir (Join-Path $TargetDir "arm64-v8a"))
 }
 
 # ============================================================
@@ -400,7 +404,7 @@ function Convert-ToSdkHashtable {
 # 入口
 # ============================================================
 if ([string]::IsNullOrWhiteSpace($ConfigFile)) {
-    $ConfigFile = Join-Path $PSScriptRoot "sdk_config.json"
+    $ConfigFile = Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) "config") "sdk_config.json"
 }
 if (-not (Test-Path -LiteralPath $ConfigFile)) {
     throw "配置文件不存在: $ConfigFile"
@@ -410,7 +414,7 @@ $cfgRoot = Get-Content -LiteralPath $ConfigFile -Raw -Encoding UTF8 | ConvertFro
 $sdkNode = $cfgRoot.$SdkKey
 if (-not $sdkNode) {
     $keys = ($cfgRoot.PSObject.Properties.Name -join ", ")
-    throw "sdk_config.json 中找不到键: $SdkKey（可用: $keys）"
+    throw "config/sdk_config.json 中找不到键: $SdkKey（可用: $keys）"
 }
 
 $sdk = Convert-ToSdkHashtable $sdkNode

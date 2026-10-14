@@ -1,7 +1,7 @@
 //! OXiScan SDK 构建工具（桌面版）
 //!
 //! 把 `git/script` 下的构建/打包/文档脚本包一层界面：
-//!   · 项目下拉框（读 ps/sdk_config.json 的键）
+//!   · 项目下拉框（读 config/sdk_config.json 的键）
 //!   · 9 个构建开关（勾选后点「执行」生效）
 //!   · 「执行」= powershell ps/buildOXiAll.ps1 -SdkKey <key> -ConfigFile <临时配置>
 //!   · 「生成文档」= python py/genSDKAPI.py <key>
@@ -27,14 +27,14 @@ fn main() -> Result<(), eframe::Error> {
 
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_title("OXiScan SDK 构建工具")
+            .with_title("OXi SDK 构建工具")
             .with_inner_size([1040.0, 780.0])
             .with_min_inner_size([780.0, 540.0]),
         ..Default::default()
     };
 
     eframe::run_native(
-        "OXiScan SDK 构建工具",
+        "OXi SDK 构建工具",
         options,
         Box::new(|cc| Ok(Box::new(app::App::new(cc)))),
     )

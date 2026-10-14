@@ -10,7 +10,7 @@ param(
     [string]$Version = ""
 )
 
-# 公共路径配置（真源：仓库根 paths.json）。param 必须在脚本第一条语句，所以放它后面。
+# 公共路径配置（真源：config/paths.json）。param 必须在脚本第一条语句，所以放它后面。
 . (Join-Path $PSScriptRoot "env_paths.ps1")
 
 # ====================== 配置区域 ======================

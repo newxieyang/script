@@ -7,20 +7,35 @@ import shutil
 import chardet
 
 def is_hidden(path):
-    """判断路径是否为隐藏文件或目录"""
+    """
+    判断路径是否为隐藏文件或目录。
+
+    与 ps/fileUtils.ps1 的 Test-IsHiddenName 逐条对齐：. / $ / cmake / src 开头的目录
+    一律剪枝（cmake 是为了避开 cmake-build*，src 是为了避开 src 源码聚合目录）。
+
+    注意原来写成 `a or (nt and b or c or d)`：Python 里 and 优先级高于 or，
+    实际等价于 `a or (nt and b) or c or d`，$ 开头的判断被 nt 短路了。
+    """
     basename = os.path.basename(path)
-    return basename.startswith('.') or (os.name == 'nt' and basename.startswith('$') or basename.startswith('cmake') or basename.startswith('src'))
- 
+    return (basename.startswith('.')
+            or basename.startswith('$')
+            or basename.startswith('cmake')
+            or basename.startswith('src'))
+
 
 def findFilePathNameByKeyWord(pjDir, key):
+    """按文件名关键字深度优先找第一个命中（与 ps 的 Find-FilePathByKeyword 一致，大小写敏感）"""
+    if not os.path.isdir(pjDir):
+        return None
+
     for root, dirs, files in os.walk(pjDir):
-    # 忽略隐藏目录
+        # 忽略隐藏目录（任意一层祖先命中即整棵剪掉）
         dirs[:] = [d for d in dirs if not is_hidden(d)]
         for file in files:
-            # print(f"File: {os.path.join(root, file)}")
             if key in file:
                 return os.path.join(root, file)
-            
+
+    return None
 
 def readVer(pjDir):
     verPN = findFilePathNameByKeyWord(pjDir, "ersion")
@@ -125,9 +140,15 @@ def parse_cmake_versions(pjDir):
 
 
 def safe_mkdir(path: str):
-    """不存在则创建文件夹"""
+    """
+    不存在则创建文件夹（含中间目录）。
+
+    对应 ps 的 New-SafeDirectory：那边用 New-Item -ItemType Directory -Force，
+    会自动补齐中间层。原来这里用 os.mkdir（单层），target_root 还不存在时
+    直接抛 FileNotFoundError —— 早先能跑通只是因为碰巧 target_root 已被建过。
+    """
     if not os.path.isdir(path):
-        os.mkdir(path)
+        os.makedirs(path, exist_ok=True)
         print(f"[创建目录] {path}")
 
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO_DIR="/data/usershare/git/gserDemo/A910"
+REPO_DIR="/data/usershare/git/mutDemo/A910"
 BRANCH="A910"
 REMOTE="origin"
 

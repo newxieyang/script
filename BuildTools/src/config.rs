@@ -1,4 +1,4 @@
-//! `ps/sdk_config.json` 的读写。
+//! `config/sdk_config.json` 的读写。
 //!
 //! 只把需求里点名的 9 个键当作"可勾选项"，其余字段（sdk_dir / prefix / lib /
 //! header_keyword / headers / doc ...）一律原样保留 —— 界面保存或生成临时配置时
@@ -168,7 +168,7 @@ impl ConfigStore {
         }
     }
 
-    /// 回写 `ps/sdk_config.json`（无 BOM，遵循仓库约定）
+    /// 回写 `config/sdk_config.json`（无 BOM，遵循仓库约定）
     pub fn save(&self) -> Result<(), String> {
         let bytes = self.serialize(self.bom)?;
         std::fs::write(&self.path, bytes)

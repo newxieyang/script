@@ -97,8 +97,8 @@ fn selftest_lines() -> (Vec<String>, bool) {
     r.ok(format!("文档脚本    : {}", layout.api_script().display()));
     r.ok(format!("python      : {}", layout.python()));
 
-    let python_exists = std::path::Path::new(&layout.python()).is_file()
-        || layout.python() == "python"; // PATH 上的裸命令无法预检
+    let python_exists =
+        std::path::Path::new(&layout.python()).is_file() || layout.python() == "python"; // PATH 上的裸命令无法预检
     if python_exists {
         r.ok("python 可执行文件存在");
     } else {
@@ -177,7 +177,8 @@ fn selftest_lines() -> (Vec<String>, bool) {
 
     // 临时配置故意带 BOM，serde_json 不认，回读时剥掉
     let text = String::from_utf8_lossy(&raw);
-    let parsed: serde_json::Value = match serde_json::from_str(text.trim_start_matches('\u{feff}')) {
+    let parsed: serde_json::Value = match serde_json::from_str(text.trim_start_matches('\u{feff}'))
+    {
         Ok(v) => v,
         Err(e) => {
             r.fail(format!("临时配置解析失败：{e}"));
@@ -308,7 +309,10 @@ impl Inner {
 
     fn start(&mut self, ctx: &egui::Context, spec: SpawnSpec, busy_label: &str) {
         if self.runner.is_some() {
-            self.push(Stream::Err, "[忽略] 已有任务在运行，请先等它结束或点「停止」。");
+            self.push(
+                Stream::Err,
+                "[忽略] 已有任务在运行，请先等它结束或点「停止」。",
+            );
             return;
         }
         let repaint = {
@@ -412,7 +416,7 @@ impl Inner {
         egui::TopBottomPanel::top("top").show(ctx, |ui| {
             ui.add_space(6.0);
             ui.horizontal(|ui| {
-                ui.heading("OXiScan SDK 构建工具");
+                ui.heading("OXi SDK");
                 ui.add_space(12.0);
                 ui.label("项目：");
                 let keys = self.store.keys().to_vec();
@@ -454,7 +458,11 @@ impl Inner {
                         RichText::new(format!(
                             "· {} 行 · {}",
                             self.log.len(),
-                            if running { "运行中…" } else { self.status.as_str() }
+                            if running {
+                                "运行中…"
+                            } else {
+                                self.status.as_str()
+                            }
                         ))
                         .color(ui.visuals().weak_text_color()),
                     );
@@ -501,16 +509,14 @@ impl Inner {
                     });
             });
 
-        if clear_requested
-            || ctx.input(|i| i.modifiers.ctrl && i.key_pressed(egui::Key::L))
-        {
+        if clear_requested || ctx.input(|i| i.modifiers.ctrl && i.key_pressed(egui::Key::L)) {
             self.log.clear();
         }
 
         // ---------------- 中部：勾选项 + 动作 ----------------
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.add_space(4.0);
-            ui.label(RichText::new("开关（勾选后点「执行」生效；点「保存配置」写回 ps/sdk_config.json）").color(
+            ui.label(RichText::new("开关（勾选后点「执行」生效；点「保存配置」写回 config/sdk_config.json）").color(
                 ui.visuals().weak_text_color(),
             ));
             ui.add_space(6.0);
@@ -590,7 +596,7 @@ impl Inner {
 
                 if ui
                     .add_enabled(self.dirty(), egui::Button::new("保存配置"))
-                    .on_hover_text("把当前所有项目的勾选写回 ps/sdk_config.json")
+                    .on_hover_text("把当前所有项目的勾选写回 config/sdk_config.json")
                     .clicked()
                 {
                     self.save_config();
@@ -599,7 +605,7 @@ impl Inner {
                 ui.add_space(10.0);
                 if ui
                     .button("重新载入配置")
-                    .on_hover_text("丢弃界面上的改动，重新读 ps/sdk_config.json")
+                    .on_hover_text("丢弃界面上的改动，重新读 config/sdk_config.json")
                     .clicked()
                 {
                     match ConfigStore::load(&self.layout.sdk_config()) {
@@ -607,7 +613,7 @@ impl Inner {
                             self.store = s;
                             self.working = self.store.all_flags();
                             self.saved = self.working.clone();
-                            self.push(Stream::Out, "[已重载] ps/sdk_config.json");
+                            self.push(Stream::Out, "[已重载] config/sdk_config.json");
                         }
                         Err(e) => self.push(Stream::Err, e),
                     }
@@ -663,7 +669,11 @@ fn install_cjk_font(ctx: &egui::Context) {
         std::sync::Arc::new(egui::FontData::from_owned(bytes)),
     );
     for family in [egui::FontFamily::Proportional, egui::FontFamily::Monospace] {
-        fonts.families.entry(family).or_default().push("cjk".to_owned());
+        fonts
+            .families
+            .entry(family)
+            .or_default()
+            .push("cjk".to_owned());
     }
     ctx.set_fonts(fonts);
     eprintln!("[字体] 已加载 {path}");

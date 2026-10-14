@@ -6,8 +6,8 @@ param (
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
-# opencv_config.json 默认取脚本同目录，不再写死仓库绝对路径
-if ([string]::IsNullOrWhiteSpace($ConfigFile)) { $ConfigFile = Join-Path $PSScriptRoot "opencv_config.json" }
+# opencv_config.json 默认取仓库 config/ 目录，不再写死仓库绝对路径
+if ([string]::IsNullOrWhiteSpace($ConfigFile)) { $ConfigFile = Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) "config") "opencv_config.json" }
 
 <#
 .SYNOPSIS
@@ -47,7 +47,7 @@ $cfg = $config.$ConfigKey
 # 2. Parse Configuration
 #
 #    工具路径（cmake / ninja / NDK / VS 生成器 / WSL 编译器根）不在这里读 ——
-#    它们统一来自仓库根 paths.json，由 BuildUtils.ps1 → env_paths.ps1 提供。
+#    它们统一来自 config/paths.json，由 BuildUtils.ps1 → env_paths.ps1 提供。
 #    本 json 只描述 OpenCV 自身：源码、版本、输出根、编哪些平台。
 # ============================================================
 $Version       = $cfg.version

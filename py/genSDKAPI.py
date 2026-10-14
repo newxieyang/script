@@ -509,8 +509,10 @@ def createSDKAPI(config, verName, APIPathName):
    
 
 def load_config():
-    # 以脚本所在目录定位 api_config.json，这样从任意 cwd（含桌面 GUI）调用都能找到
-    cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_config.json")
+    # 由脚本所在目录上溯到仓库根定位 config/api_config.json，
+    # 这样从任意 cwd（含桌面 GUI）调用都能找到
+    here = os.path.dirname(os.path.abspath(__file__))
+    cfg_path = os.path.join(os.path.dirname(here), "config", "api_config.json")
     with open(cfg_path, encoding="utf-8") as f:
         return json.load(f)
 

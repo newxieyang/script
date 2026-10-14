@@ -5,8 +5,8 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
-# sdk_config.json 默认取脚本同目录，不再写死仓库绝对路径
-if ([string]::IsNullOrWhiteSpace($ConfigFile)) { $ConfigFile = Join-Path $PSScriptRoot "sdk_config.json" }
+# sdk_config.json 默认取仓库 config/ 目录，不再写死仓库绝对路径
+if ([string]::IsNullOrWhiteSpace($ConfigFile)) { $ConfigFile = Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) "config") "sdk_config.json" }
 
 # Encoding Fix - Final Cleanup
 <#
@@ -259,7 +259,7 @@ if ($ShouldPackage) {
     Write-Host "`n[5/5] Running SDK packager..."
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
     # 把本次使用的配置转发给打包脚本，否则 GUI/调用方传进来的 copy_*_lib、keep_latest_doc 等
-    # 覆盖值到不了打包阶段（OXi.ps1 会回落到默认 ps\sdk_config.json）
+    # 覆盖值到不了打包阶段（OXi.ps1 会回落到默认 config\sdk_config.json）
     & $PackageScript -SdkKey $SdkKey -ConfigFile $ConfigFile
 } else {
     Write-Host "`n[5/5] Skipping SDK packager (should_package = false)."

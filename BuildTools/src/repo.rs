@@ -1,4 +1,4 @@
-//! 仓库布局定位：找到 `git/script` 根（含 `paths.json` 与 `ps/sdk_config.json`），
+//! 仓库布局定位：找到 `git/script` 根（含 `config/paths.json` 与 `config/sdk_config.json`），
 //! 并给出各处脚本 / 配置的绝对路径。
 //!
 //! 之所以不写死路径：exe 可能被 `cargo run` 启动（cwd = BuildTools/）、
@@ -40,7 +40,7 @@ impl Layout {
         }
 
         Err(format!(
-            "找不到仓库根（要求同时存在 paths.json 与 ps/sdk_config.json）。\n已尝试的起点：{}",
+            "找不到仓库根（要求同时存在 config/paths.json 与 config/sdk_config.json）。\n已尝试的起点：{}",
             anchors
                 .iter()
                 .map(|p| p.display().to_string())
@@ -50,20 +50,26 @@ impl Layout {
     }
 
     fn is_repo_root(dir: &Path) -> bool {
-        dir.join("paths.json").is_file() && dir.join("ps").join("sdk_config.json").is_file()
+        dir.join("config").join("paths.json").is_file()
+            && dir.join("config").join("sdk_config.json").is_file()
     }
 
     pub fn root(&self) -> &Path {
         &self.root
     }
 
-    pub fn paths_json(&self) -> PathBuf {
-        self.root.join("paths.json")
+    /// 所有配置文件的目录（`config/`）。
+    pub fn config_dir(&self) -> PathBuf {
+        self.root.join("config")
     }
 
-    /// 默认配置（需求 1）：`ps/sdk_config.json`
+    pub fn paths_json(&self) -> PathBuf {
+        self.config_dir().join("paths.json")
+    }
+
+    /// 默认配置（需求 1）：`config/sdk_config.json`
     pub fn sdk_config(&self) -> PathBuf {
-        self.root.join("ps").join("sdk_config.json")
+        self.config_dir().join("sdk_config.json")
     }
 
     pub fn build_script(&self) -> PathBuf {
@@ -78,7 +84,7 @@ impl Layout {
         self.root.join("py")
     }
 
-    /// 读 `paths.json` 的 `windows.python`；读不到就回落到 PATH 上的 `python`。
+    /// 读 `config/paths.json` 的 `windows.python`；读不到就回落到 PATH 上的 `python`。
     pub fn python(&self) -> String {
         const FALLBACK: &str = "python";
         let Ok(text) = std::fs::read_to_string(self.paths_json()) else {

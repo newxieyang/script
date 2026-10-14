@@ -66,7 +66,7 @@ API_INCLUDE_CANDIDATES = [
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parent
-CONFIG_PATH = HERE / "api_config.json"
+CONFIG_PATH = HERE.parent / "config" / "api_config.json"
 
 ALL_SECTIONS = ["branches", "contracts", "functions", "copies"]
 

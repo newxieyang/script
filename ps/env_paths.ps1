@@ -1,5 +1,5 @@
 ﻿<#
-公共路径配置（唯一真源：仓库根 paths.json）
+公共路径配置（唯一真源：config/paths.json）
 =====================================================================
 任何脚本 dot-source 本文件即可直接使用下列变量，不要再往脚本里写死路径：
 
@@ -49,7 +49,7 @@ function Get-WinPathFromWsl {
 # ---------------------------------------------------------------
 # 读取唯一真源
 # ---------------------------------------------------------------
-$PathsFile = Join-Path (Split-Path $PSScriptRoot -Parent) "paths.json"
+$PathsFile = Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) "config") "paths.json"
 if (-not (Test-Path -LiteralPath $PathsFile -PathType Leaf)) {
     throw "找不到公共路径配置: $PathsFile"
 }
@@ -65,7 +65,7 @@ $python = $WinCfg.python
 $sdkPath = $WinCfg.android_sdk
 $ndkPath = $WinCfg.android_ndk
 
-# 由 NDK 根派生：换 NDK 版本只改 paths.json 的 android_ndk，这里自动跟随
+# 由 NDK 根派生：换 NDK 版本只改 config/paths.json 的 android_ndk，这里自动跟随
 $toolchain = "$ndkPath/build/cmake/android.toolchain.cmake"
 $llvmBin = "$ndkPath/toolchains/llvm/prebuilt/windows-x86_64/bin"
 $llvmStrip = "$llvmBin/llvm-strip.exe"

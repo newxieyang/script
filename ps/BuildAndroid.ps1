@@ -20,9 +20,9 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Configuration —— 路径来自 ps/env_paths.ps1（真源：仓库根 paths.json），
+# Configuration —— 路径来自 ps/env_paths.ps1（真源：config/paths.json），
 # BuildUtils.ps1 已经把它 dot-source 进来了，不要在本脚本里写死绝对路径。
-# NDK 版本、ninja、android-28 / c++_shared 这些都在 paths.json 里改。
+# NDK 版本、ninja、android-28 / c++_shared 这些都在 config/paths.json 里改。
 $CmakeExe = $cmake
 $NinjaExe = $ninja
 $AndroidNdkRoot = $ndkPath
@@ -106,7 +106,7 @@ try {
     Check-Directory -Path $AndroidNdkRoot -Name "Android NDK"
     Ensure-Directory $winBuildBase
 
-    # ABIs to build（列表在 paths.json 的 android.abis）
+    # ABIs to build（列表在 config/paths.json 的 android.abis）
     $abis = $androidAbis
 
     foreach ($abi in $abis) {

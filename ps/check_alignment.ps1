@@ -1,4 +1,4 @@
-# NDK and target configuration (paths come from ..\paths.json via env_paths.ps1)
+# NDK and target configuration (paths come from ..\config\paths.json via env_paths.ps1)
 . (Join-Path $PSScriptRoot "env_paths.ps1")
 # $targetDir = "D:\git\oxi\g6\A910\A910_Android\libFAP\src\main\cpp\arm64-v8a"
 # $targetDir = "D:\git\oxi\g6\A910\A910_Android\libFAP\src\main\cpp\armeabi-v7a"
