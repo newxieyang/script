@@ -77,15 +77,15 @@
             "ScanUltimateApi_err.h"
         ],
         "copy_win_lib": true,
-        "copy_android_lib": true,
+        "copy_android_lib": false,
         "copy_linux_lib": true,
         "doc": null,
         "keep_latest_doc": false,
-        "build_static": true,
-        "build_android": true,
+        "build_static": false,
+        "build_android": false,
         "build_windows": true,
         "build_linux": true,
-        "should_package": false
+        "should_package": true
     },
     "GSER": {
         "name": "GSER",
@@ -107,6 +107,6 @@
         "build_android": false,
         "build_windows": false,
         "build_linux": true,
-        "should_package": false
+        "should_package": true
     }
 }

@@ -8,6 +8,13 @@ edition = "2024"
 # （0.35/0.36 做了大改：App::ui 取代 App::update、TopBottomPanel 被移除等）
 eframe = "0.31"
 # ps/sdk_config.json 要原样保留未知字段与键顺序（preserve_order = 用 IndexMap 而非 BTreeMap 排序）
+serde = { version = "1", default-features = false } # 只用 Serialize trait（save 按仓库格式序列化）
 serde_json = { version = "1", features = ["preserve_order"] }
 # 子进程输出兜底：PowerShell 侧是 UTF-8，但 Python 在管道下可能按 GBK 输出
 encoding_rs = "0.8"
+# 只用来把 assets/icon.png 解成 RGBA 喂给窗口图标（不启用其它格式，保持依赖轻）
+png = "0.17"
+
+[build-dependencies]
+# build.rs 用它把 assets/icon.ico 作为图标资源嵌进 exe（仅 Windows 生效）
+embed-resource = "3"

@@ -4,6 +4,7 @@
 //! header_keyword / headers / doc ...）一律原样保留 —— 界面保存或生成临时配置时
 //! 靠 serde_json::Value 整体克隆，不需要为每个机型建结构体。
 
+use serde::Serialize;
 use serde_json::Value;
 use std::path::{Path, PathBuf};
 
@@ -20,17 +21,17 @@ pub const FLAG_KEYS: [&str; 9] = [
     "should_package",
 ];
 
-/// 每个开关的界面提示（键名，中文说明）
+/// 每个开关的界面短说明（灰色小字，显示在主标签右侧）
 pub const FLAG_HINTS: [&str; 9] = [
-    "Win 库 + simpleWin + win_X86/X64Demo 进包",
-    "Android 库 + simpleAndroid + apk 进包",
-    "simpleLinux（Qt 源码 + 预编译库）进包",
-    "打包时保留 doc 为最新（清旧文档）",
-    "编静态库（同时出 .a / .lib）",
-    "编 Android（arm64-v8a / armeabi-v7a）",
-    "编 Windows（x86 / x64）",
-    "编 Linux（x64 / aarch64，走 WSL）",
-    "buildOXiAll.ps1 结束后自动调用 OXi.ps1 出包",
+    "Win + Demo 进包",
+    "so + apk 进包",
+    "Qt 源码 + 预编译库",
+    "打包时清理旧文档",
+    "同时输出 .a / .lib",
+    "arm64-v8a / armeabi-v7a",
+    "x86 / x64",
+    "x64 / aarch64 · WSL",
+    "调用 OXi.ps1 出包",
 ];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -138,34 +139,40 @@ impl ConfigStore {
         }
     }
 
-    /// 项目的关键信息，给界面做摘要显示（sdk_dir / target_root）
-    pub fn summary_of(&self, key: &str) -> String {
-        let Some(v) = self.doc.get(key) else {
-            return String::new();
-        };
-        let g = |k: &str| v.get(k).and_then(|x| x.as_str()).unwrap_or("-");
-        format!(
-            "sdk_dir: {}\ntarget_root: {}   prefix: {}   lib: {}",
-            g("sdk_dir"),
-            g("target_root"),
-            g("prefix"),
-            g("lib")
-        )
+    /// 读取项目的某个字符串字段（路径信息卡片用）
+    pub fn field_of(&self, key: &str, field: &str) -> String {
+        self.doc
+            .get(key)
+            .and_then(|v| v.get(field))
+            .and_then(|x| x.as_str())
+            .unwrap_or("-")
+            .to_string()
     }
 
     fn serialize(&self, bom: bool) -> Result<Vec<u8>, String> {
-        let mut body = serde_json::to_string_pretty(&self.doc)
-            .map_err(|e| format!("序列化配置失败: {e}"))?
-            .into_bytes();
+        // 4 空格缩进：与仓库里 config/sdk_config.json 的原格式一致。
+        // 默认的 to_string_pretty 是 2 空格，会让每次「保存配置」都变成整文件 diff。
+        let mut body = Vec::new();
+        let fmt = serde_json::ser::PrettyFormatter::with_indent(b"    ");
+        let mut ser = serde_json::Serializer::with_formatter(&mut body, fmt);
+        self.doc
+            .serialize(&mut ser)
+            .map_err(|e| format!("序列化配置失败: {e}"))?;
         body.push(b'\n');
+
+        // 仓库约定：json = 无 BOM + CRLF。统一转 CRLF，避免保存后 git 全文件报改动。
+        let mut out = Vec::with_capacity(body.len() + 3);
         if bom {
-            let mut out = Vec::with_capacity(body.len() + 3);
             out.extend_from_slice(b"\xef\xbb\xbf");
-            out.extend_from_slice(&body);
-            Ok(out)
-        } else {
-            Ok(body)
         }
+        for b in body {
+            if b == b'\n' {
+                out.extend_from_slice(b"\r\n");
+            } else {
+                out.push(b);
+            }
+        }
+        Ok(out)
     }
 
     /// 回写 `config/sdk_config.json`（无 BOM，遵循仓库约定）
@@ -203,5 +210,29 @@ impl ConfigStore {
         bytes.extend_from_slice(&body);
 
         std::fs::write(out, bytes).map_err(|e| format!("写临时配置失败 {}: {e}", out.display()))
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// save() 必须按仓库格式落盘（4 空格缩进 + CRLF、无 BOM），
+    /// 否则每次「保存配置」都会把 config/sdk_config.json 变成整文件 diff。
+    #[test]
+    fn save_keeps_repo_format() {
+        let dir = std::env::temp_dir().join("BuildTools_test");
+        std::fs::create_dir_all(&dir).unwrap();
+        let p = dir.join("fmt_probe.json");
+        std::fs::write(&p, b"{\r\n    \"A\": {\r\n        \"copy_win_lib\": true\r\n    }\r\n}\r\n")
+            .unwrap();
+
+        let store = ConfigStore::load(&p).unwrap();
+        store.save().unwrap();
+
+        let bytes = std::fs::read(&p).unwrap();
+        assert_eq!(
+            bytes,
+            b"{\r\n    \"A\": {\r\n        \"copy_win_lib\": true\r\n    }\r\n}\r\n"
+        );
     }
 }

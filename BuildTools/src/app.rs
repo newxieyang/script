@@ -19,6 +19,24 @@ const CJK_FONT_CANDIDATES: [&str; 8] = [
     "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
 ];
 
+/// 各开关在界面上的主标签（与 FLAG_KEYS 一一对应，短说明在 config::FLAG_HINTS）
+const FLAG_LABELS: [&str; 9] = [
+    "Windows 库",
+    "Android 库",
+    "Linux 库",
+    "保留最新文档",
+    "静态库",
+    "Android",
+    "Windows",
+    "Linux",
+    "结束后自动打包",
+];
+
+/// 「复制进包」卡片里的开关下标
+const COPY_IDX: [usize; 3] = [0, 1, 2];
+/// 「编译目标」卡片里的开关下标（显示顺序）
+const BUILD_IDX: [usize; 4] = [6, 7, 5, 4];
+
 pub struct App {
     inner: Result<Inner, String>,
 }
@@ -103,6 +121,15 @@ fn selftest_lines() -> (Vec<String>, bool) {
         r.ok("python 可执行文件存在");
     } else {
         r.fail(format!("python 不存在：{}", layout.python()));
+    }
+
+    // 窗口图标（exe 文件图标由 build.rs 嵌在资源里，运行时看不到）
+    match crate::window_icon() {
+        Some(i) => r.ok(format!(
+            "窗口图标    : assets/icon.png 解码成功（{}×{} RGBA）",
+            i.width, i.height
+        )),
+        None => r.fail("窗口图标：assets/icon.png 解码失败"),
     }
 
     let store = match ConfigStore::load(&layout.sdk_config()) {
@@ -245,7 +272,14 @@ struct Inner {
     log: Vec<Line>,
     runner: Option<Runner>,
     status: String,
+    /// 上一帧中部内容（卡片 + 按钮）的屏幕底边，用于把日志面板顶到按钮下方固定间距处
+    mid_bottom: f32,
+    /// 上一帧日志面板顶边（屏幕坐标），与 `mid_bottom` 之差即实际间距，供布局自检/测试断言
+    log_top: f32,
 }
+
+/// 按钮区与日志面板之间留出的间距，与按钮上方「卡片 → 按钮」的间距一致
+const LOG_GAP: f32 = 20.0;
 
 impl Inner {
     fn try_new() -> Result<Self, String> {
@@ -253,15 +287,33 @@ impl Inner {
         let store = ConfigStore::load(&layout.sdk_config())?;
         let working = store.all_flags();
         let saved = working.clone();
+
+        // 初始日志：就绪状态 + 使用提示
+        let first = store.keys()[0].clone();
+        let checked = (0..FLAG_KEYS.len()).filter(|&i| working[0].get(i)).count();
+        let log = vec![
+            Line {
+                stream: Stream::Out,
+                text: format!("[就绪] 项目 {first} · 勾选 {checked} 项 · 等待执行"),
+            },
+            Line {
+                stream: Stream::Out,
+                text: "提示: 勾选后点「执行」生效；「保存配置」写入 config/sdk_config.json"
+                    .to_string(),
+            },
+        ];
+
         Ok(Inner {
             layout,
             store,
             selected: 0,
             working,
             saved,
-            log: Vec::new(),
+            log,
             runner: None,
             status: "就绪".to_string(),
+            mid_bottom: 0.0,
+            log_top: 0.0,
         })
     }
 
@@ -412,48 +464,101 @@ impl Inner {
         let running = self.runner.is_some();
         let dark = ctx.style().visuals.dark_mode;
 
-        // ---------------- 顶部：项目选择 ----------------
+        // 卡片配色：浅色主题浅灰底、深色主题深灰底
+        let card_fill = if dark {
+            Color32::from_rgb(0x2a, 0x2d, 0x33)
+        } else {
+            Color32::from_rgb(0xf6, 0xf7, 0xf9)
+        };
+        let card_stroke = if dark {
+            Color32::from_rgb(0x3a, 0x3d, 0x44)
+        } else {
+            Color32::from_rgb(0xe4, 0xe6, 0xea)
+        };
+        // 输出面板固定深色（与设计稿一致），日志配色也不随主题走
+        let log_bg = Color32::from_rgb(0x1b, 0x1f, 0x27);
+
+        // ---------------- 顶部：标题 + 项目下拉 + 路径信息 ----------------
         egui::TopBottomPanel::top("top").show(ctx, |ui| {
-            ui.add_space(6.0);
-            ui.horizontal(|ui| {
-                ui.heading("OXi SDK");
-                ui.add_space(12.0);
-                ui.label("项目：");
-                let keys = self.store.keys().to_vec();
-                let cur = self.current_key();
-                egui::ComboBox::from_id_salt("project")
-                    .selected_text(cur.as_str())
-                    .width(180.0)
-                    .show_ui(ui, |ui| {
-                        for (i, k) in keys.iter().enumerate() {
-                            ui.selectable_value(&mut self.selected, i, k.as_str());
-                        }
-                    });
-                ui.add_space(8.0);
-                if self.dirty() {
-                    ui.colored_label(Color32::from_rgb(210, 150, 40), "● 有未保存的勾选改动");
-                }
-            });
             ui.add_space(4.0);
-            ui.label(
-                RichText::new(self.store.summary_of(&self.current_key()))
-                    .monospace()
-                    .size(12.0)
-                    .color(ui.visuals().weak_text_color()),
-            );
-            ui.add_space(6.0);
+            ui.horizontal(|ui| {
+                ui.label(RichText::new("OXi SDK 构建工具").size(20.0));
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if self.dirty() {
+                        ui.label(
+                            RichText::new("● 未保存")
+                                .size(12.0)
+                                .color(Color32::from_rgb(0xd8, 0x8a, 0x2a)),
+                        );
+                    }
+                    let keys = self.store.keys().to_vec();
+                    egui::ComboBox::from_id_salt("project")
+                        .selected_text(format!("项目: {}", self.current_key()))
+                        .width(190.0)
+                        .show_ui(ui, |ui| {
+                            for (i, k) in keys.iter().enumerate() {
+                                ui.selectable_value(&mut self.selected, i, k.as_str());
+                            }
+                        });
+                });
+            });
+            ui.separator();
+            ui.add_space(8.0);
+
+            let key = self.current_key();
+            egui::Frame::default()
+                .fill(card_fill)
+                .stroke(egui::Stroke::new(1.0, card_stroke))
+                .corner_radius(6.0)
+                .inner_margin(egui::Margin::symmetric(14, 12))
+                .show(ui, |ui| {
+                    let weak = ui.visuals().weak_text_color();
+                    ui.label(RichText::new("路径信息").size(12.5).color(weak));
+                    ui.add_space(2.0);
+                    ui.label(
+                        RichText::new(format!("sdk_dir: {}", self.store.field_of(&key, "sdk_dir")))
+                            .monospace()
+                            .size(12.5),
+                    );
+                    ui.label(
+                        RichText::new(format!(
+                            "target: {}    prefix: {}    lib: {}",
+                            self.store.field_of(&key, "target_root"),
+                            self.store.field_of(&key, "prefix"),
+                            self.store.field_of(&key, "lib")
+                        ))
+                        .monospace()
+                        .size(12.5),
+                    );
+                });
+            ui.add_space(4.0);
         });
 
-        // ---------------- 底部：输出面板 ----------------
+        // ---------------- 底部：输出日志（固定深色面板） ----------------
         let mut clear_requested = false;
-        egui::TopBottomPanel::bottom("log")
-            .resizable(true)
-            .default_height(320.0)
-            .min_height(140.0)
+        // 高度 = 窗口底边 − 上一帧内容（卡片+按钮）底边 − 固定间距，
+        // 这样日志顶部与按钮的间距在任意窗口尺寸下都等于按钮上方那段间距。
+        // 首帧还没测量值，先用 390 兜底，第二帧起即精确贴合。
+        let win_bottom = ctx.available_rect().bottom();
+        let log_h = if self.mid_bottom > 0.0 {
+            (win_bottom - self.mid_bottom - LOG_GAP).max(160.0)
+        } else {
+            390.0
+        };
+        let log_panel = egui::TopBottomPanel::bottom("log")
+            .exact_height(log_h)
+            .frame(
+                egui::Frame::default()
+                    .fill(log_bg)
+                    .inner_margin(egui::Margin::symmetric(14, 12)),
+            )
             .show(ctx, |ui| {
-                ui.add_space(4.0);
                 ui.horizontal(|ui| {
-                    ui.strong("输出");
+                    ui.label(
+                        RichText::new("输出日志")
+                            .size(13.5)
+                            .color(Color32::from_rgb(0xc8, 0xd0, 0xdc)),
+                    );
                     ui.label(
                         RichText::new(format!(
                             "· {} 行 · {}",
@@ -464,31 +569,16 @@ impl Inner {
                                 self.status.as_str()
                             }
                         ))
-                        .color(ui.visuals().weak_text_color()),
+                        .size(12.0)
+                        .color(Color32::from_rgb(0x77, 0x80, 0x90)),
                     );
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui
-                            .button("清空输出")
-                            .on_hover_text("快捷键 Ctrl+L")
-                            .clicked()
-                        {
+                        if ui.button("清空").on_hover_text("快捷键 Ctrl+L").clicked() {
                             clear_requested = true;
                         }
                     });
                 });
-
-                ui.separator();
-
-                let err_color = if dark {
-                    Color32::from_rgb(255, 150, 150)
-                } else {
-                    Color32::from_rgb(178, 40, 40)
-                };
-                let cmd_color = if dark {
-                    Color32::from_rgb(140, 200, 255)
-                } else {
-                    Color32::from_rgb(30, 90, 160)
-                };
+                ui.add_space(4.0);
 
                 egui::ScrollArea::vertical()
                     .auto_shrink([false, false])
@@ -496,91 +586,108 @@ impl Inner {
                     .show_rows(ui, 17.0, self.log.len(), |ui, rows| {
                         for idx in rows {
                             let line = &self.log[idx];
-                            let text = RichText::new(&line.text).monospace().size(13.0);
+                            let base = RichText::new(&line.text).monospace().size(13.0);
                             let text = match line.stream {
-                                Stream::Err => text.color(err_color),
+                                Stream::Err => base.color(Color32::from_rgb(0xff, 0x8a, 0x80)),
                                 Stream::Out if line.text.starts_with('>') => {
-                                    text.color(cmd_color).strong()
+                                    base.color(Color32::from_rgb(0x8f, 0xb8, 0xe8))
                                 }
-                                Stream::Out => text,
+                                Stream::Out
+                                    if line.text.starts_with("[已保存]")
+                                        || line.text.starts_with("[已重载]")
+                                        || line.text.starts_with("[OK]") =>
+                                {
+                                    base.color(Color32::from_rgb(0x7e, 0xd8, 0x7e))
+                                }
+                                Stream::Out if line.text.starts_with('[') => {
+                                    base.color(Color32::from_rgb(0xa8, 0xb4, 0xc4))
+                                }
+                                Stream::Out => base.color(Color32::from_rgb(0xde, 0xe4, 0xee)),
                             };
                             ui.label(text);
                         }
                     });
             });
+        // 日志面板顶边（屏幕坐标）：与 mid_bottom 之差应恒为 LOG_GAP
+        self.log_top = log_panel.response.rect.top();
 
         if clear_requested || ctx.input(|i| i.modifiers.ctrl && i.key_pressed(egui::Key::L)) {
             self.log.clear();
         }
 
-        // ---------------- 中部：勾选项 + 动作 ----------------
+        // ---------------- 中部：两张卡片 + 动作按钮 ----------------
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.add_space(4.0);
-            ui.label(RichText::new("开关（勾选后点「执行」生效；点「保存配置」写回 config/sdk_config.json）").color(
-                ui.visuals().weak_text_color(),
-            ));
-            ui.add_space(6.0);
-
             let enabled = !running;
             let mut flags = self.working[self.selected];
 
-            egui::Grid::new("flags")
-                .num_columns(2)
-                .spacing([18.0, 7.0])
-                .show(ui, |ui| {
-                    for (i, key) in FLAG_KEYS.iter().enumerate() {
-                        let mut v = flags.get(i);
-                        let resp = ui.add_enabled(
-                            enabled,
-                            egui::Checkbox::new(&mut v, RichText::new(*key).monospace()),
-                        );
-                        if resp.changed() {
-                            flags.set(i, v);
+            ui.columns(2, |cols| {
+                // 左卡：复制进包（含「其他」）
+                egui::Frame::default()
+                    .fill(card_fill)
+                    .stroke(egui::Stroke::new(1.0, card_stroke))
+                    .corner_radius(6.0)
+                    .inner_margin(egui::Margin::symmetric(14, 12))
+                    .show(&mut cols[0], |ui| {
+                        let weak = ui.visuals().weak_text_color();
+                        ui.label(RichText::new("复制进包").size(13.5).color(weak));
+                        ui.add_space(6.0);
+                        for i in COPY_IDX {
+                            flag_row(ui, enabled, &mut flags, i);
                         }
+                        ui.add_space(10.0);
+                        ui.separator();
+                        ui.add_space(10.0);
+                        ui.label(RichText::new("其他").size(13.5).color(weak));
+                        flag_row(ui, enabled, &mut flags, 3);
+                    });
+
+                // 右卡：编译目标
+                egui::Frame::default()
+                    .fill(card_fill)
+                    .stroke(egui::Stroke::new(1.0, card_stroke))
+                    .corner_radius(6.0)
+                    .inner_margin(egui::Margin::symmetric(14, 12))
+                    .show(&mut cols[1], |ui| {
                         ui.label(
-                            RichText::new(FLAG_HINTS[i])
-                                .size(12.0)
+                            RichText::new("编译目标")
+                                .size(13.5)
                                 .color(ui.visuals().weak_text_color()),
                         );
-                        ui.end_row();
-                    }
-                });
+                        ui.add_space(6.0);
+                        for &i in &BUILD_IDX {
+                            flag_row(ui, enabled, &mut flags, i);
+                        }
+                         ui.add_space(6.0);
+                        ui.separator();
+                        ui.add_space(6.0);
+                        flag_row(ui, enabled, &mut flags, 8);
+                    });
+            });
             self.working[self.selected] = flags;
 
-            ui.add_space(14.0);
-            ui.separator();
-            ui.add_space(10.0);
-
-            ui.horizontal(|ui| {
+            ui.add_space(20.0);
+            let btn_row = ui.horizontal(|ui| {
                 let exec = ui.add_enabled(
                     enabled,
-                    egui::Button::new(RichText::new("执行").size(16.0)).min_size(egui::vec2(120.0, 34.0)),
+                    egui::Button::new(RichText::new("▶  执行").size(15.0).color(Color32::WHITE))
+                        .fill(Color32::from_rgb(0x25, 0x63, 0xEB))
+                        .corner_radius(6.0)
+                        .min_size(egui::vec2(112.0, 36.0)),
                 );
                 if exec.clicked() {
                     self.run_build(ctx);
                 }
-                if exec.hovered() {
-                    ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                }
 
-                let doc = ui.add_enabled(
-                    enabled,
-                    egui::Button::new(RichText::new("生成文档").size(16.0))
-                        .min_size(egui::vec2(120.0, 34.0)),
-                );
-                if doc.clicked() {
+                if ui.add_enabled(enabled, plain_btn("生成文档")).clicked() {
                     self.run_doc(ctx);
                 }
-                if doc.hovered() {
-                    ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                }
-
-                ui.add_space(10.0);
 
                 if ui
                     .add_enabled(
                         running,
-                        egui::Button::new("停止").min_size(egui::vec2(80.0, 34.0)),
+                        egui::Button::new(RichText::new("停止").size(14.0).color(Color32::from_rgb(0xB9, 0x1C, 0x1C)))
+                            .corner_radius(6.0)
+                            .min_size(egui::vec2(76.0, 36.0)),
                     )
                     .on_hover_text("只结束本程序启动的 powershell / python 进程；\n其派生的子进程（cmake、wsl 等）不保证一并终止。")
                     .clicked()
@@ -594,62 +701,55 @@ impl Inner {
                     }
                 }
 
-                if ui
-                    .add_enabled(self.dirty(), egui::Button::new("保存配置"))
-                    .on_hover_text("把当前所有项目的勾选写回 config/sdk_config.json")
-                    .clicked()
-                {
-                    self.save_config();
-                }
-
-                ui.add_space(10.0);
-                if ui
-                    .button("重新载入配置")
-                    .on_hover_text("丢弃界面上的改动，重新读 config/sdk_config.json")
-                    .clicked()
-                {
-                    match ConfigStore::load(&self.layout.sdk_config()) {
-                        Ok(s) => {
-                            self.store = s;
-                            self.working = self.store.all_flags();
-                            self.saved = self.working.clone();
-                            self.push(Stream::Out, "[已重载] config/sdk_config.json");
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if ui
+                        .add(plain_btn("自检"))
+                        .on_hover_text("检查仓库定位 / 配置文件 / 临时配置覆盖机制（同一套逻辑也是 --selftest）")
+                        .clicked()
+                    {
+                        let (lines, pass) = selftest_lines();
+                        for l in lines {
+                            let stream = if l.starts_with("[FAIL]") {
+                                Stream::Err
+                            } else {
+                                Stream::Out
+                            };
+                            self.push(stream, l);
                         }
-                        Err(e) => self.push(Stream::Err, e),
+                        self.push(
+                            if pass { Stream::Out } else { Stream::Err },
+                            if pass { "自检通过。" } else { "自检未通过。" },
+                        );
                     }
-                }
 
-                if ui
-                    .button("自检")
-                    .on_hover_text("检查仓库定位 / 配置文件 / 临时配置覆盖机制（同一套逻辑也是 --selftest）")
-                    .clicked()
-                {
-                    let (lines, pass) = selftest_lines();
-                    for l in lines {
-                        let stream = if l.starts_with("[FAIL]") {
-                            Stream::Err
-                        } else {
-                            Stream::Out
-                        };
-                        self.push(stream, l);
+                    if ui
+                        .add(plain_btn("重新载入配置"))
+                        .on_hover_text("丢弃界面上的改动，重新读 config/sdk_config.json")
+                        .clicked()
+                    {
+                        match ConfigStore::load(&self.layout.sdk_config()) {
+                            Ok(s) => {
+                                self.store = s;
+                                self.working = self.store.all_flags();
+                                self.saved = self.working.clone();
+                                self.push(Stream::Out, "[已重载] config/sdk_config.json");
+                            }
+                            Err(e) => self.push(Stream::Err, e),
+                        }
                     }
-                    self.push(
-                        if pass { Stream::Out } else { Stream::Err },
-                        if pass { "自检通过。" } else { "自检未通过。" },
-                    );
-                }
+
+                    if ui
+                        .add_enabled(self.dirty(), plain_btn("保存配置"))
+                        .on_hover_text("把当前所有项目的勾选写回 config/sdk_config.json")
+                        .clicked()
+                    {
+                        self.save_config();
+                    }
+                });
             });
 
-            ui.add_space(10.0);
-            ui.label(
-                RichText::new(format!(
-                    "「执行」  → powershell ps/buildOXiAll.ps1 -SdkKey {key} -ConfigFile <临时配置>\n\
-                     「生成文档」→ <python> py/genSDKAPI.py {key}",
-                    key = self.current_key()
-                ))
-                .size(12.0)
-                .color(ui.visuals().weak_text_color()),
-            );
+            // 记下按钮行的真实底边（屏幕坐标），供下一帧计算日志面板高度
+            self.mid_bottom = btn_row.response.rect.bottom();
         });
     }
 }
@@ -695,4 +795,61 @@ fn tune_style(ctx: &egui::Context) {
         .insert(egui::TextStyle::Heading, egui::FontId::proportional(21.0));
     style.spacing.item_spacing = egui::vec2(8.0, 6.0);
     ctx.set_style(style);
+}
+
+/// 普通动作按钮（描边、圆角）
+fn plain_btn(text: &str) -> egui::Button<'_> {
+    egui::Button::new(RichText::new(text.to_owned()).size(14.0))
+        .corner_radius(6.0)
+        .min_size(egui::vec2(96.0, 34.0))
+}
+
+/// 卡片里的一行勾选项：主标签 + 灰色小字说明
+fn flag_row(ui: &mut egui::Ui, enabled: bool, flags: &mut Flags, i: usize) {
+    let mut v = flags.get(i);
+    ui.horizontal(|ui| {
+        let resp = ui.add_enabled(enabled, egui::Checkbox::new(&mut v, FLAG_LABELS[i]));
+        if resp.changed() {
+            flags.set(i, v);
+        }
+        ui.label(
+            RichText::new(FLAG_HINTS[i])
+                .size(12.0)
+                .color(ui.visuals().weak_text_color()),
+        );
+    });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 断言：日志面板顶边与中部内容底边之差 = LOG_GAP（与按钮上方那段间距一致）
+    fn gap_after_frames(inner: &mut Inner, size: egui::Vec2) -> f32 {
+        let ctx = egui::Context::default();
+        for _ in 0..4 {
+            let raw = egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, size)),
+                ..Default::default()
+            };
+            let _ = ctx.run(raw, |ctx| inner.ui(ctx));
+        }
+        inner.log_top - inner.mid_bottom
+    }
+
+    #[test]
+    fn log_gap_matches_button_gap() {
+        let mut inner = Inner::try_new().expect("仓库定位失败：请在 BuildTools 目录下运行测试");
+        for size in [
+            egui::vec2(1040.0, 780.0),
+            egui::vec2(900.0, 640.0),
+            egui::vec2(1280.0, 900.0),
+        ] {
+            let gap = gap_after_frames(&mut inner, size);
+            assert!(
+                (gap - LOG_GAP).abs() < 1.0,
+                "窗口 {size:?} 下日志间距 {gap}，期望 {LOG_GAP}"
+            );
+        }
+    }
 }

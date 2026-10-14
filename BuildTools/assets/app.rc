@@ -1,0 +1,7 @@
+// Windows resource script: embeds assets/icon.ico as the exe icon resource.
+// The ico is generated from assets/icon.png (256x256, downscaled from the source avatar),
+// containing 7 sizes: 16/24/32/48/64/128/256.
+// Kept pure ASCII on purpose: rc.exe decodes the script with the current code page,
+// so non-ASCII bytes here are a portability hazard.
+// The .rc and the .ico live in the same directory, which rc.exe searches for relative paths.
+1 ICON "icon.ico"
