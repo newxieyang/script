@@ -1,5 +1,5 @@
-# NDK and target configuration
-. env_paths.ps1
+# NDK and target configuration (paths come from ..\paths.json via env_paths.ps1)
+. (Join-Path $PSScriptRoot "env_paths.ps1")
 # $targetDir = "D:\git\oxi\g6\A910\A910_Android\libFAP\src\main\cpp\arm64-v8a"
 # $targetDir = "D:\git\oxi\g6\A910\A910_Android\libFAP\src\main\cpp\armeabi-v7a"
 $targetDir = "E:\3rdSRC\onnxruntime1.25.1\build\Android_arm64_Release\Release\libonnxruntime.so"

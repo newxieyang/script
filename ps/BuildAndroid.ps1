@@ -20,25 +20,20 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Configuration
-$CmakeExe = "D:\apps\CMake\bin\cmake.exe"
-$NinjaExe = "D:\apps\JetBrains\CLion 2023.1.4\bin\ninja\win\x64\ninja.exe"
-$AndroidNdkRoot = "D:\apps\Android\Sdk\ndk\28.2.13676358"
-$AndroidPlatform = "android-28"
+# Configuration —— 路径来自 ps/env_paths.ps1（真源：仓库根 paths.json），
+# BuildUtils.ps1 已经把它 dot-source 进来了，不要在本脚本里写死绝对路径。
+# NDK 版本、ninja、android-28 / c++_shared 这些都在 paths.json 里改。
+$CmakeExe = $cmake
+$NinjaExe = $ninja
+$AndroidNdkRoot = $ndkPath
 $BuildJobs = 8
 
 if ([string]::IsNullOrWhiteSpace($winBuildBase)) {
     $winBuildBase = Join-Path (Split-Path $SdkRoot -Parent) "build_temp\android"
 }
 
-# Convert WSL path -> Windows path
-if ($OutRootWsl -match "^/mnt/([a-zA-Z])/(.*)$") {
-    $drive = $Matches[1].ToUpper()
-    $rest = $Matches[2] -replace '/', '\'
-    $outRootWin = "${drive}:\${rest}"
-} else {
-    $outRootWin = $OutRootWsl -replace '/', '\'
-}
+# WSL 路径 -> Windows 路径（转换函数同样只有 env_paths.ps1 一份）
+$outRootWin = Get-WinPathFromWsl $OutRootWsl
 
 $android_arm64 = Join-Path $outRootWin "Android\arm64-v8a"
 $android_armv7 = Join-Path $outRootWin "Android\armeabi-v7a"
@@ -61,7 +56,7 @@ function Build-Android-Abi {
     $cmakeSdkRoot = $SdkRoot -replace '\\', '/'
     $cmakeThirdPartyDir = $ThirdPartyDir -replace '\\', '/'
 
-    # 生成器/NDK 工具链/ABI/静态开关交给 preset（真源 D:/git/script/cmake-presets/sdk-presets.json）。
+    # 生成器/NDK 工具链/ABI/静态开关交给 preset（真源 cmake-presets/sdk-presets.json）。
     # 注意 preset 里的 NDK 与 ninja 路径是本机绝对路径，换机器要在那边改。
     $mode = "shared"
     if ($StaticFlag) { $mode = "static" }
@@ -80,7 +75,7 @@ function Build-Android-Abi {
         $configureArgs = @(
             "-S", $cmakeSdkRoot, "-B", $buildDir, "-G", "Ninja",
             "-DCMAKE_MAKE_PROGRAM=$NinjaExe", "-DCMAKE_BUILD_TYPE=Release",
-            "-DANDROID_STL=c++_shared", "-DANDROID_PLATFORM=$AndroidPlatform",
+            "-DANDROID_STL=$androidStl", "-DANDROID_PLATFORM=$androidPlatform",
             "-DCMAKE_TOOLCHAIN_FILE=$toolchain", "-DANDROID_ABI=$Abi",
             "-DBUILD_STATIC_LIBS=$isStaticStr",
             "-DTHIRD_PARTY_DIR=$cmakeThirdPartyDir"
@@ -111,8 +106,8 @@ try {
     Check-Directory -Path $AndroidNdkRoot -Name "Android NDK"
     Ensure-Directory $winBuildBase
 
-    # ABIs to build
-    $abis = @("arm64-v8a", "armeabi-v7a")
+    # ABIs to build（列表在 paths.json 的 android.abis）
+    $abis = $androidAbis
 
     foreach ($abi in $abis) {
         if ($BuildStatic) {

@@ -1,10 +1,13 @@
-
+﻿
 param (
     [string]$ConfigKey = "OPENCV",
-    [string]$ConfigFile = "D:\git\script\ps\opencv_config.json"
+    [string]$ConfigFile = ""
 )
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
+
+# opencv_config.json 默认取脚本同目录，不再写死仓库绝对路径
+if ([string]::IsNullOrWhiteSpace($ConfigFile)) { $ConfigFile = Join-Path $PSScriptRoot "opencv_config.json" }
 
 <#
 .SYNOPSIS
@@ -42,6 +45,10 @@ $cfg = $config.$ConfigKey
 
 # ============================================================
 # 2. Parse Configuration
+#
+#    工具路径（cmake / ninja / NDK / VS 生成器 / WSL 编译器根）不在这里读 ——
+#    它们统一来自仓库根 paths.json，由 BuildUtils.ps1 → env_paths.ps1 提供。
+#    本 json 只描述 OpenCV 自身：源码、版本、输出根、编哪些平台。
 # ============================================================
 $Version       = $cfg.version
 $SrcDir        = $cfg.src_dir -replace '/', '\'
@@ -50,16 +57,16 @@ $BuildLinux    = [bool]$cfg.build_linux
 $BuildWindows  = [bool]$cfg.build_windows
 $BuildAndroid  = [bool]$cfg.build_android
 
-$WslScript     = $cfg.wsl_script
-$WslGccX64     = $cfg.wsl_gcc_x64
-$WslGccArm64   = $cfg.wsl_gcc_arm64
+$WslScript     = $WslOpencvScript
+$WslGccX64     = $wslGccX64
+$WslGccArm64   = $wslGccAarch64
 
-$WinCmake      = $cfg.win_cmake -replace '/', '\'
-$WinVsGen      = $cfg.win_vs_generator
+$WinCmake      = $cmake -replace '/', '\'
+$WinVsGen      = $vsGenerator
 
-$AndroidNdk    = $cfg.android_ndk -replace '/', '\'
-$AndroidPlatform = $cfg.android_platform
-$AndroidNinja  = $cfg.android_ninja -replace '/', '\'
+$AndroidNdk    = $ndkPath -replace '/', '\'
+$AndroidPlatform = $androidPlatform
+$AndroidNinja  = $ninja -replace '/', '\'
 $AndroidCmake  = $WinCmake
 
 # Version suffix for Windows DLL naming (4.6.0 -> 460, 4.10.0 -> 4100)
@@ -105,8 +112,9 @@ if ($BuildLinux) {
     $wslOutDir = Get-WslPath $OutDir
 
     # Pass version + source path as environment variables to WSL.
-    # opencv-wsl.sh should read OPENCV_VERSION (with fallback to 4.6.0).
-    wsl bash -c "OPENCV_VERSION='$Version' bash $WslScript '$Version'"
+    # opencv-wsl.sh 读 OPENCV_VERSION（缺省回退 4.6.0）与 OPENCV_SRC（缺省回退 /mnt/e/3rdSRC/opencv-4.6.0），
+    # 这样源码位置只在 opencv_config.json 的 src_dir 里维护一份。
+    wsl bash -c "OPENCV_VERSION='$Version' OPENCV_SRC='$wslSrcDir' bash $WslScript '$Version'"
 
     if ($LASTEXITCODE -ne 0) {
         throw "Linux (WSL) build failed, exit code=$LASTEXITCODE"
@@ -198,7 +206,7 @@ Write-Host "============================================================"
 function Show-Artifacts {
     param([string]$Label, [string]$Path)
     if (Test-Path $Path) {
-        Write-Host "`n  $Label:"
+        Write-Host "`n  ${Label}:"
         Get-ChildItem $Path -Recurse -File | ForEach-Object {
             $rel = $_.FullName.Substring($Path.Length)
             Write-Host "    $rel  ($('{0:N1}' -f ($_.Length/1KB)) KB)"

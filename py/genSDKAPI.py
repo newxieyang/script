@@ -1,7 +1,9 @@
 # !/usr/bin/python
 # encoding:utf-8
 import json
+import os
 import re
+import sys
 from docx import Document
 
 from docx.oxml import parse_xml
@@ -507,28 +509,45 @@ def createSDKAPI(config, verName, APIPathName):
    
 
 def load_config():
-    with open("api_config.json", encoding="utf-8") as f:
+    # 以脚本所在目录定位 api_config.json，这样从任意 cwd（含桌面 GUI）调用都能找到
+    cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_config.json")
+    with open(cfg_path, encoding="utf-8") as f:
         return json.load(f)
 
 
-if __name__ == '__main__':
-
+def generate(sdk_key):
+    """按 SDK key 生成 ISO 用户手册。返回 True=成功，False=失败。"""
     config = load_config()
 
-     # config["GSER","A910", "MIAXIS", "huantian", "Thales",]
-    sdk = config["GSER"]
-    if not sdk["sdk_dir"] == "":
-        print(sdk["sdk_dir"])
-        result = parse_cmake_versions(sdk["sdk_dir"])
-        print(sdk["output_name"].format(version=result['fap_version']))
+    if sdk_key not in config:
+        print("[ERROR] api_config.json 里没有 '%s'。可选：%s"
+              % (sdk_key, ", ".join(config.keys())))
+        return False
 
-        print(f"--------------{result['fap_version']}---------------")
-        APIFilePath = findFilePathNameByKeyWord(sdk["sdk_dir"], sdk["macro"]) 
-        print(APIFilePath)
-        if APIFilePath is None:
-            print("APIFilePath is null")
-        else:
-            createSDKAPI(sdk, result['fap_version'], APIFilePath)
-    # createSDKAPI("D:\\git\\oxi\\OXiScan\\dev\\fap70", "D:\\G7SDKLib\\doc")
+    sdk = config[sdk_key]
+    if not sdk["sdk_dir"]:
+        print("[ERROR] '%s' 的 sdk_dir 为空，跳过。" % sdk_key)
+        return False
+
+    print(sdk["sdk_dir"])
+    result = parse_cmake_versions(sdk["sdk_dir"])
+    print(sdk["output_name"].format(version=result['fap_version']))
+
+    print(f"--------------{result['fap_version']}---------------")
+    APIFilePath = findFilePathNameByKeyWord(sdk["sdk_dir"], sdk["macro"])
+    print(APIFilePath)
+    if APIFilePath is None:
+        print("APIFilePath is null")
+        return False
+
+    createSDKAPI(sdk, result['fap_version'], APIFilePath)
+    print("[OK] 文档已生成：%s" % sdk["output_name"].format(version=result['fap_version']))
+    return True
+
+
+if __name__ == '__main__':
+    # 用法: python genSDKAPI.py [A910|MIAXIS|Thales|huantian|GSER]；缺省 GSER（保持原行为）
+    _sdk_key = sys.argv[1] if len(sys.argv) > 1 else "GSER"
+    sys.exit(0 if generate(_sdk_key) else 1)
     
    

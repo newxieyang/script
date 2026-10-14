@@ -1,9 +1,12 @@
 ﻿param (
     [string]$SdkKey = "GSER",
-    [string]$ConfigFile = "D:\git\script\ps\sdk_config.json"
+    [string]$ConfigFile = ""
 )
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
+
+# sdk_config.json 默认取脚本同目录，不再写死仓库绝对路径
+if ([string]::IsNullOrWhiteSpace($ConfigFile)) { $ConfigFile = Join-Path $PSScriptRoot "sdk_config.json" }
 
 # Encoding Fix - Final Cleanup
 <#
@@ -81,7 +84,8 @@ if ([string]::IsNullOrEmpty($ThirdPartyDir)) {
     Write-Warning "Could not dynamically find '3rd' directory. Falling back to: $ThirdPartyDir"
 }
 
-$WslBuildScript = "/mnt/d/git/script/shell/buildOXiAll.sh"
+# WSL 侧入口脚本（WSL 绝对路径）—— 由 env_paths.ps1 按仓库实际位置给出，
+# 不再写死在脚本里（换机器/换挂载点自动跟随）
 $BuildWinScript = Join-Path $PSScriptRoot "BuildWin.ps1"
 $BuildAndroidScript = Join-Path $PSScriptRoot "BuildAndroid.ps1"
 $PackageScript = Join-Path $PSScriptRoot "OXi.ps1"
@@ -254,7 +258,9 @@ if ($sdkConfig.build_android) {
 if ($ShouldPackage) {
     Write-Host "`n[5/5] Running SDK packager..."
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-    & $PackageScript -SdkKey $SdkKey
+    # 把本次使用的配置转发给打包脚本，否则 GUI/调用方传进来的 copy_*_lib、keep_latest_doc 等
+    # 覆盖值到不了打包阶段（OXi.ps1 会回落到默认 ps\sdk_config.json）
+    & $PackageScript -SdkKey $SdkKey -ConfigFile $ConfigFile
 } else {
     Write-Host "`n[5/5] Skipping SDK packager (should_package = false)."
 }

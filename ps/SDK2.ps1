@@ -6,11 +6,12 @@
 #   .\SDK2.ps1 1            # 仅 Windows
 #   .\SDK2.ps1 2            # 仅 Android
 #   .\SDK2.ps1 -Version 2.0.1.7
-. env_paths.ps1
-
 param(
     [string]$Version = ""
 )
+
+# 公共路径配置（真源：仓库根 paths.json）。param 必须在脚本第一条语句，所以放它后面。
+. (Join-Path $PSScriptRoot "env_paths.ps1")
 
 # ====================== 配置区域 ======================
 $baseDir      = "D:\git\oxi\shenzhen\"

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -Eeuo pipefail
 
+# 公共路径配置（真源：仓库根 paths.json）—— 提供 LOCAL_GCC_ROOT / AARCH64_GCC_ROOT /
+# WSL_CMAKE / WSL_NINJA / ANDROID_PLATFORM 等，别在本脚本里再写死 /opt/... 路径。
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/env_paths.sh"
+
 # ============================================================
 # Parameter Parsing
 # ============================================================
@@ -63,10 +67,7 @@ if [ -z "$THIRD_PARTY_DIR" ]; then
     THIRD_PARTY_DIR="$(dirname "$(dirname "$SRC_DIR")")/3rd"
 fi
 
-# Compiler Roots
-AARCH64_GCC_ROOT="/opt/aarch64-gcc9.3"
-LOCAL_GCC_ROOT="/opt/gcc-9.3.0"
-
+# Compiler Roots —— 来自 shell/env_paths.sh（真源仓库根 paths.json 的 wsl 段）
 # AArch64 Cross Compiler
 AARCH64_GCC="${AARCH64_GCC_ROOT}/bin/aarch64-linux-gnu-gcc"
 AARCH64_GXX="${AARCH64_GCC_ROOT}/bin/aarch64-linux-gnu-g++"
@@ -113,10 +114,10 @@ check_command()
 
 # 判断某个 configure preset 在当前环境能不能用。
 # 拿 `cmake --list-presets` 当探针：它不需要工具链就能跑通，能读通说明源目录的
-# CMakePresets.json（含 include 到 /mnt/d/git/script/cmake-presets/sdk-presets.json 的引用链）
+# CMakePresets.json（含 include 到仓库根的 cmake-presets/sdk-presets.json 的引用链）
 # 有效；而且 CMake 会按当前平台过滤掉生成器不可用的 preset（Linux 下列不出 VS2019 那些），
 # 所以命中即代表本机真的能用它构建。任一环节不满足就返回非 0，调用方回退手工参数。
-# 构建配置的真源只有一份：/mnt/d/git/script/cmake-presets/sdk-presets.json。
+# 构建配置的真源只有一份：仓库根的 cmake-presets/sdk-presets.json。
 preset_available()
 {
     local src="$1"
@@ -317,7 +318,7 @@ build_platform_linux()
         echo "Build dir: ${BUILD_DIR}"
         echo "Output dir: ${OUTPUT_DIR}"
 
-        # 生成器/编译器/ccache/静态开关交给 preset（真源 /mnt/d/git/script/cmake-presets/sdk-presets.json，
+        # 生成器/编译器/ccache/静态开关交给 preset（真源仓库根的 cmake-presets/sdk-presets.json，
         # 源目录里只有一个 include 它的 CMakePresets.json）。-B 仍由本脚本指定，
         # 因为 --preset 之外的 -B 会覆盖 preset 的 binaryDir。
         local PRESET="linux-${OUT_PLATFORM_DIR}-${TYPE}"

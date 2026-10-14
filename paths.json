@@ -1,0 +1,43 @@
+{
+  "_comment": [
+    "全仓库工具路径与构建常量的唯一真源。改机器只改这一个文件。",
+    "四端读取器：ps/env_paths.ps1（PowerShell）、py/utils/env_paths.py（Python）、",
+    "shell/env_paths.sh（WSL bash）、bat/config.bat（cmd，间接调用 ps 那份）。",
+    "禁止再往任何脚本里写死这些路径 —— 用 py/checkPaths.py 可以扫描残余。",
+    "格式约定：shell 端的 env_paths.sh 用 sed/grep 直接解析本文件（不依赖 python3），",
+    "所以每个键必须独占一行、值必须是用双引号包住的字符串，不要改成多行或数字/布尔字面量。",
+    "派生路径（不要再手写）：安卓工具链 = android_ndk + /build/cmake/android.toolchain.cmake；",
+    "llvm-strip / llvm-readelf = android_ndk + /toolchains/llvm/prebuilt/windows-x86_64/bin/。",
+    "cmake-presets/sdk-presets.json 里也有机器相关路径（CLion 要能独立使用 preset，不能改成 $env{} 宏），",
+    "用 python py/checkPaths.py --check 校验两侧一致，--write 可把它同步过来。"
+  ],
+
+  "windows": {
+    "cmake": "D:/apps/CMake/bin/cmake.exe",
+    "ninja": "D:/apps/JetBrains/CLion 2023.1.4/bin/ninja/win/x64/ninja.exe",
+    "msbuild": "D:/apps/Microsoft Visual Studio/2019/Professional/MSBuild/Current/Bin/MSBuild.exe",
+    "python": "D:/apps/anaconda3/python.exe",
+    "android_sdk": "D:/apps/Android/Sdk",
+    "android_ndk": "D:/apps/Android/Sdk/ndk/28.2.13676358"
+  },
+
+  "wsl": {
+    "cmake": "cmake",
+    "ninja": "ninja",
+    "python": "python3",
+    "gcc_x64_root": "/opt/gcc-9.3.0",
+    "gcc_aarch64_root": "/opt/aarch64-gcc9.3"
+  },
+
+  "android": {
+    "platform": "android-28",
+    "stl": "c++_shared",
+    "abis": "arm64-v8a,armeabi-v7a"
+  },
+
+  "vs": {
+    "generator": "Visual Studio 16 2019",
+    "arch_x86": "Win32",
+    "arch_x64": "x64"
+  }
+}

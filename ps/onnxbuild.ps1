@@ -9,7 +9,7 @@ Windows:
     x86
 #>
 
-. env_paths.ps1
+. (Join-Path $PSScriptRoot "env_paths.ps1")
 
 
 $root = "E:/3rdSRC/onnxruntime1.25.1"

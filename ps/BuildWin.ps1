@@ -19,23 +19,17 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Configuration
-$CmakeExe = "D:\apps\CMake\bin\cmake.exe"
+# Configuration —— 路径来自 ps/env_paths.ps1（真源：仓库根 paths.json），
+# BuildUtils.ps1 已经把它 dot-source 进来了，不要在本脚本里写死绝对路径。
+$CmakeExe = $cmake
 $BuildJobs = 8
 
 if ([string]::IsNullOrWhiteSpace($winBuildBase)) {
     $winBuildBase = Join-Path (Split-Path $SdkRoot -Parent) "build_temp\win"
 }
 
-# Convert WSL path -> Windows path
-$outRootWin = Get-WslPath $OutRootWsl # Actually Get-WslPath is for Win->WSL. Let's handle WSL->Win here manually.
-if ($OutRootWsl -match "^/mnt/([a-zA-Z])/(.*)$") {
-    $drive = $Matches[1].ToUpper()
-    $rest = $Matches[2] -replace '/', '\'
-    $outRootWin = "${drive}:\${rest}"
-} else {
-    $outRootWin = $OutRootWsl -replace '/', '\'
-}
+# WSL 路径 -> Windows 路径（转换函数同样只有 env_paths.ps1 一份）
+$outRootWin = Get-WinPathFromWsl $OutRootWsl
 
 $win_x64_static = Join-Path $outRootWin "Windows\x64\static"
 $win_x64_shared = Join-Path $outRootWin "Windows\x64\shared"
@@ -53,13 +47,13 @@ function Build-Windows-Arch {
     Remove-BuildDirectory $buildDir
     Ensure-Directory $OutDir
 
-    $vsArch = if ($Arch -eq "x64") { "x64" } else { "Win32" }
+    $vsArch = if ($Arch -eq "x64") { $vsArchX64 } else { $vsArchX86 }
 
     # Ensure paths use forward slashes for CMake to avoid escape character issues on Windows
     $cmakeSdkRoot = $SdkRoot -replace '\\', '/'
     $cmakeThirdPartyDir = $ThirdPartyDir -replace '\\', '/'
 
-    # 生成器/架构/静态开关交给 preset（真源 D:/git/script/cmake-presets/sdk-presets.json，
+    # 生成器/架构/静态开关交给 preset（真源 cmake-presets/sdk-presets.json，
     # 源目录里只有一个 include 它的 CMakePresets.json）。-B 仍由本脚本指定，
     # 因为 --preset 之外的 -B 会覆盖 preset 的 binaryDir。
     $mode = "shared"
@@ -79,7 +73,7 @@ function Build-Windows-Arch {
         $configureArgs = @(
             "-S", $cmakeSdkRoot,
             "-B", $buildDir,
-            "-G", "Visual Studio 16 2019",
+            "-G", $vsGenerator,
             "-A", $vsArch,
             "-DBUILD_STATIC_LIBS=$isStaticStr",
             "-DTHIRD_PARTY_DIR=$cmakeThirdPartyDir"

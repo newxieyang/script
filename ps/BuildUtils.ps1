@@ -4,6 +4,11 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # Encoding Fix - Final Cleanup
 # Build System Utility Functions
 
+# 公共路径配置（真源：仓库根 paths.json）—— dot-source 本文件的脚本会自动拿到
+# $cmake / $ninja / $msbuild / $ndkPath / $toolchain / $llvmStrip / $readelf /
+# $androidPlatform / $vsGenerator / $ScriptRepoWsl 等变量，不要再各自写死路径。
+. (Join-Path $PSScriptRoot "env_paths.ps1")
+
 function Check-File {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
@@ -109,23 +114,13 @@ function Copy-Artifact {
     Write-Host "  [COPY] $($File.Name) -> ${OutDir}"
 }
 
-function Get-WslPath {
-    param([string]$WinPath)
-    if ($WinPath -match "^([a-zA-Z]):\\(.*)$") {
-        $drive = $Matches[1].ToLower()
-        $rest = $Matches[2] -replace '\\', '/'
-        return "/mnt/$drive/$rest"
-    }
-    return $WinPath -replace '\\', '/'
-}
-
 function Test-CMakePresetAvailable {
     <#
         .SYNOPSIS
             判断某个 configure preset 在当前机器上能不能直接用。
         .DESCRIPTION
             拿 `cmake --list-presets` 当探针：它不需要工具链就能跑通，能读通说明
-            源目录的 CMakePresets.json（含 include 到 D:/git/script/cmake-presets/sdk-presets.json
+            源目录的 CMakePresets.json（含 include 到仓库根的 cmake-presets/sdk-presets.json
             的引用链）是有效的；而且 CMake 会按当前平台过滤掉生成器不可用的 preset
             （Linux 下列不出 VS2019 的那些），所以命中即代表"本机真的能用它构建"。
             任一环节不满足就返回 $false，调用方回退到手工参数数组。
