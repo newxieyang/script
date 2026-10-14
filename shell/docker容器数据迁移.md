@@ -17,7 +17,7 @@ vim /etc/docker/daemon.json
   "data-root": "/data/docker"
 }
 ```
-##### 4、重载配置，启动 docker
+#####[README.md](..%2F..%2F..%2FG6SDKLib%2FA910%2FG6SDKv1.0.51.84%2FsimpleLinux%2FREADME.md) 4、重载配置，启动 docker
 ```
 systemctl daemon-reload
 systemctl start docker
