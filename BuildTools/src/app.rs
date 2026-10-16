@@ -462,19 +462,7 @@ impl Inner {
         self.drain_runner();
 
         let running = self.runner.is_some();
-        let dark = ctx.style().visuals.dark_mode;
-
-        // 卡片配色：浅色主题浅灰底、深色主题深灰底
-        let card_fill = if dark {
-            Color32::from_rgb(0x2a, 0x2d, 0x33)
-        } else {
-            Color32::from_rgb(0xf6, 0xf7, 0xf9)
-        };
-        let card_stroke = if dark {
-            Color32::from_rgb(0x3a, 0x3d, 0x44)
-        } else {
-            Color32::from_rgb(0xe4, 0xe6, 0xea)
-        };
+        // 卡片只留内边距（无边框、无背景色），与主题无关
         // 输出面板固定深色（与设计稿一致），日志配色也不随主题走
         let log_bg = Color32::from_rgb(0x1b, 0x1f, 0x27);
 
@@ -482,7 +470,7 @@ impl Inner {
         egui::TopBottomPanel::top("top").show(ctx, |ui| {
             ui.add_space(4.0);
             ui.horizontal(|ui| {
-                ui.label(RichText::new("OXi SDK 构建工具").size(20.0));
+                ui.label(RichText::new("OXi SDK Build Tools").size(20.0));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if self.dirty() {
                         ui.label(
@@ -507,10 +495,7 @@ impl Inner {
 
             let key = self.current_key();
             egui::Frame::default()
-                .fill(card_fill)
-                .stroke(egui::Stroke::new(1.0, card_stroke))
-                .corner_radius(6.0)
-                .inner_margin(egui::Margin::symmetric(14, 12))
+                .inner_margin(egui::Margin::symmetric(2, 2))
                 .show(ui, |ui| {
                     let weak = ui.visuals().weak_text_color();
                     ui.label(RichText::new("路径信息").size(12.5).color(weak));
@@ -623,10 +608,7 @@ impl Inner {
             ui.columns(2, |cols| {
                 // 左卡：复制进包（含「其他」）
                 egui::Frame::default()
-                    .fill(card_fill)
-                    .stroke(egui::Stroke::new(1.0, card_stroke))
-                    .corner_radius(6.0)
-                    .inner_margin(egui::Margin::symmetric(14, 12))
+                    .inner_margin(egui::Margin::symmetric(2, 2))
                     .show(&mut cols[0], |ui| {
                         let weak = ui.visuals().weak_text_color();
                         ui.label(RichText::new("复制进包").size(13.5).color(weak));
@@ -643,10 +625,7 @@ impl Inner {
 
                 // 右卡：编译目标
                 egui::Frame::default()
-                    .fill(card_fill)
-                    .stroke(egui::Stroke::new(1.0, card_stroke))
-                    .corner_radius(6.0)
-                    .inner_margin(egui::Margin::symmetric(14, 12))
+                    .inner_margin(egui::Margin::symmetric(2, 2))
                     .show(&mut cols[1], |ui| {
                         ui.label(
                             RichText::new("编译目标")

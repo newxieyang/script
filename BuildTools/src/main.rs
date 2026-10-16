@@ -1,4 +1,4 @@
-//! OXiScan SDK 构建工具（桌面版）
+//! OXi SDK Build Tools（桌面版）
 //!
 //! 把 `git/script` 下的构建/打包/文档脚本包一层界面：
 //!   · 项目下拉框（读 config/sdk_config.json 的键）
@@ -26,7 +26,7 @@ fn main() -> Result<(), eframe::Error> {
     }
 
     let mut viewport = egui::ViewportBuilder::default()
-        .with_title("OXi SDK 构建工具")
+        .with_title("OXi SDK Build Tools")
         .with_inner_size([1040.0, 780.0])
         .with_min_inner_size([780.0, 540.0]);
     if let Some(icon) = window_icon() {
@@ -39,7 +39,7 @@ fn main() -> Result<(), eframe::Error> {
     };
 
     eframe::run_native(
-        "OXi SDK 构建工具",
+        "OXi SDK Build Tools",
         options,
         Box::new(|cc| Ok(Box::new(app::App::new(cc)))),
     )
