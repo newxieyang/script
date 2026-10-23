@@ -1,4 +1,4 @@
-//! 仓库布局定位：找到 `git/script` 根（含 `config/paths.json` 与 `config/sdk_config.json`），
+//! 仓库布局定位：找到 `git/oxi/script` 根（含 `config/paths.json` 与 `config/sdk_config.json`），
 //! 并给出各处脚本 / 配置的绝对路径。
 //!
 //! 之所以不写死路径：exe 可能被 `cargo run` 启动（cwd = BuildTools/）、

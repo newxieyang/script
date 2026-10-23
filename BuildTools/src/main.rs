@@ -1,6 +1,6 @@
 //! OXi SDK Build Tools（桌面版）
 //!
-//! 把 `git/script` 下的构建/打包/文档脚本包一层界面：
+//! 把 `git/oxi/script` 下的构建/打包/文档脚本包一层界面：
 //!   · 项目下拉框（读 config/sdk_config.json 的键）
 //!   · 9 个构建开关（勾选后点「执行」生效）
 //!   · 「执行」= powershell ps/buildOXiAll.ps1 -SdkKey <key> -ConfigFile <临时配置>
