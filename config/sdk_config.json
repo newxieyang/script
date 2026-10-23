@@ -1,8 +1,8 @@
 {
     "A910": {
         "name": "G6",
-        "sdk_dir": "D:/git/oxi/g6/A910/A910",
-        "target_root": "D:/G6SDKLib/A910",
+        "sdk_dir": "D:/git/oxi/A910/A910",
+        "target_root": "D:/GSerSDKLib/A910",
         "prefix": "G6SDKv",
         "lib": "AraDevice",
         "header_keyword": [
@@ -23,8 +23,8 @@
     },
     "MIAXIS": {
         "name": "G6",
-        "sdk_dir": "D:/git/oxi/g6/MIAXIS/MIAXIS",
-        "target_root": "D:/G6SDKLib/MIAXIS",
+        "sdk_dir": "D:/git/oxi/MIAXIS/MIAXIS",
+        "target_root": "D:/GSerSDKLib/MIAXIS",
         "prefix": "G6SDKv",
         "lib": "FAP60",
         "header_keyword": [
@@ -45,8 +45,8 @@
     },
     "Thales": {
         "name": "G6",
-        "sdk_dir": "D:/git/oxi/g6/Thales/Thales",
-        "target_root": "D:/G6SDKLib/Thales",
+        "sdk_dir": "D:/git/oxi/Thales/Thales",
+        "target_root": "D:/GSerSDKLib/Thales",
         "prefix": "G6SDKv",
         "lib": "FAP60",
         "header_keyword": [
@@ -67,8 +67,8 @@
     },
     "huantian": {
         "name": "G6",
-        "sdk_dir": "D:/git/oxi/g6/huantian/huantian",
-        "target_root": "D:/G6SDKLib/huantian",
+        "sdk_dir": "D:/git/oxi/huantian/huantian",
+        "target_root": "D:/GSerSDKLib/huantian",
         "prefix": "G6SDKv",
         "lib": "FAP60",
         "header_keyword": [
@@ -89,19 +89,19 @@
     },
     "GSER": {
         "name": "GSER",
-        "sdk_dir": "D:/git/oxi/shenzhen/oxiscansdk",
-        "target_root": "D:/GSerSDKLib",
+        "sdk_dir": "D:/git/oxi/oxiscansdk/oxiscansdk",
+        "target_root": "D:/GSerSDKLib/scanSDK",
         "prefix": "OXi_FP_SDK_v",
         "lib": "FAP",
         "headers": [
-            "D:/git/oxi/shenzhen/oxiscansdk/base/export/OXiScan_Api.h",
-            "D:/git/oxi/shenzhen/oxiscansdk/base/include/OXiScan_def.h",
-            "D:/git/oxi/shenzhen/oxiscansdk/base/include/OXiScan_err.h"
+            "D:/git/oxi/oxiscansdk/oxiscansdk/base/export/OXiScan_Api.h",
+            "D:/git/oxi/oxiscansdk/oxiscansdk/base/include/OXiScan_def.h",
+            "D:/git/oxi/oxiscansdk/oxiscansdk/base/include/OXiScan_err.h"
         ],
         "copy_win_lib": true,
         "copy_android_lib": true,
         "copy_linux_lib": true,
-        "doc": "D:/GSerSDKLib/doc",
+        "doc": "D:/GSerSDKLib/scanSDK/doc",
         "keep_latest_doc": true,
         "build_static": true,
         "build_android": false,

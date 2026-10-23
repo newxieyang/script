@@ -84,6 +84,11 @@ impl Layout {
         self.root.join("py")
     }
 
+    /// adb 无线调试脚本：取设备 IP 并让 adb 切到 TCP 5555。
+    pub fn wifi_script(&self) -> PathBuf {
+        self.root.join("bat").join("wifi.bat")
+    }
+
     /// 读 `config/paths.json` 的 `windows.python`；读不到就回落到 PATH 上的 `python`。
     pub fn python(&self) -> String {
         const FALLBACK: &str = "python";

@@ -96,7 +96,7 @@ def extract_brief_description(funName, APIPathName):
 # ---------------------------------------------------------------
 # 目录（TOC）
 #
-# 参考文档 D:\GSerSDKLib\doc\Fingerprint Scanner SDK (ISO)v 2.0.0.31.docx 的第 2 页是目录：
+# 参考文档 D:\GSerSDKLib\scanSDK\doc\Fingerprint Scanner SDK (ISO)v 2.0.0.31.docx 的第 2 页是目录：
 #   CONTEXT 标题 + TOC 域（\o "1-3"），逐条列出 1/2/3 章，以及 2 章下的 4 个二级小节
 #   （Supported Fingerprint Sensor / SDK Features / Support for / Supported Communication
 #   Interface）和 3 章下的每个 API 小节。

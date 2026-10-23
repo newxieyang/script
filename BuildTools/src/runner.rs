@@ -9,6 +9,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, Sender, TryRecvError, channel};
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -43,6 +44,10 @@ pub struct Runner {
     child: Arc<Mutex<Child>>,
     rx: Receiver<Event>,
     killed: Arc<AtomicBool>,
+    /// 进程本身已退出（try_wait 确认）。与「输出读完」解耦：管道可能还被孙进程握着。
+    exited: bool,
+    /// exited 后等待残余输出的截止时刻
+    deadline: Option<Instant>,
     exit_code: Option<i32>,
     banner_sent: bool,
     banner: String,
@@ -50,6 +55,12 @@ pub struct Runner {
 
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
+/// 进程退出后等待残余管道输出的宽限期。
+/// powershell 退出后，它派生的孙进程（wsl、gradle/java 守护进程等）可能仍握着
+/// stdout/stderr 句柄，读取线程永远等不到 EOF —— 宽限期一过就收尾，
+/// 否则界面上的「执行」按钮会永久停留在禁用态。
+const DRAIN_GRACE: Duration = Duration::from_millis(500);
 
 impl Runner {
     /// 启动子进程；`repaint` 用来在收到新输出时唤醒界面重绘。
@@ -104,6 +115,8 @@ impl Runner {
             child: Arc::new(Mutex::new(child)),
             rx,
             killed: Arc::new(AtomicBool::new(false)),
+            exited: false,
+            deadline: None,
             exit_code: None,
             banner_sent: false,
             banner: spec.banner,
@@ -120,11 +133,12 @@ impl Runner {
         child.kill().map_err(|e| format!("停止失败: {e}"))
     }
 
-    /// 取本次新增的输出行；进程结束且输出读完后 `exit_code` 变为 Some。
+    /// 取本次新增的输出行；进程结束且收尾后 `exit_code` 变为 Some。
     ///
-    /// 结束判定用 channel 的 `Disconnected`（两个读取线程都退出、且缓冲已排空）
-    /// 而不是「读取线程计数归零」—— 后者存在"行已发出但计数已减到 0"的竞态，
-    /// 会让最后几行输出丢掉。
+    /// 结束判定 = 「进程已退出（try_wait）」且「输出读完（channel Disconnected）
+    /// 或宽限期已过」。早期版本只看 Disconnected：powershell 的孙进程
+    /// （wsl、gradle daemon 等）继承并握着管道句柄时永远等不到 EOF，
+    /// 进程早退了界面却永远显示运行中。
     pub fn poll(&mut self) -> Vec<Line> {
         let mut out = Vec::new();
 
@@ -136,6 +150,24 @@ impl Runner {
             });
         }
 
+        // 1) 进程级退出检测：不等管道 EOF（孙进程可能一直握着句柄）
+        if !self.exited {
+            if let Ok(mut child) = self.child.lock() {
+                match child.try_wait() {
+                    Ok(Some(_)) => {
+                        self.exited = true;
+                        self.deadline = Some(Instant::now() + DRAIN_GRACE);
+                    }
+                    Ok(None) => {}
+                    Err(_) => {
+                        self.exited = true;
+                        self.deadline = Some(Instant::now());
+                    }
+                }
+            }
+        }
+
+        // 2) 排空本轮新增输出（Disconnected = 两个读取线程都退出且缓冲已排空）
         let mut closed = false;
         loop {
             match self.rx.try_recv() {
@@ -148,32 +180,34 @@ impl Runner {
             }
         }
 
-        if closed && self.exit_code.is_none() {
-            let Ok(mut child) = self.child.lock() else {
-                return out;
-            };
-            match child.try_wait() {
-                Ok(Some(status)) => {
-                    let code = status.code().unwrap_or(-1);
-                    self.exit_code = Some(code);
-                    let killed = self.killed.load(Ordering::SeqCst);
+        // 3) 收尾：输出读完立即收；管道被孙进程握住时按宽限期超时收
+        if self.exited && self.exit_code.is_none() {
+            let timed_out = self.deadline.map_or(true, |d| Instant::now() >= d);
+            if closed || timed_out {
+                let code = self
+                    .child
+                    .lock()
+                    .ok()
+                    .and_then(|mut c| c.try_wait().ok().flatten())
+                    .and_then(|s| s.code())
+                    .unwrap_or(-1);
+                if !closed {
                     out.push(Line {
-                        stream: if code == 0 { Stream::Out } else { Stream::Err },
-                        text: if killed {
-                            format!("[已停止] 退出码 {code}")
-                        } else {
-                            format!("[进程结束] 退出码 {code}")
-                        },
+                        stream: Stream::Out,
+                        text: "[注意] 进程已退出，但其派生的后台进程仍占用输出管道，残余输出不再等待"
+                            .to_string(),
                     });
                 }
-                Ok(None) => {}
-                Err(e) => {
-                    self.exit_code = Some(-1);
-                    out.push(Line {
-                        stream: Stream::Err,
-                        text: format!("[等待进程失败] {e}"),
-                    });
-                }
+                let killed = self.killed.load(Ordering::SeqCst);
+                out.push(Line {
+                    stream: if code == 0 { Stream::Out } else { Stream::Err },
+                    text: if killed {
+                        format!("[已停止] 退出码 {code}")
+                    } else {
+                        format!("[进程结束] 退出码 {code}")
+                    },
+                });
+                self.exit_code = Some(code);
             }
         }
 

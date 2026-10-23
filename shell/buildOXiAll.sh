@@ -63,8 +63,22 @@ echo "DEBUG: THIRD_PARTY_DIR received: $THIRD_PARTY_DIR"
 # ============================================================
 # Global Path Configuration (WSL Perspective)
 # ============================================================
+# 未显式指定时，从源目录逐级向上找名为 3rd 的目录（与 ps 侧的向上查找一致）。
+# 原来写死"上两级 + /3rd"：oxi/oxiscansdk/oxiscansdk → oxi/3rd，项目一挪就指向不存在的路径。
 if [ -z "$THIRD_PARTY_DIR" ]; then
-    THIRD_PARTY_DIR="$(dirname "$(dirname "$SRC_DIR")")/3rd"
+    _probe="$SRC_DIR"
+    while [ -n "$_probe" ] && [ "$_probe" != "/" ]; do
+        if [ -d "${_probe}/3rd" ]; then
+            THIRD_PARTY_DIR="${_probe}/3rd"
+            break
+        fi
+        _probe="$(dirname "$_probe")"
+    done
+    unset _probe
+    if [ -z "$THIRD_PARTY_DIR" ]; then
+        echo "[ERROR] 未能从 $SRC_DIR 逐级向上找到 3rd 目录，请用 --third-party 显式指定"
+        exit 1
+    fi
 fi
 
 # Compiler Roots —— 来自 shell/env_paths.sh（真源 config/paths.json 的 wsl 段）

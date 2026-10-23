@@ -113,6 +113,12 @@ fn selftest_lines() -> (Vec<String>, bool) {
     r.ok(format!("默认配置    : {}", layout.sdk_config().display()));
     r.ok(format!("构建脚本    : {}", layout.build_script().display()));
     r.ok(format!("文档脚本    : {}", layout.api_script().display()));
+    let wifi = layout.wifi_script();
+    if wifi.is_file() {
+        r.ok(format!("WiFi 脚本   : {}", wifi.display()));
+    } else {
+        r.fail(format!("WiFi 脚本不存在：{}", wifi.display()));
+    }
     r.ok(format!("python      : {}", layout.python()));
 
     let python_exists =
@@ -444,6 +450,24 @@ impl Inner {
         );
     }
 
+    /// 入口三：WiFi = bat/wifi.bat（取设备 IP、adb 切 TCP 无线调试）
+    fn run_wifi(&mut self, ctx: &egui::Context) {
+        let script = self.layout.wifi_script();
+        let args = vec!["/C".to_string(), script.display().to_string()];
+        let banner = format!("cmd /C {}", script.display());
+        self.start(
+            ctx,
+            SpawnSpec {
+                program: "cmd".to_string(),
+                args,
+                cwd: Some(self.layout.root().to_path_buf()),
+                envs: Vec::new(),
+                banner,
+            },
+            "正在连接设备 WiFi ...",
+        );
+    }
+
     fn save_config(&mut self) {
         self.store.apply_working(&self.working);
         match self.store.save() {
@@ -699,6 +723,14 @@ impl Inner {
                             if pass { Stream::Out } else { Stream::Err },
                             if pass { "自检通过。" } else { "自检未通过。" },
                         );
+                    }
+
+                    if ui
+                        .add(plain_btn("WiFi"))
+                        .on_hover_text("调用 bat/wifi.bat：读取设备 IP 并让 adb 切换到无线调试（TCP 5555）")
+                        .clicked()
+                    {
+                        self.run_wifi(ctx);
                     }
 
                     if ui

@@ -16,6 +16,8 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 
 
 . (Join-Path $PSScriptRoot "BuildUtils.ps1")
+# copyUtils.ps1：Copy-LibFiles（整组 .so 一起拷），与打包侧共用同一套落点规则
+. (Join-Path $PSScriptRoot "copyUtils.ps1")
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -97,6 +99,12 @@ function Build-Android-Abi {
         }
     }
     Copy-Artifact -File $artifact -OutDir $OutDir
+
+    # 算法库 libFAPAlgo.so 必须与主库同目录（OXiAlgoLoader 从主库自身目录加载），
+    # 也必须一起落进构建输出目录 —— 否则 build\<prefix><version>\Android\<abi> 里只有主库，
+    # 后续 Sync/打包只能去源码树的构建目录碰运气（IDE 的 cmake-build-* 常常陈旧或未 strip）。
+    $nSo = Copy-LibFiles -SrcDir $buildDir -DstDir $OutDir -Kind so
+    Write-Host "  [COPY] 运行时库 $nSo 个 .so -> $OutDir"
 }
 
 try {
